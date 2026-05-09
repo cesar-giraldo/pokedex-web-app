@@ -1,0 +1,20 @@
+{
+	# Modo worker: el kernel de Symfony queda en memoria entre peticiones
+	frankenphp {
+		worker ./public/index.php
+	}
+}
+
+{$SERVER_NAME:localhost} {
+	log {
+		output stderr
+		format console
+	}
+
+	root * /app/public
+	encode zstd br gzip
+
+	php_server {
+		try_files {path} index.php
+	}
+}

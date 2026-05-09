@@ -1,0 +1,64 @@
+services:
+  # ========================================================
+  # Aplicación PHP + servidor web (FrankenPHP)
+  # ========================================================
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app_php
+    restart: unless-stopped
+    ports:
+      - "80:80"      # HTTP
+      - "443:443"    # HTTPS
+      - "443:443/udp" # HTTP/3
+    volumes:
+      - ./:/app:cached            # Código en vivo (hot reload)
+      - caddy_data:/data          # Certificados TLS
+      - caddy_config:/config      # Configuración de Caddy
+      - ./docker/Caddyfile:/etc/frankenphp/Caddyfile:ro
+    environment:
+      SERVER_NAME: "https://localhost"
+      # se comenta aqui para que sea sobre escrita por los .env (.env.local.php -> .env.local -> .env)
+      # DATABASE_URL: "postgresql://app:app@database:5432/app?serverVersion=18&charset=utf8"
+      APP_ENV: dev
+      APP_SECRET: "ChangeMe!ThisIsADevSecret"
+      # Habilitar el modo worker de FrankenPHP solo en staging o prod (5x +rápido)
+      # FRANKENPHP_CONFIG: "worker ./public/index.php"
+    depends_on:
+      database:
+        condition: service_healthy
+    tty: true
+
+  # ========================================================
+  # Base de datos PostgreSQL 18
+  # ========================================================
+  database:
+    image: postgres:18.3-alpine
+    container_name: app_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    ports:
+      - "5432:5432"   # Para conectarte desde tu cliente SQL
+    volumes:
+      # ⚠️ IMPORTANTE: en Postgres 18+ el volumen se monta en /var/lib/postgresql
+      # (NO en /var/lib/postgresql/data como en versiones anteriores).
+      # La imagen oficial guarda los datos en una subcarpeta versionada
+      # (p. ej. /var/lib/postgresql/18/docker) para soportar pg_upgrade --link.
+      - db_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+# ========================================================
+# Volúmenes persistentes
+# ========================================================
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:
