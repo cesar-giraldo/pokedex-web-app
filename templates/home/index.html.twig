@@ -1,23 +1,23 @@
 {% extends 'base.html.twig' %}
 
-
 {% block title %}Home · PokeDex{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>{{ message }}</h1>
-
-    <p>Everything is working fine.<p>
-
-    <ul>
-        {% for pokemon in pokemons %}
-            <li>{{ pokemon.name }} - {{ pokemon.type.name }}</li>
-        {% endfor %}
-    </ul>
+<div class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-8">
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+        <h1 class="text-4xl font-bold text-indigo-700 mb-4">
+            Listado de Pokemons
+        </h1>
+        <ul class="divide-y divide-gray-200">
+            {% for pokemon in pokemons %}
+                <li class="py-3 flex justify-between">
+                    <span class="font-medium text-gray-800">{{ pokemon.name }}</span>
+                    <span class="text-indigo-600 font-semibold">{{ pokemon.type.name }}</span>
+                </li>
+            {% else %}
+                <li class="py-3 text-gray-500">No hay productos.</li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 {% endblock %}
