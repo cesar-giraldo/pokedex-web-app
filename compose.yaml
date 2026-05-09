@@ -16,7 +16,8 @@ services:
       - ./:/app:cached            # Código en vivo (hot reload)
       - caddy_data:/data          # Certificados TLS
       - caddy_config:/config      # Configuración de Caddy
-      - ./docker/Caddyfile:/etc/frankenphp/Caddyfile:ro
+      # Habilitar la siguiente linea en producción
+      # - ./docker/Caddyfile:/etc/frankenphp/Caddyfile:ro
     environment:
       SERVER_NAME: "https://localhost"
       # se comenta aqui para que sea sobre escrita por los .env (.env.local.php -> .env.local -> .env)

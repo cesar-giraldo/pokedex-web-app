@@ -13,5 +13,11 @@
     <h1>{{ message }}</h1>
 
     <p>Everything is working fine.<p>
+
+    <ul>
+        {% for pokemon in pokemons %}
+            <li>{{ pokemon.name }} - {{ pokemon.type.name }}</li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}
