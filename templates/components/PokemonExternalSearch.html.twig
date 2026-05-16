@@ -1,0 +1,42 @@
+<div {{attributes}}>
+    <input type="text" 
+        class="border rounded px-3 py-2 mr-2"
+        placeholder="Nombre del Pokemon"
+        data-model="name"
+        value="{{ name }}">
+
+    <button type="button" 
+        class="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600"
+        data-action="live#action"
+        data-live-action-param="search">Buscar</button>
+
+    {% if this.pokemon is not empty %}
+        <div class="mt-2">Resultado:</div>
+        <table class="table-auto">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2">Nombre</th>
+                    <th class="px-4 py-2">Tipo</th>
+                    <th class="px-4 py-2">Altura</th>
+                    <th class="px-4 py-2">Peso</th>
+                    <th class="px-4 py-2">Velocidad</th>
+                    <th class="px-4 py-2">Ataque</th>
+                    <th class="px-4 py-2">Defensa</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="border px-4 py-2">{{ this.pokemon.name }}</td>
+                    <td class="border px-4 py-2">{{ this.pokemon.types[0].type.name }}</td>
+                    <td class="border px-4 py-2">{{ this.pokemon.height }}</td>
+                    <td class="border px-4 py-2">{{ this.pokemon.weight }}</td>
+                    <td class="border px-4 py-2">-</td>
+                    <td class="border px-4 py-2">-</td>
+                    <td class="border px-4 py-2">-</td>
+                </tr>
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-gray-500">Pokemon no encontrado.</p>
+    {% endif %}
+</div>

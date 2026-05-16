@@ -259,6 +259,310 @@ Lista completa: <https://ux.symfony.com/>
 
 ---
 
+### 4.12.1 · Usar `symfony/ux-live-component` para peticiones AJAX
+
+A continuación hay dos flujos comunes y paso a paso usando `symfony/ux-live-component`:
+
+- Petición a un **controlador interno** (lógica en tu app Symfony).
+- Petición a una **API externa** (por ejemplo `https://pokeapi.co/api/v2/pokemon/{name}`) donde el componente hará la llamada desde el servidor y actualizará la vista.
+
+Nota: instala el paquete si no lo hiciste aún:
+
+```bash
+docker compose exec php composer require symfony/ux-live-component
+```
+
+#### A. Petición a un controlador interno (Live Component que llama a un endpoint interno)
+
+1. Crear el Live Component PHP (ejemplo `src/Twig/Components/PokemonSearch.php`). Usa los atributos proporcionados por el paquete para declarar `props` y `actions`.
+
+```php
+<?php
+
+namespace App\Twig\Components;
+
+use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
+use Symfony\UX\LiveComponent\Attribute\LiveAction;
+use Symfony\UX\LiveComponent\Attribute\LiveProp;
+use Symfony\UX\LiveComponent\DefaultActionTrait;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+
+#[AsLiveComponent()]
+final class PokemonSearch
+{
+    use DefaultActionTrait;
+
+    public function __construct(
+        private EntityManagerInterface $em,
+        private LoggerInterface $logger
+    ) {
+    }
+
+    #[LiveProp(writable: true)]
+    public string $name = '';
+
+    #[LiveProp(writable: true)]
+    public Pokemon|null $pokemon = null;
+
+
+    #[LiveAction]
+    public function search(): void
+    {
+        $result = $this->em->getRepository(Pokemon::class)->findOneByName($this->name);
+        if ($result instanceof Pokemon) {
+            $this->pokemon = $result;
+        } else {
+            $this->pokemon = null;
+        }
+    }
+}
+```
+
+2. Crear la plantilla Twig del componente (por ejemplo `templates/components/PokemonSearch.html.twig`):
+
+```twig
+{# templates/components/PokemonSearch.html.twig #}
+<div {{attributes}}>
+    <input type="text" 
+        class="border rounded px-3 py-2 mr-2"
+        placeholder="Nombre del Pokemon"
+        data-model="name"
+        value="{{ name }}">
+
+    <button type="button" 
+        class="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600"
+        data-action="live#action"
+        data-live-action-param="search">Buscar</button>
+
+    {% if this.pokemon %}
+        <div class="mt-2">Resultado: {{ dump(this.pokemon) }}</div> 
+    {% else %}
+        <p class="text-gray-500">Pokemon no encontrado.</p>
+    {% endif %}
+</div>
+```
+
+3. Montar el componente en cualquier plantilla Twig:
+
+```twig
+{{ component('PokemonSearch', { name: 'Pikachu' }) }}
+```
+
+4. Comportamiento: al hacer clic en **Buscar**, `symfony/ux-live-component` hará la petición AJAX automáticamente al servidor, ejecutará el método `search()` del componente, volverá a renderizar el fragmento y actualizará el DOM.
+
+#### B. Petición a una API externa (PokeAPI) desde un Live Component
+
+1. Se crea un nuevo LiveComponent de la misma forma que se creó en el Punto A anterior, pero en lugar de realizar una consulta a nuestra base de datos, vamos a necesitar consultar una API Externa.
+
+La mejor práctica recomendada es aislar la infraestructura creando un Servicio de Symfony (Service API client) e inyectarlo en tu LiveComponent. Nunca debes escribir la lógica de curl o peticiones HTTP directamente dentro del componente.Para la gestión de peticiones HTTP, el módulo estándar y recomendado es el Symfony HttpClient (ya incluido en la instalacion actual de symfony).
+
+`src/Service/PokeAPIClient.php`
+
+```php
+<?php
+
+namespace App\Service;
+
+use Psr\Log\LoggerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
+class PokeAPIClient
+{
+    // El HttpClient se inyecta automáticamente aquí
+    public function __construct(
+        private HttpClientInterface $httpClient,
+        private LoggerInterface $logger
+    ) {}
+
+    public function getPokemonByName(string $name): array
+    {
+        try {
+            $response = $this->httpClient->request('GET', "https://pokeapi.co/api/v2/pokemon/$name");
+            return $response->toArray(); // Convierte el JSON automáticamente a array
+        } catch (\Exception $e) {
+            $this->logger->error('Error fetching Pokemon from PokeAPI', ['name' => $name, 'error' => $e->getMessage()]);
+            return [];
+        }
+    }
+}
+
+```
+
+2. Componente que consume el Servicio `/src/Twig/Components/PokemonExternalSearch.php`:
+
+```php
+<?php
+
+namespace App\Twig\Components;
+
+use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
+use Symfony\UX\LiveComponent\Attribute\LiveAction;
+use Symfony\UX\LiveComponent\Attribute\LiveProp;
+use Symfony\UX\LiveComponent\DefaultActionTrait;
+use App\Service\PokeAPIClient;
+
+#[AsLiveComponent()]
+final class PokemonExternalSearch
+{
+    use DefaultActionTrait;
+
+    public function __construct(
+        private PokeAPIClient $pokeApi
+    ) {
+    }
+
+    #[LiveProp(writable: true)]
+    public string $name = '';
+
+    #[LiveProp(writable: true)]
+    public array|null $pokemon = null;
+
+
+    #[LiveAction]
+    public function search(): void
+    {
+        $result = $this->pokeApi->getPokemonByName($this->name);
+        if (is_array($result)) {
+            $this->pokemon = $result;
+        } else {
+            $this->pokemon = null;
+        }
+    }
+}
+```
+
+3. Montar el componente en una plantilla Twig como en el ejemplo anterior:
+
+```twig
+{{ component('PokemonExternalSearch', { name: '' }) }}
+```
+
+Consideraciones y consejos
+
+- Seguridad: cuando llamas APIs externas desde el servidor, sanitiza y valida la entrada del usuario para evitar peticiones maliciosas o demasiado costosas.
+- Caché: para evitar llamadas excesivas a PokeAPI en desarrollo, implementa un caché simple (por ejemplo usando `cache.app`) o limita la frecuencia de búsqueda.
+- Desarrollo: usa `bin/console server:run` o `symfony serve` y revisa la consola del navegador para ver las solicitudes AJAX generadas por Live Components.
+
+Con esto tendrás dos flujos: uno donde el componente invoca lógica interna y otro donde el servidor actúa como proxy hacia una API externa y actualiza el fragmento en la página sin recargar.
+
+
+### 4.12.2 · Alternativa: Stimulus + `fetch` (llamar PokeAPI desde el navegador)
+
+Si prefieres más control cliente-side o quieres llamar directamente a APIs públicas como PokeAPI, puedes usar un controlador Stimulus que realice una petición `fetch` y actualice el DOM.
+
+Pasos detallados:
+
+1) Crear el controlador Stimulus (JS o TS)
+
+assets/controllers/pokemon_controller.js
+
+```js
+import { Controller } from '@hotwired/stimulus';
+
+export default class extends Controller {
+    static targets = ['name', 'output', 'spinner'];
+
+    async fetchPokemon() {
+        const name = this.nameTarget.value.trim().toLowerCase();
+        if (!name) return;
+
+        this.showSpinner(true);
+
+        try {
+            const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(name)}`);
+            if (!res.ok) throw new Error('Not found');
+            const data = await res.json();
+            this.renderPokemon(data);
+        } catch (e) {
+            this.outputTarget.innerHTML = `<div class="text-red-600">Pokemon no encontrado</div>`;
+        } finally {
+            this.showSpinner(false);
+        }
+    }
+
+    renderPokemon(data) {
+        this.outputTarget.innerHTML = `
+            <div class="flex items-center gap-4">
+                <img src="${data.sprites.front_default}" alt="${data.name}" class="w-20 h-20">
+                <div>
+                    <h3 class="text-xl font-bold">${data.name}</h3>
+                    <div>HP: ${data.stats.find(s => s.stat.name === 'hp')?.base_stat ?? '-'} </div>
+                </div>
+            </div>`;
+    }
+
+    showSpinner(visible) {
+        if (!this.hasSpinnerTarget) return;
+        this.spinnerTarget.style.display = visible ? 'inline-block' : 'none';
+    }
+}
+```
+
+2) Registrar/usar el controlador en Twig
+
+En la plantilla donde quieras el buscador (por ejemplo `templates/home/index.html.twig`):
+
+```twig
+<div {{ stimulus_controller('pokemon') }}>
+    <div class="flex gap-2 items-center">
+        <input type="text" {{ stimulus_target('pokemon', 'name') }} placeholder="Nombre del pokemon" class="border rounded px-2 py-1">
+        <button type="button" {{ stimulus_action('pokemon', 'fetchPokemon') }} class="btn-primary">Buscar</button>
+        <div {{ stimulus_target('pokemon', 'spinner') }} style="display:none">🔄</div>
+    </div>
+
+    <div class="mt-4" {{ stimulus_target('pokemon', 'output') }}></div>
+</div>
+```
+
+3) Compilar/gestionar assets
+
+- Si usas sólo JS (archivo `assets/controllers/pokemon_controller.js`) y AssetMapper, no necesitas build adicional: AssetMapper copia el archivo a `public/assets` cuando sea necesario.
+- Si usas TypeScript, compila `.ts` a `.js` (ver la sección anterior sobre `tsconfig.json` y `npx tsc --watch`).
+
+4) Consideraciones
+
+- CORS: PokeAPI permite peticiones GET desde el navegador; si trabajas con otra API que no permita CORS, crea un endpoint interno (proxy) que haga la llamada y devuelva el JSON.
+- Seguridad: para GET no necesitas CSRF, pero para POST sí. Maneja errores y rate limits en el cliente.
+- UX: añade `debounce` si quieres buscar al teclear; muestra spinner y mensajes de error claros.
+- Caché: para reducir llamadas públicas, cachea en `localStorage` o implementa cache en el servidor.
+
+5) Alternativa híbrida
+
+- Si quieres control cliente-side para la latencia inicial pero validación/registro en servidor, haz que Stimulus llame a un endpoint interno (`/api/pokemon/{name}`) que valide, cachee y luego haga la petición a PokeAPI.
+
+Ejemplo de endpoint interno (rápido):
+
+```php
+// src/Controller/Api/PokemonController.php
+namespace App\Controller\Api;
+
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
+class PokemonController
+{
+    public function __construct(private HttpClientInterface $httpClient) {}
+
+    #[Route('/api/pokemon/{name}', name: 'api_pokemon_get', methods: ['GET'])]
+    public function show(string $name): JsonResponse
+    {
+        $url = sprintf('https://pokeapi.co/api/v2/pokemon/%s', rawurlencode(strtolower($name)));
+        try {
+            $resp = $this->httpClient->request('GET', $url);
+            return new JsonResponse($resp->toArray());
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'not found'], Response::HTTP_NOT_FOUND);
+        }
+    }
+}
+```
+
+Usa Stimulus para llamar `/api/pokemon/{name}` en vez de la URL pública si quieres evitar CORS o centralizar caché/limites.
+
+
 ## Paso 4.13 · Workflow recomendado de desarrollo
 
 Cuando estés desarrollando, abre **dos terminales**:
