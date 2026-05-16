@@ -455,17 +455,39 @@ Pasos detallados:
 
 1) Crear el controlador Stimulus (JS o TS)
 
-assets/controllers/pokemon_controller.js
+`assets/controllers/search_pokemon_controller.js`:
+
+```
+dconsole make:stimulus-controller search-pokemon
+```
 
 ```js
-import { Controller } from '@hotwired/stimulus';
-
+/* stimulusFetch: 'lazy' */
 export default class extends Controller {
-    static targets = ['name', 'output', 'spinner'];
+    static targets = ['pokemonName', 'pokemonDetails', 'spinner']
 
-    async fetchPokemon() {
-        const name = this.nameTarget.value.trim().toLowerCase();
-        if (!name) return;
+    initialize() {
+    }
+
+    connect() {
+        // add or remove classes, attributes, dispatch custom events, etc.
+        // this.fooTarget.addEventListener('click', this._fooBar)
+    }
+
+    // Add custom controller actions here
+    // fooBar() { this.fooTarget.classList.toggle(this.bazClass) }
+
+    disconnect() {
+        // Here you should remove all event listeners added in "connect()" 
+        // this.fooTarget.removeEventListener('click', this._fooBar)
+    }
+
+    async search() {
+        const name = this.pokemonNameTarget.value.trim().toLowerCase();
+        if (!name) {
+            alert('Please enter the pokemon name');
+            return;
+        }
 
         this.showSpinner(true);
 
@@ -475,14 +497,15 @@ export default class extends Controller {
             const data = await res.json();
             this.renderPokemon(data);
         } catch (e) {
-            this.outputTarget.innerHTML = `<div class="text-red-600">Pokemon no encontrado</div>`;
+            console.error("Error: " + e.message);
+            this.pokemonDetailsTarget.innerHTML = `<div class="text-red-600">Pokemon no encontrado</div>`;
         } finally {
             this.showSpinner(false);
         }
     }
 
     renderPokemon(data) {
-        this.outputTarget.innerHTML = `
+        this.pokemonDetailsTarget.innerHTML = `
             <div class="flex items-center gap-4">
                 <img src="${data.sprites.front_default}" alt="${data.name}" class="w-20 h-20">
                 <div>
@@ -493,8 +516,12 @@ export default class extends Controller {
     }
 
     showSpinner(visible) {
-        if (!this.hasSpinnerTarget) return;
-        this.spinnerTarget.style.display = visible ? 'inline-block' : 'none';
+        // Simple toggle to show/hide the spinner (.toogle, .replace can also be used)
+        if (visible) {
+            this.spinnerTarget.classList.remove("hidden")
+        } else {
+            this.spinnerTarget.classList.add('hidden');
+        }
     }
 }
 ```
@@ -504,14 +531,18 @@ export default class extends Controller {
 En la plantilla donde quieras el buscador (por ejemplo `templates/home/index.html.twig`):
 
 ```twig
-<div {{ stimulus_controller('pokemon') }}>
-    <div class="flex gap-2 items-center">
-        <input type="text" {{ stimulus_target('pokemon', 'name') }} placeholder="Nombre del pokemon" class="border rounded px-2 py-1">
-        <button type="button" {{ stimulus_action('pokemon', 'fetchPokemon') }} class="btn-primary">Buscar</button>
-        <div {{ stimulus_target('pokemon', 'spinner') }} style="display:none">🔄</div>
-    </div>
+<div class="mt-8 p-6 bg-amber-50 rounded-xl border border-amber-200" {{ stimulus_controller('search-pokemon') }}>
+    <h2 class="text-xl font-bold text-amber-700 mb-2">Buscar Pokemon - Stimulus + Fech - External API</h2>
+    <input type="text" {{ stimulus_target('search-pokemon', 'pokemonName') }} placeholder="Nombre del Pokemon" class="border rounded px-3 py-2 mr-2">
 
-    <div class="mt-4" {{ stimulus_target('pokemon', 'output') }}></div>
+    <button type="button" {{ stimulus_action('search-pokemon', 'search') }} class="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600">
+        Buscar
+    </button>
+
+    <div class="mt-3 text-lg font-medium" {{ stimulus_target('search-pokemon', 'pokemonDetails') }}></div>
+    <div {{ stimulus_target('search-pokemon', 'spinner') }} class="hidden">
+        {{ ux_icon('heroicons:arrow-path', {class: 'size-6 text-gray-500 hover:text-indigo-600'}) }}
+    </div>
 </div>
 ```
 
@@ -527,7 +558,7 @@ En la plantilla donde quieras el buscador (por ejemplo `templates/home/index.htm
 - UX: añade `debounce` si quieres buscar al teclear; muestra spinner y mensajes de error claros.
 - Caché: para reducir llamadas públicas, cachea en `localStorage` o implementa cache en el servidor.
 
-5) Alternativa híbrida
+5) Alternativa híbrida (Opcional)
 
 - Si quieres control cliente-side para la latencia inicial pero validación/registro en servidor, haz que Stimulus llame a un endpoint interno (`/api/pokemon/{name}`) que valide, cachee y luego haga la petición a PokeAPI.
 

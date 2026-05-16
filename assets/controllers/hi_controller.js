@@ -38,6 +38,11 @@ export default class extends Controller {
     }
 
     greet() {
-        this.outputTarget.textContent = `Hello, ${this.nameTarget.value}!`
+        if (this.nameTarget.value) {
+            this.outputTarget.textContent = `Hello, ${this.nameTarget.value}!`
+        } else {
+            alert('Please enter your name');
+        }
+        
     }
 }

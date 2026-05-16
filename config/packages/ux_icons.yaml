@@ -14,6 +14,9 @@ ux_icons:
     # Throw an exception if an icon is not
     ignore_not_found: false
 
+    icon_sets:
+        heroicons: ~
+
 when@prod:
     ux_icons:
         # Suppress exceptions for missing icons in production
