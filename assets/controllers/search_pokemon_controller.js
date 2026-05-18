@@ -25,6 +25,7 @@ export default class extends Controller {
         // this.fooTarget.removeEventListener('click', this._fooBar)
     }
 
+    // External search using PokeAPI directly from the frontend
     async search() {
         const name = this.pokemonNameTarget.value.trim().toLowerCase();
         if (!name) {
@@ -47,6 +48,7 @@ export default class extends Controller {
         }
     }
 
+    // Internal search using our Symfony backend
     async internalSearch() {
         const name = this.pokemonNameTarget.value.trim();
         if (!name) {
@@ -57,7 +59,7 @@ export default class extends Controller {
         this.showSpinner(true);
 
         try {
-            const res = await fetch(`/internal-pokemon-search?name=${encodeURIComponent(name)}`);
+            const res = await fetch(`/internal-pokemon-search/${encodeURIComponent(name)}`);
             if (!res.ok) throw new Error('Not found');
             const data = await res.json();
 

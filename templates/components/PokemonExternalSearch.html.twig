@@ -15,6 +15,7 @@
         <table class="table-auto">
             <thead>
                 <tr>
+                    <th class="px-4 py-2">Imagen</th>
                     <th class="px-4 py-2">Nombre</th>
                     <th class="px-4 py-2">Tipo</th>
                     <th class="px-4 py-2">Altura</th>
@@ -26,13 +27,16 @@
             </thead>
             <tbody>
                 <tr>
+                    <td class="border items-center">
+                        <img src="{{ this.pokemon.sprites.front_default }}" alt="{{ this.pokemon.name }}" class="w-20 h-20">
+                    </td>
                     <td class="border px-4 py-2">{{ this.pokemon.name }}</td>
                     <td class="border px-4 py-2">{{ this.pokemon.types[0].type.name }}</td>
-                    <td class="border px-4 py-2">{{ this.pokemon.height }}</td>
-                    <td class="border px-4 py-2">{{ this.pokemon.weight }}</td>
-                    <td class="border px-4 py-2">-</td>
-                    <td class="border px-4 py-2">-</td>
-                    <td class="border px-4 py-2">-</td>
+                    <td class="border px-4 py-2">{{ this.pokemon.height }} pies</td>
+                    <td class="border px-4 py-2">{{ this.pokemon.weight }} lbs</td>
+                    <td class="border px-4 py-2">{{ this.pokemon.stats[5].base_stat }}</td>
+                    <td class="border px-4 py-2">{{ this.pokemon.stats[1].base_stat }}</td>
+                    <td class="border px-4 py-2">{{ this.pokemon.stats[2].base_stat }}</td>
                 </tr>
             </tbody>
         </table>

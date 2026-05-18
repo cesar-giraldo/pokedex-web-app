@@ -6,8 +6,8 @@ use App\Entity\Pokemon;
 use App\Entity\PokemonType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController
@@ -49,12 +49,10 @@ final class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/internal-pokemon-search', name: 'app_internal_pokemon_search', methods: ['GET'])]
-    public function internalPokemonSearch(EntityManagerInterface $em, Request $request): Response
+    #[Route('/internal-pokemon-search/{name}', name: 'app_internal_pokemon_search', methods: ['GET'])]
+    public function internalPokemonSearch(EntityManagerInterface $em, string $name): JsonResponse
     {
-        $pokemonName = $request->query->get('name');
-
-        $pokemon = $em->getRepository(Pokemon::class)->findOneByName($pokemonName);
+        $pokemon = $em->getRepository(Pokemon::class)->findOneByName($name);
 
         $response = [
             'success' => $pokemon instanceof Pokemon,
