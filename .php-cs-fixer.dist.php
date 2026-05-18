@@ -11,11 +11,7 @@ $finder = (new PhpCsFixer\Finder())
     ])
     ->exclude('var')
     ->name('*.php')
-    ->notPath('bundles')
-    /* ->notPath([
-        'config/bundles.php',
-        'config/reference.php',
-    ]) */
+    ->notPath(['bundles', 'reference'])
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);
 

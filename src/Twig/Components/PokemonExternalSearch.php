@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Twig\Components;
 
+use App\Service\PokeAPIClient;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
-use App\Service\PokeAPIClient;
+
+use function is_array;
 
 #[AsLiveComponent()]
 final class PokemonExternalSearch
@@ -22,8 +26,7 @@ final class PokemonExternalSearch
     public string $name = '';
 
     #[LiveProp(writable: true)]
-    public array|null $pokemon = null;
-
+    public ?array $pokemon = null;
 
     #[LiveAction]
     public function search(): void

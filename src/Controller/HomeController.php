@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Pokemon;
@@ -18,14 +20,14 @@ final class HomeController extends AbstractController
         // Insertar un pokemon si no existe ninguno
         $repo = $em->getRepository(Pokemon::class);
         if (0 === $repo->count([])) {
-            $type = (new PokemonType())
+            $type = new PokemonType()
                 ->setName('electric')
                 ->setGeneration('generation-i')
                 ->setSprite('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-iii/colosseum/13.png');
 
             $em->persist($type);
 
-            $pokemon = (new Pokemon())
+            $pokemon = new Pokemon()
                 ->setName('Pikachu')
                 ->setType($type)
                 ->setListOrder(35)
@@ -59,9 +61,9 @@ final class HomeController extends AbstractController
             'data' => $pokemon ? [
                 'name' => $pokemon->getName(),
                 'spriteFront' => $pokemon->getSpriteFront(),
-                'healthPoints' => $pokemon->getHealthPoints()
+                'healthPoints' => $pokemon->getHealthPoints(),
             ] : null,
-            'errors' => $pokemon ? null : ['Pokemon not found']
+            'errors' => $pokemon ? null : ['Pokemon not found'],
         ];
 
         return $this->json($response);

@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\PokemonRepository;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -36,7 +40,7 @@ class Pokemon
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $spriteBack = null;
 
-    #[ORM\Column(type: Types::INTEGER, precision: 10,nullable: true)]
+    #[ORM\Column(type: Types::INTEGER, precision: 10, nullable: true)]
     private ?int $attack = null;
 
     #[ORM\Column(type: Types::INTEGER, precision: 10, nullable: true)]
@@ -49,10 +53,10 @@ class Pokemon
     private ?int $healthPoints = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTime $createdAt = null;
+    private ?DateTime $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTime $lastUpdatedAt = null;
+    private ?DateTime $lastUpdatedAt = null;
 
     public function getId(): ?int
     {
@@ -191,24 +195,24 @@ class Pokemon
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(?DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getLastUpdatedAt(): ?\DateTimeImmutable
+    public function getLastUpdatedAt(): ?DateTimeImmutable
     {
         return $this->lastUpdatedAt;
     }
 
-    public function setLastUpdatedAt(?\DateTimeImmutable $lastUpdatedAt): static
+    public function setLastUpdatedAt(?DateTimeImmutable $lastUpdatedAt): static
     {
         $this->lastUpdatedAt = $lastUpdatedAt;
 

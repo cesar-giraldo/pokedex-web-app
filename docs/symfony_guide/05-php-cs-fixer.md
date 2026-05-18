@@ -33,7 +33,7 @@ $finder = (new PhpCsFixer\Finder())
         __DIR__.'/public',
     ])
     ->name('*.php')
-    ->notPath('bundles')
+    ->notPath(['bundles', 'reference'])
     ->ignoreDotFiles(true)
     ->ignoreVCS(true)
 ;

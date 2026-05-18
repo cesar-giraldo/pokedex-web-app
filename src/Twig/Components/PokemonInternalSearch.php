@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Twig\Components;
 
+use App\Entity\Pokemon;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
-use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
-use App\Entity\Pokemon;
 
 #[AsLiveComponent()]
 final class PokemonInternalSearch
@@ -25,14 +27,13 @@ final class PokemonInternalSearch
     public string $name = '';
 
     #[LiveProp(writable: true)]
-    public Pokemon|null $pokemon = null;
-
+    public ?Pokemon $pokemon = null;
 
     #[LiveAction]
     public function search(): void
     {
         $result = $this->em->getRepository(Pokemon::class)->findOneByName($this->name);
-        
+
         $this->logger->info('LiveComponent PokemonInternalSearch::search called', ['name' => $this->name]);
 
         if ($result instanceof Pokemon) {
