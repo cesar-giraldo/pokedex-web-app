@@ -47,13 +47,51 @@ export default class extends Controller {
         }
     }
 
+    async internalSearch() {
+        const name = this.pokemonNameTarget.value.trim();
+        if (!name) {
+            alert('Please enter the pokemon name');
+            return;
+        }
+
+        this.showSpinner(true);
+
+        try {
+            const res = await fetch(`/internal-pokemon-search?name=${encodeURIComponent(name)}`);
+            if (!res.ok) throw new Error('Not found');
+            const data = await res.json();
+
+            if (!data.success) {
+                throw new Error(data.errors?.[0] || 'Unknown error');
+            }
+            this.renderInternalPokemon(data.data);
+        } catch (e) {
+            console.error("Error: " + e.message);
+            this.pokemonDetailsTarget.innerHTML = `<div class="text-red-600">Pokemon no encontrado</div>`;
+        } finally {
+            this.showSpinner(false);
+        }
+    }
+
     renderPokemon(data) {
+
         this.pokemonDetailsTarget.innerHTML = `
             <div class="flex items-center gap-4">
                 <img src="${data.sprites.front_default}" alt="${data.name}" class="w-20 h-20">
                 <div>
                     <h3 class="text-xl font-bold">${data.name}</h3>
                     <div>HP: ${data.stats.find(s => s.stat.name === 'hp')?.base_stat ?? '-'} </div>
+                </div>
+            </div>`;
+    }
+
+    renderInternalPokemon(data) {
+        this.pokemonDetailsTarget.innerHTML = `
+            <div class="flex items-center gap-4">
+                <img src="${data.spriteFront}" alt="${data.name}" class="w-20 h-20">
+                <div>
+                    <h3 class="text-xl font-bold">${data.name}</h3>
+                    <div>HP: ${data.healthPoints ?? '-'} </div>
                 </div>
             </div>`;
     }
