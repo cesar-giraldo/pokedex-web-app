@@ -1,0 +1,10 @@
+parameters:
+    level: 8
+    paths:
+        - src/
+        - tests/
+    excludePaths:
+        - tests/bootstrap.php
+    symfony:
+        # Ruta al contenedor de desarrollo de Symfony 8
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml

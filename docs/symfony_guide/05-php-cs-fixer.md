@@ -264,7 +264,7 @@ parameters:
         - tests
     symfony:
         # Ruta al contenedor de desarrollo de Symfony 8
-        container_xml_path: var/cache/dev/App_KernelDevDebugContainer.xml
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
 ```
 
 Ejecútalo:
