@@ -1,3 +1,7 @@
+includes:
+    # Habilita las reglas estrictas de análisis para Doctrine
+    # - vendor/phpstan/phpstan-doctrine/rules.neon
+
 parameters:
     level: 8
     paths:
@@ -8,3 +12,6 @@ parameters:
     symfony:
         # Ruta al contenedor de desarrollo de Symfony 8
         containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+
+    doctrine:
+        objectManagerLoader: tests/object-manager.php
