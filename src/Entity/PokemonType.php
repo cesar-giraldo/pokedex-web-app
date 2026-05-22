@@ -17,8 +17,8 @@ class PokemonType
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $name = null;
+    #[ORM\Column(length: 50, nullable: false)]
+    private string $name;
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $generation = null;
@@ -42,7 +42,7 @@ class PokemonType
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }

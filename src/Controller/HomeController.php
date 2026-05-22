@@ -35,7 +35,7 @@ final class HomeController extends AbstractController
                 ->setAttack(55)
                 ->setDefense(40)
                 ->setSpeed(90)
-                ->setHeight(4)
+                ->setHeight('4')
                 ->setWeight(60)
                 ->setSpriteFront('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png')
                 ->setSpriteBack('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/25.png');

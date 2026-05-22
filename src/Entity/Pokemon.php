@@ -6,7 +6,6 @@ namespace App\Entity;
 
 use App\Repository\PokemonRepository;
 use DateTime;
-use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -18,20 +17,20 @@ class Pokemon
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
-    private ?string $name = null;
+    #[ORM\Column(length: 100, nullable: false)]
+    private string $name;
 
-    #[ORM\Column(type: Types::FLOAT, nullable: false)]
-    private ?string $height = null;
+    #[ORM\Column(type: Types::STRING, nullable: false)]
+    private string $height;
 
     #[ORM\Column(type: Types::INTEGER)]
-    private ?int $weight = null;
+    private int $weight;
 
     #[ORM\ManyToOne(inversedBy: 'pokemons')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?PokemonType $type = null;
 
-    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
     private ?int $listOrder = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -63,7 +62,7 @@ class Pokemon
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -75,7 +74,7 @@ class Pokemon
         return $this;
     }
 
-    public function getHeight(): ?string
+    public function getHeight(): string
     {
         return $this->height;
     }
@@ -87,7 +86,7 @@ class Pokemon
         return $this;
     }
 
-    public function getWeight(): ?int
+    public function getWeight(): int
     {
         return $this->weight;
     }
@@ -195,24 +194,24 @@ class Pokemon
         return $this;
     }
 
-    public function getCreatedAt(): ?DateTimeImmutable
+    public function getCreatedAt(): ?DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?DateTimeImmutable $createdAt): static
+    public function setCreatedAt(?DateTime $createdAt): static
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getLastUpdatedAt(): ?DateTimeImmutable
+    public function getLastUpdatedAt(): ?DateTime
     {
         return $this->lastUpdatedAt;
     }
 
-    public function setLastUpdatedAt(?DateTimeImmutable $lastUpdatedAt): static
+    public function setLastUpdatedAt(?DateTime $lastUpdatedAt): static
     {
         $this->lastUpdatedAt = $lastUpdatedAt;
 
