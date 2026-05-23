@@ -20,8 +20,8 @@ class Pokemon
     #[ORM\Column(length: 100, nullable: false)]
     private string $name;
 
-    #[ORM\Column(type: Types::STRING, nullable: false)]
-    private string $height;
+    #[ORM\Column(type: Types::INTEGER, nullable: false)]
+    private int $height;
 
     #[ORM\Column(type: Types::INTEGER)]
     private int $weight;
@@ -74,12 +74,12 @@ class Pokemon
         return $this;
     }
 
-    public function getHeight(): string
+    public function getHeight(): int
     {
         return $this->height;
     }
 
-    public function setHeight(string $height): static
+    public function setHeight(int $height): static
     {
         $this->height = $height;
 
