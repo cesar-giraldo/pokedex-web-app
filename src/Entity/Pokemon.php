@@ -10,6 +10,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PokemonRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Pokemon
 {
     #[ORM\Id]
@@ -214,6 +215,20 @@ class Pokemon
     public function setLastUpdatedAt(?DateTime $lastUpdatedAt): static
     {
         $this->lastUpdatedAt = $lastUpdatedAt;
+
+        return $this;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function setDefaults(): static
+    {
+        if (!$this->createdAt) {
+            $this->createdAt = new DateTime();
+        }
+
+        // Always update the lastUpdatedAt timestamp on persist or update
+        $this->lastUpdatedAt = new DateTime();
 
         return $this;
     }

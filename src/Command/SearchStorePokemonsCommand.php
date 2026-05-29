@@ -156,7 +156,7 @@ class SearchStorePokemonsCommand extends Command
             $io->info(sprintf('Total errors encountered: %d', $errorsCount));
 
             if (!empty($errorLog)) {
-                $io->warning('Errores detallados:');
+                $io->warning('Detailed Errors:');
                 foreach ($errorLog as $err) {
                     $io->writeln($err);
                 }
