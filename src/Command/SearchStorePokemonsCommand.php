@@ -86,9 +86,19 @@ class SearchStorePokemonsCommand extends Command
         $totalPokemonsAdded = 0;
         $existingPokemonsCount = 0;
         $errorsCount = 0;
+        $errorLog = [];
+
+        // Used to keep the types in cache and avoid multiple database queries for the same type
+        $typeCache = [];
 
         foreach ($pokemons as $pokemonData) {
             $name = $pokemonData['name'];
+            if (!$name) {
+                $io->error('Pokemon data missing name, skipping...');
+                ++$errorsCount;
+                $errorLog[] = 'Missing name in pokemonData: ' . json_encode($pokemonData);
+                continue;
+            }
 
             if ($writeInDatabase) {
                 // Check if the pokemon already exists in the database
@@ -104,20 +114,34 @@ class SearchStorePokemonsCommand extends Command
                 if (!$pokemonDetails instanceof PokemonDetails) {
                     $io->error(sprintf('Failed to fetch details for Pokemon "%s", skipping...', $name));
                     ++$errorsCount;
+                    $errorLog[] = sprintf('Failed to fetch details for %s', $name);
                     continue;
                 }
 
-                // Get or create pokemon type in the database
-                $pokemonType = $this->createPokemonType($pokemonDetails);
-                if (!$pokemonType instanceof PokemonType) {
-                    $io->error(sprintf('Failed to determine type for Pokemon "%s", skipping...', $name));
+                // Check pokemon type name
+                if (empty($pokemonDetails->types) || !isset($pokemonDetails->types[0]['type']['name'])) {
+                    $io->error(sprintf('Pokemon "%s" missing type information, skipping...', $name));
                     ++$errorsCount;
+                    $errorLog[] = sprintf('Missing type for %s', $name);
                     continue;
+                }
+
+                $typeName = $pokemonDetails->types[0]['type']['name'];
+                if (isset($typeCache[$typeName])) {
+                    $pokemonType = $typeCache[$typeName];
+                } else {
+                    $pokemonType = $this->getOrCreatePokemonType($typeName);
+                    if ($pokemonType instanceof PokemonType) {
+                        $typeCache[$typeName] = $pokemonType;
+                    } else {
+                        $io->error(sprintf('Failed to determine type for Pokemon "%s", skipping...', $name));
+                        ++$errorsCount;
+                        $errorLog[] = sprintf('Failed to determine type for %s', $name);
+                        continue;
+                    }
                 }
 
                 $pokemon = $this->createPokemonEntityFromApiData($pokemonDetails, $pokemonType);
-                $this->entityManager->flush();
-
                 ++$totalPokemonsAdded;
                 $io->comment(sprintf('Pokemon "%s" of type "%s" has been saved to the database.', $pokemon->getName(), $pokemonType->getName()));
             } else {
@@ -126,9 +150,17 @@ class SearchStorePokemonsCommand extends Command
         }
 
         if ($writeInDatabase) {
+            $this->entityManager->flush();
             $io->info(sprintf('Total Pokemons added to the database: %d', $totalPokemonsAdded));
             $io->info(sprintf('Total existing Pokemons skipped: %d', $existingPokemonsCount));
             $io->info(sprintf('Total errors encountered: %d', $errorsCount));
+
+            if (!empty($errorLog)) {
+                $io->warning('Errores detallados:');
+                foreach ($errorLog as $err) {
+                    $io->writeln($err);
+                }
+            }
         } else {
             $io->info('DRY RUN mode, no Pokemons were added to the database.');
         }
@@ -138,15 +170,8 @@ class SearchStorePokemonsCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function createPokemonType(PokemonDetails $pokemonDetails): ?PokemonType
+    private function getOrCreatePokemonType(string $typeName): ?PokemonType
     {
-        // check the count or array types
-        if (empty($pokemonDetails->types)) {
-            return null;
-        }
-
-        $typeName = $pokemonDetails->types[0]['type']['name'] ?? 'unknown';
-
         // check if pokemon type already exists in the database
         $existingType = $this->pokemonTypeRepository->findOneByName($typeName);
         if ($existingType) {
