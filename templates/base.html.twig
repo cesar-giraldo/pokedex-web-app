@@ -1,25 +1,129 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>{% block title %}Welcome {% endblock %} | Pokedex</title>
+    
+    <!-- ===== Title Icon ===== -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
+    {% block stylesheets %}
+    {% endblock %}
 
-        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphpHotReload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
+
+    {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
+    {% if frankenphpHotReload %}
+    <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
+    <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
+    <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+    {% endif %}
+  </head>
+  <body
+    x-data="{ page: 'formElements', 'loaded': true, 'darkMode': false, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }"
+    x-init="
+         darkMode = JSON.parse(localStorage.getItem('darkMode'));
+         $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
+    :class="{'dark bg-gray-900': darkMode === true}"
+  >
+    <!-- ===== Preloader Start ===== -->
+    {{ include('partials/preloader.html.twig') }}
+    <!-- ===== Preloader End ===== -->
+
+    <!-- ===== Page Wrapper Start ===== -->
+    <div class="flex h-screen overflow-hidden">
+      <!-- ===== Sidebar Start ===== -->
+      {{ include('partials/sidebar.html.twig') }}
+      <!-- ===== Sidebar End ===== -->
+
+      <!-- ===== Content Area Start ===== -->
+      <div
+        class="relative flex flex-1 flex-col overflow-x-hidden overflow-y-auto"
+      >
+        <!-- Small Device Overlay Start -->
+        {{ include('partials/overlay.html.twig') }}
+        <!-- Small Device Overlay End -->
+
+        <!-- ===== Header Start ===== -->
+        {{ include('partials/header.html.twig') }}
+        <!-- ===== Header End ===== -->
+
+        <!-- ===== Main Content Start ===== -->
+        <main>
+          <div class="mx-auto max-w-(--breakpoint-2xl) p-4 md:p-6">
+            <!-- Breadcrumb Start -->
+            <div x-data="{ pageName: `Form Elements`}">
+              {{ include('partials/breadcrumb.html.twig') }}
+            </div>
+            <!-- Breadcrumb End -->
+
+            {% block body %}{% endblock %}
+            
+          </div>
+        </main>
+        <!-- ===== Main Content End ===== -->
+      </div>
+      <!-- ===== Content Area End ===== -->
+    </div>
+    <!-- ===== Page Wrapper End ===== -->
+
+    <script>
+      function dropdown() {
+        return {
+          options: [],
+          selected: [],
+          show: false,
+          open() {
+            this.show = true;
+          },
+          close() {
+            this.show = false;
+          },
+          isOpen() {
+            return this.show === true;
+          },
+          select(index, event) {
+            if (!this.options[index].selected) {
+              this.options[index].selected = true;
+              this.options[index].element = event.target;
+              this.selected.push(index);
+            } else {
+              this.selected.splice(this.selected.lastIndexOf(index), 1);
+              this.options[index].selected = false;
+            }
+          },
+          remove(index, option) {
+            this.options[option].selected = false;
+            this.selected.splice(index, 1);
+          },
+          loadOptions() {
+            const options = document.getElementById("select").options;
+            for (let i = 0; i < options.length; i++) {
+              this.options.push({
+                value: options[i].value,
+                text: options[i].innerText,
+                selected:
+                  options[i].getAttribute("selected") != null
+                    ? options[i].getAttribute("selected")
+                    : false,
+              });
+            }
+          },
+          selectedValues() {
+            return this.selected.map((option) => {
+              return this.options[option].value;
+            });
+          },
+        };
+      }
+    </script>
+  </body>
 </html>
+
