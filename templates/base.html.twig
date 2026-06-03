@@ -27,11 +27,10 @@
     {% endif %}
   </head>
   <body
-    x-data="{ page: 'formElements', 'loaded': true, 'darkMode': false, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }"
-    x-init="
-         darkMode = JSON.parse(localStorage.getItem('darkMode'));
-         $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
-    :class="{'dark bg-gray-900': darkMode === true}"
+    data-controller="templates--base" data-templates--base-page-value="Form Base Elements"
+    data-templates--base-dark-class="bg-gray-900"
+    data-templates--base-hide-class="hidden"
+    data-templates--base-target="bodyContainer"
   >
     <!-- ===== Preloader Start ===== -->
     {{ include('partials/preloader.html.twig') }}
@@ -59,7 +58,8 @@
         <main>
           <div class="mx-auto max-w-(--breakpoint-2xl) p-4 md:p-6">
             <!-- Breadcrumb Start -->
-            <div x-data="{ pageName: `Form Elements`}">
+            <div>
+              <p>Page Name: <span data-templates--base-target="outputPageName"></span></p>
               {{ include('partials/breadcrumb.html.twig') }}
             </div>
             <!-- Breadcrumb End -->
