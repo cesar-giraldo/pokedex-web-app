@@ -65,4 +65,17 @@ export default class extends Controller {
             }
         }
     }
+
+    toggleSidebar() {
+        this.sidebarToggleValue = !this.sidebarToggleValue;
+    }
+
+    hideSidebar() {
+        this.sidebarToggleValue = false;
+    }
+    
+    sidebarToggleValueChanged(newValue) {
+        console.log(`Sidebar toggle changed to ${newValue}`);
+        this.element.setAttribute("data-sidebar", newValue ? "collapsed" : "expanded");
+    }
 }
