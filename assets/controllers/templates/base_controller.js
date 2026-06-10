@@ -16,14 +16,23 @@ export default class extends Controller {
 
         // notifications specific
         notificationsDropdownOpen: Boolean,
-        activeNotifications: Boolean
+        activeNotifications: Boolean,
+
+        // user menu specific
+        userMenuDropdownOpen: Boolean
     };
 
     // define classes keys (real class defined in the HTML template)
     static classes = ['dark', 'hide'];
 
     // elements to be handled by the controller, defined in the HTML template with data-templates--base-target
-    static targets = ['outputPageName', 'bodyContainer', 'pageLoader', 'notificationsDropdown'];
+    static targets = [
+        'outputPageName',
+        'bodyContainer',
+        'pageLoader',
+        'notificationsDropdown',
+        'userMenuDropdown'
+    ];
 
     initialize() {
         this.loadedValue = false;
@@ -38,6 +47,9 @@ export default class extends Controller {
         // notifications specific
         this.notificationsDropdownOpenValue = false;
         this.activeNotificationsValue = true;
+
+        // user menu specific
+        this.userMenuDropdownOpenValue = false;
     }
 
     connect() {
@@ -129,5 +141,25 @@ export default class extends Controller {
     }
     activeNotificationsValueChanged(newValue) {
         this.element.setAttribute("data-notifications-status", newValue ? "unread" : "read");
+    }
+
+    /**
+     * User menu dropdown control methods
+     */
+    closeUserMenuDropdown() {
+        this.userMenuDropdownOpenValue = false;
+    }
+    toggleUserMenuDropdown(event) {
+        event.preventDefault();
+        this.userMenuDropdownOpenValue = !this.userMenuDropdownOpenValue;
+    }
+    userMenuDropdownOpenValueChanged(newValue) {
+        if (this.hasUserMenuDropdownTarget) {
+            if (newValue) {
+                this.userMenuDropdownTarget.classList.remove(this.hideClass);
+            } else {
+                this.userMenuDropdownTarget.classList.add(this.hideClass);
+            }
+        }
     }
 }
