@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { useClickOutside } from "stimulus-use";
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
@@ -11,14 +12,18 @@ export default class extends Controller {
         scrollTop: Boolean,
         
         // header specific
-        menuToggle: Boolean
+        menuToggle: Boolean,
+
+        // notifications specific
+        notificationsDropdownOpen: Boolean,
+        activeNotifications: Boolean
     };
 
     // define classes keys (real class defined in the HTML template)
     static classes = ['dark', 'hide'];
 
     // elements to be handled by the controller, defined in the HTML template with data-templates--base-target
-    static targets = ['outputPageName', 'bodyContainer', 'pageLoader'];
+    static targets = ['outputPageName', 'bodyContainer', 'pageLoader', 'notificationsDropdown'];
 
     initialize() {
         this.loadedValue = false;
@@ -29,9 +34,16 @@ export default class extends Controller {
         
         // header specific
         this.menuToggleValue = false;
+
+        // notifications specific
+        this.notificationsDropdownOpenValue = false;
+        this.activeNotificationsValue = true;
     }
 
     connect() {
+        // this enables the automatic event 'click:outside'
+        useClickOutside(this);
+
         console.log('Page Name: ' + this.pageValue);
         this.updatePageValue();
         this.darkModeValue = JSON.parse(localStorage.getItem('darkMode')) || false;
@@ -53,7 +65,6 @@ export default class extends Controller {
 
     // watcher for dark mode changes, updates localStorage and toggles the class on body
     darkModeValueChanged(newValue, oldValue) {
-        console.log(`Dark mode changed from ${oldValue} to ${newValue}`);
         localStorage.setItem('darkMode', JSON.stringify(newValue));
         if (this.hasBodyContainerTarget) {
             this.bodyContainerTarget.classList.toggle(this.darkClass, newValue)
@@ -93,7 +104,30 @@ export default class extends Controller {
         this.menuToggleValue = !this.menuToggleValue;
     }
     menuToggleValueChanged(newValue) {
-        console.log(`Header menu toggle changed to ${newValue}`);
         this.element.setAttribute("data-header-menu", newValue ? "expanded" : "collapsed");
+    }
+
+    /**
+     * Notifications dropdown control methods
+     */
+    closeNotificationsDropdown() {
+        this.notificationsDropdownOpenValue = false;
+    }
+    toogleNotificationsDropdown() {
+        this.notificationsDropdownOpenValue = !this.notificationsDropdownOpenValue;
+        this.activeNotificationsValue = false;
+    }
+    // watcher for notifications dropdown open state, shows or hides the dropdown based on the value
+    notificationsDropdownOpenValueChanged(newValue) {
+        if (this.hasNotificationsDropdownTarget) {
+            if (newValue) {
+                this.notificationsDropdownTarget.classList.remove(this.hideClass);
+            } else {
+                this.notificationsDropdownTarget.classList.add(this.hideClass);
+            }
+        }
+    }
+    activeNotificationsValueChanged(newValue) {
+        this.element.setAttribute("data-notifications-status", newValue ? "unread" : "read");
     }
 }

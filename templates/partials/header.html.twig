@@ -88,9 +88,14 @@
 				<!-- Dark Mode Toggler -->
 
 				<!-- Notification Menu Area -->
-				<div class="relative" x-data="{ dropdownOpen: false, notifying: true }" @click.outside="dropdownOpen = false">
-					<button class="hover:text-dark-900 relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white" @click.prevent="dropdownOpen = ! dropdownOpen; notifying = false">
-						<span :class="!notifying ? 'hidden' : 'flex'" class="absolute top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-orange-400">
+				<div class="relative" data-action="click:outside->templates--base#closeNotificationsDropdown">
+					<button 
+						class="hover:text-dark-900 relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+						data-action="click->templates--base#toogleNotificationsDropdown">
+						<span :class="!notifying ? 'hidden' : 'flex'" 
+							class="absolute top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-orange-400
+							group-data-[notifications-status=read]:hidden
+							group-data-[notifications-status=unread]:flex">
 							<span class="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
 						</span>
 						<svg class="fill-current" width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -99,7 +104,7 @@
 					</button>
 
 					<!-- Dropdown Start -->
-					<div x-show="dropdownOpen" class="shadow-theme-lg dark:bg-gray-dark absolute -right-[240px] mt-[17px] flex h-[480px] w-[350px] flex-col rounded-2xl border border-gray-200 bg-white p-3 sm:w-[361px] lg:right-0 dark:border-gray-800">
+					<div data-templates--base-target="notificationsDropdown" class="shadow-theme-lg dark:bg-gray-dark absolute -right-[240px] mt-[17px] flex h-[480px] w-[350px] flex-col rounded-2xl border border-gray-200 bg-white p-3 sm:w-[361px] lg:right-0 dark:border-gray-800">
 						<div class="mb-3 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
 							<h5 class="text-lg font-semibold text-gray-800 dark:text-white/90">
 								Notification
