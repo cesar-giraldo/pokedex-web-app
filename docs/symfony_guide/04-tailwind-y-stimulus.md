@@ -516,7 +516,7 @@ export default class extends Controller {
     }
 
     showSpinner(visible) {
-        // Simple toggle to show/hide the spinner (.toogle, .replace can also be used)
+        // Simple toggle to show/hide the spinner (.toggle, .replace can also be used)
         if (visible) {
             this.spinnerTarget.classList.remove("hidden")
         } else {

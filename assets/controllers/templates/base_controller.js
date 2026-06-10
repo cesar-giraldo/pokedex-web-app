@@ -75,6 +75,10 @@ export default class extends Controller {
         }
     }
 
+    toggleDarkMode(event) {
+        event.preventDefault();
+        this.darkModeValue = !this.darkModeValue;
+    }
     // watcher for dark mode changes, updates localStorage and toggles the class on body
     darkModeValueChanged(newValue, oldValue) {
         localStorage.setItem('darkMode', JSON.stringify(newValue));
@@ -125,7 +129,7 @@ export default class extends Controller {
     closeNotificationsDropdown() {
         this.notificationsDropdownOpenValue = false;
     }
-    toogleNotificationsDropdown() {
+    toggleNotificationsDropdown() {
         this.notificationsDropdownOpenValue = !this.notificationsDropdownOpenValue;
         this.activeNotificationsValue = false;
     }
@@ -161,5 +165,6 @@ export default class extends Controller {
                 this.userMenuDropdownTarget.classList.add(this.hideClass);
             }
         }
+        this.element.setAttribute("data-user-dropdown-status", newValue ? "open" : "closed");
     }
 }
