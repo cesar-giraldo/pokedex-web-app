@@ -8,7 +8,10 @@ export default class extends Controller {
         darkMode: Boolean,
         stickyMenu: Boolean,
         sidebarToggle: Boolean,
-        scrollTop: Boolean
+        scrollTop: Boolean,
+        
+        // header specific
+        menuToggle: Boolean
     };
 
     // define classes keys (real class defined in the HTML template)
@@ -23,6 +26,9 @@ export default class extends Controller {
         this.stickyMenuValue = false;
         this.sidebarToggleValue = false;
         this.scrollTopValue = false;
+        
+        // header specific
+        this.menuToggleValue = false;
     }
 
     connect() {
@@ -66,16 +72,28 @@ export default class extends Controller {
         }
     }
 
+    /**
+     * Sidebar control methods
+     */
     toggleSidebar() {
         this.sidebarToggleValue = !this.sidebarToggleValue;
     }
-
     hideSidebar() {
         this.sidebarToggleValue = false;
     }
-    
     sidebarToggleValueChanged(newValue) {
         console.log(`Sidebar toggle changed to ${newValue}`);
         this.element.setAttribute("data-sidebar", newValue ? "collapsed" : "expanded");
+    }
+
+    /**
+     * Header menu control methods
+     */
+    changeMenuToggle() {
+        this.menuToggleValue = !this.menuToggleValue;
+    }
+    menuToggleValueChanged(newValue) {
+        console.log(`Header menu toggle changed to ${newValue}`);
+        this.element.setAttribute("data-header-menu", newValue ? "expanded" : "collapsed");
     }
 }
