@@ -14,10 +14,6 @@ export default class extends Controller {
         // header specific
         menuToggle: Boolean,
 
-        // notifications specific
-        notificationsDropdownOpen: Boolean,
-        activeNotifications: Boolean,
-
         // user menu specific
         userMenuDropdownOpen: Boolean
     };
@@ -30,7 +26,6 @@ export default class extends Controller {
         'outputPageName',
         'bodyContainer',
         'pageLoader',
-        'notificationsDropdown',
         'userMenuDropdown'
     ];
 
@@ -43,10 +38,6 @@ export default class extends Controller {
         
         // header specific
         this.menuToggleValue = false;
-
-        // notifications specific
-        this.notificationsDropdownOpenValue = false;
-        this.activeNotificationsValue = true;
 
         // user menu specific
         this.userMenuDropdownOpenValue = false;
@@ -121,30 +112,6 @@ export default class extends Controller {
     }
     menuToggleValueChanged(newValue) {
         this.element.setAttribute("data-header-menu", newValue ? "expanded" : "collapsed");
-    }
-
-    /**
-     * Notifications dropdown control methods
-     */
-    closeNotificationsDropdown() {
-        this.notificationsDropdownOpenValue = false;
-    }
-    toggleNotificationsDropdown() {
-        this.notificationsDropdownOpenValue = !this.notificationsDropdownOpenValue;
-        this.activeNotificationsValue = false;
-    }
-    // watcher for notifications dropdown open state, shows or hides the dropdown based on the value
-    notificationsDropdownOpenValueChanged(newValue) {
-        if (this.hasNotificationsDropdownTarget) {
-            if (newValue) {
-                this.notificationsDropdownTarget.classList.remove(this.hideClass);
-            } else {
-                this.notificationsDropdownTarget.classList.add(this.hideClass);
-            }
-        }
-    }
-    activeNotificationsValueChanged(newValue) {
-        this.element.setAttribute("data-notifications-status", newValue ? "unread" : "read");
     }
 
     /**
