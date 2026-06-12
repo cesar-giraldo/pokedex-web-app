@@ -1,5 +1,4 @@
 import { Controller } from '@hotwired/stimulus';
-import { useClickOutside } from "stimulus-use";
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
@@ -13,9 +12,6 @@ export default class extends Controller {
         
         // header specific
         menuToggle: Boolean,
-
-        // user menu specific
-        userMenuDropdownOpen: Boolean
     };
 
     // define classes keys (real class defined in the HTML template)
@@ -25,8 +21,7 @@ export default class extends Controller {
     static targets = [
         'outputPageName',
         'bodyContainer',
-        'pageLoader',
-        'userMenuDropdown'
+        'pageLoader'
     ];
 
     initialize() {
@@ -38,15 +33,9 @@ export default class extends Controller {
         
         // header specific
         this.menuToggleValue = false;
-
-        // user menu specific
-        this.userMenuDropdownOpenValue = false;
     }
 
     connect() {
-        // this enables the automatic event 'click:outside'
-        useClickOutside(this);
-
         console.log('Page Name: ' + this.pageValue);
         this.updatePageValue();
         this.darkModeValue = JSON.parse(localStorage.getItem('darkMode')) || false;
@@ -112,26 +101,5 @@ export default class extends Controller {
     }
     menuToggleValueChanged(newValue) {
         this.element.setAttribute("data-header-menu", newValue ? "expanded" : "collapsed");
-    }
-
-    /**
-     * User menu dropdown control methods
-     */
-    closeUserMenuDropdown() {
-        this.userMenuDropdownOpenValue = false;
-    }
-    toggleUserMenuDropdown(event) {
-        event.preventDefault();
-        this.userMenuDropdownOpenValue = !this.userMenuDropdownOpenValue;
-    }
-    userMenuDropdownOpenValueChanged(newValue) {
-        if (this.hasUserMenuDropdownTarget) {
-            if (newValue) {
-                this.userMenuDropdownTarget.classList.remove(this.hideClass);
-            } else {
-                this.userMenuDropdownTarget.classList.add(this.hideClass);
-            }
-        }
-        this.element.setAttribute("data-user-dropdown-status", newValue ? "open" : "closed");
     }
 }
