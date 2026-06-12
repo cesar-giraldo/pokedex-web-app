@@ -15,6 +15,8 @@ final class FormController extends AbstractController
     {
         return $this->render('form/index.html.twig', [
             'controller_name' => 'FormController',
+            'active_menu' => 'forms',
+            'active_page' => 'formElements',
         ]);
     }
 }
