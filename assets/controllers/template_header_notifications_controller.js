@@ -28,9 +28,7 @@ export default class extends Controller {
     disconnect() {
     }
 
-    /**
-     * Created to avoid the data-action "click:outside" in the HTML
-     */
+    // Created to fix the the data-action "click:outside" event
     clickOutside(event) {
         this.closeNotificationsDropdown();
     }
