@@ -9,7 +9,7 @@ export default class extends Controller {
         stickyMenu: Boolean,
         sidebarToggle: Boolean,
         scrollTop: Boolean,
-        
+
         // header specific
         menuToggle: Boolean,
     };
@@ -26,19 +26,26 @@ export default class extends Controller {
 
     initialize() {
         this.loadedValue = false;
-        this.darkModeValue = false;
         this.stickyMenuValue = false;
         this.sidebarToggleValue = false;
         this.scrollTopValue = false;
-        
+
         // header specific
         this.menuToggleValue = false;
+
+        const storedDarkMode = localStorage.getItem('darkMode');
+        if (storedDarkMode === null) {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            this.darkModeValue = prefersDark ? true : false;
+        } else {
+            this.darkModeValue = JSON.parse(storedDarkMode);
+            console.log('Loaded darkMode from localStorage:', this.darkModeValue);
+        }
     }
 
     connect() {
         console.log('Page Name: ' + this.pageValue);
         this.updatePageValue();
-        this.darkModeValue = JSON.parse(localStorage.getItem('darkMode')) || false;
 
         // loader simulation
         setTimeout(() => {
