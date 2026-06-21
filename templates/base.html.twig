@@ -28,7 +28,7 @@
   </head>
   <body
     data-controller="template-base" 
-    data-template-base-page-value="Form Base Elements"
+    data-template-base-page-value="{{active_page|default('Pokedex')}}"
     data-template-base-dark-class="dark"
     data-template-base-hide-class="hidden"
     data-template-base-target="bodyContainer"
@@ -61,7 +61,7 @@
           <div class="mx-auto max-w-(--breakpoint-2xl) p-4 md:p-6">
             <!-- Breadcrumb Start -->
             <div>
-              <p>Page Name: <span data-template-base-target="outputPageName"></span></p>
+              {# <p>Page Name: <span data-template-base-target="outputPageName"></span></p> #}
               {{ include('partials/breadcrumb.html.twig') }}
             </div>
             <!-- Breadcrumb End -->
