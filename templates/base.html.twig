@@ -28,6 +28,7 @@
   </head>
   <body
     data-controller="template-base" 
+    data-template-base-selected-menu-value="{{ active_menu|default('dashboard') }}"
     data-template-base-page-value="{{active_page|default('Pokedex')}}"
     data-template-base-dark-class="dark"
     data-template-base-hide-class="hidden"

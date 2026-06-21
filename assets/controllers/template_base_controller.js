@@ -7,8 +7,12 @@ export default class extends Controller {
         loaded: Boolean,
         darkMode: Boolean,
         stickyMenu: Boolean,
-        sidebarToggle: Boolean,
         scrollTop: Boolean,
+
+        // Sidebar specific
+        sidebarToggle: Boolean,
+        selectedMenu: String,
+        
 
         // header specific
         menuToggle: Boolean,
@@ -39,7 +43,6 @@ export default class extends Controller {
             this.darkModeValue = prefersDark ? true : false;
         } else {
             this.darkModeValue = JSON.parse(storedDarkMode);
-            console.log('Loaded darkMode from localStorage:', this.darkModeValue);
         }
     }
 
@@ -87,6 +90,16 @@ export default class extends Controller {
     }
 
     /**
+     * Header menu control methods
+     */
+    changeMenuToggle() {
+        this.menuToggleValue = !this.menuToggleValue;
+    }
+    menuToggleValueChanged(newValue) {
+        this.element.setAttribute("data-header-menu", newValue ? "expanded" : "collapsed");
+    }
+
+    /**
      * Sidebar control methods
      */
     toggleSidebar() {
@@ -96,17 +109,56 @@ export default class extends Controller {
         this.sidebarToggleValue = false;
     }
     sidebarToggleValueChanged(newValue) {
-        console.log(`Sidebar toggle changed to ${newValue}`);
         this.element.setAttribute("data-sidebar", newValue ? "collapsed" : "expanded");
     }
 
-    /**
-     * Header menu control methods
-     */
-    changeMenuToggle() {
-        this.menuToggleValue = !this.menuToggleValue;
+    setSelectedMenu(event) {
+        event.preventDefault();
+        this.selectedMenuValue = event.params.selectedMenu;
     }
-    menuToggleValueChanged(newValue) {
-        this.element.setAttribute("data-header-menu", newValue ? "expanded" : "collapsed");
+
+    selectedMenuValueChanged(newMenu, oldMenu) {
+        // Desactivamos el menú anterior si existía
+        if (oldMenu) {
+            this.toggleMenuState(oldMenu, false);
+        }
+
+        // Activamos el nuevo menú elegido
+        if (newMenu) {
+            this.toggleMenuState(newMenu, true);
+        }
+    }
+
+    toggleMenuState(menuName, isActive) {
+        const group = this.element.querySelector(`.group-menu-${menuName}`);
+        if (!group) return;
+
+        const link = group.querySelector('a.menu-item');
+        if (link) {
+            // Alterna las clases principales del enlace
+            link.classList.toggle('menu-item-active', isActive);
+            link.classList.toggle('menu-item-inactive', !isActive);
+
+            // Alterna las clases del primer SVG (icono principal)
+            const icon = link.querySelector('svg');
+            if (icon) {
+                icon.classList.toggle('menu-item-icon-active', isActive);
+                icon.classList.toggle('menu-item-icon-inactive', !isActive);
+            }
+
+            // Alterna las clases del SVG de la flecha
+            const arrow = link.querySelector('svg.menu-item-arrow');
+            if (arrow) {
+                arrow.classList.toggle('menu-item-arrow-active', isActive);
+                arrow.classList.toggle('menu-item-arrow-inactive', !isActive);
+            }
+        }
+
+        // Muestra u oculta el contenedor desplegable (dropdown)
+        const dropdown = group.querySelector('div.overflow-hidden');
+        if (dropdown) {
+            dropdown.classList.toggle('block', isActive);
+            dropdown.classList.toggle('hidden', !isActive);
+        }
     }
 }
