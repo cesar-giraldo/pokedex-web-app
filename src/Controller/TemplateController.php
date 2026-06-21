@@ -8,13 +8,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-final class FormController extends AbstractController
+final class TemplateController extends AbstractController
 {
-    #[Route('/form', name: 'app_form')]
-    public function index(): Response
+    #[Route('/design/form', name: 'app_form')]
+    public function formIndex(): Response
     {
-        return $this->render('form/index.html.twig', [
-            'controller_name' => 'FormController',
+        return $this->render('design/form/index.html.twig', [
+            'controller_name' => 'TemplateController',
             'active_menu' => 'forms',
             'active_page' => 'formElements',
         ]);
