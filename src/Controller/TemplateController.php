@@ -10,6 +10,16 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class TemplateController extends AbstractController
 {
+    #[Route('/design', name: 'app_design_index')]
+    public function index(): Response
+    {
+        return $this->render('design/index.html.twig', [
+            'controller_name' => 'TemplateController',
+            'active_menu' => 'dashboard',
+            'active_page' => 'dashboard',
+        ]);
+    }
+
     #[Route('/design/form', name: 'app_design_form')]
     public function formIndex(): Response
     {
