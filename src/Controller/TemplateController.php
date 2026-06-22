@@ -20,13 +20,23 @@ final class TemplateController extends AbstractController
         ]);
     }
 
-    #[Route('/design/basic-table', name: 'app_design_table_basic')]
+    #[Route('/design/basicTable', name: 'app_design_table_basic')]
     public function basicTableIndex(): Response
     {
         return $this->render('design/tables/basic.html.twig', [
             'controller_name' => 'TemplateController',
             'active_menu' => 'tables',
             'active_page' => 'basicTables',
+        ]);
+    }
+
+    #[Route('/design/userProfile', name: 'app_design_user_profile')]
+    public function userProfileIndex(): Response
+    {
+        return $this->render('design/profile/index.html.twig', [
+            'controller_name' => 'TemplateController',
+            'active_menu' => 'userProfile',
+            'active_page' => 'userProfile',
         ]);
     }
 }
