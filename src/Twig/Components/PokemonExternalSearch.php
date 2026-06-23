@@ -11,7 +11,10 @@ use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
-#[AsLiveComponent()]
+#[AsLiveComponent(
+    name: 'pokemon_external_search',
+    template: 'components/pokemon_external_search.html.twig'
+)]
 final class PokemonExternalSearch
 {
     use DefaultActionTrait;

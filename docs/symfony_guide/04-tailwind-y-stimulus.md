@@ -435,7 +435,7 @@ final class PokemonExternalSearch
 3. Montar el componente en una plantilla Twig como en el ejemplo anterior:
 
 ```twig
-{{ component('PokemonExternalSearch', { name: '' }) }}
+{{ component('pokemon_external_search', { name: '' }) }}
 ```
 
 Consideraciones y consejos

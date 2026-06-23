@@ -12,7 +12,10 @@ use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
-#[AsLiveComponent()]
+#[AsLiveComponent(
+    name: 'pokemon_internal_search',
+    template: 'components/pokemon_internal_search.html.twig'
+)]
 final class PokemonInternalSearch
 {
     use DefaultActionTrait;

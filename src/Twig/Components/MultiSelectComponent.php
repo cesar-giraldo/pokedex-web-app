@@ -8,7 +8,7 @@ use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 
 #[AsTwigComponent(
     name: 'component_multi_select',
-    template: 'components/MultiSelectComponent.html.twig'
+    template: 'components/multi_select_component.html.twig'
 )]
 final class MultiSelectComponent
 {
