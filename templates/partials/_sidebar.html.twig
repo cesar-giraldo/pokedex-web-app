@@ -222,8 +222,13 @@
 									</a>
 								</li>
 								<li>
-									<a href="404.html" class="menu-dropdown-item group {% if active_menu === 'pages' and active_page === 'page_404' %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+									<a href="{{ path('app_design_page_404') }}" class="menu-dropdown-item group {% if active_menu === 'pages' and active_page === 'page_404' %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
 										404 Error
+									</a>
+								</li>
+								<li>
+									<a href="{{ path('app_design_page_500') }}" class="menu-dropdown-item group {% if active_menu === 'pages' and active_page === 'page_500' %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+										500 Error
 									</a>
 								</li>
 							</ul>

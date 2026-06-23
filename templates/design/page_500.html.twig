@@ -1,0 +1,21 @@
+{% extends 'base_error.html.twig' %}
+
+{% block title %}500 Error - Server Error{% endblock %}
+
+{% block body %}
+	<h1 class="mb-8 text-title-md font-bold text-gray-800 dark:text-white/90 xl:text-title-2xl">
+		SERVER ERROR
+	</h1>
+
+	<img src="{{ asset('images/error/500.svg') }}" alt="404" class="dark:hidden"/>
+	<img src="{{ asset('images/error/500-dark.svg') }}" alt="404" class="hidden dark:block"/>
+
+	<p class="mb-6 mt-10 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
+		Oops! Our server is taking a short break. Please try again in a few moments.
+	</p>
+
+	<a href="{{ path('app_design_index') }}" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-3.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
+		Back to Home Page
+	</a>
+{% endblock %}
+

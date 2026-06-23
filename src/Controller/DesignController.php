@@ -54,11 +54,35 @@ final class DesignController extends AbstractController
     public function blankPage(): Response
     {
         // Other Pages
-        // fileManager, pricingTables, page404, page500, page503, success, faq, comingSoon, maintenance
+        // fileManager, pricingTables, page500, page503, success, faq, comingSoon, maintenance
         return $this->render('design/blank_page.html.twig', [
             'controller_name' => 'DesignController',
             'active_menu' => 'pages',
             'active_page' => 'blank_page',
+        ]);
+    }
+
+    #[Route('/design/page-not-found', name: 'app_design_page_404')]
+    public function page404(): Response
+    {
+        // Other Pages
+        // fileManager, pricingTables, page500, page503, success, faq, comingSoon, maintenance
+        return $this->render('design/page_404.html.twig', [
+            'controller_name' => 'DesignController',
+            'active_menu' => 'pages',
+            'active_page' => 'page_404',
+        ]);
+    }
+
+    #[Route('/design/server-error', name: 'app_design_page_500')]
+    public function page500(): Response
+    {
+        // Other Pages
+        // fileManager, pricingTables, page503, success, faq, comingSoon, maintenance
+        return $this->render('design/page_500.html.twig', [
+            'controller_name' => 'DesignController',
+            'active_menu' => 'pages',
+            'active_page' => 'page_500',
         ]);
     }
 }

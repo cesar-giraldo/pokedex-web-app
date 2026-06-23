@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
+		<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+		<title>
+			{% block title %}Error{% endblock %}
+			| Pokedex</title>
+
+		<!-- ===== Title Icon ===== -->
+		<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>"> {% block stylesheets %}{% endblock %}
+
+		{% block javascripts %}
+			{% block importmap %}
+				{{ importmap('app') }}
+			{% endblock %}
+		{% endblock %}
+
+		{% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
+		{% if frankenphpHotReload %}
+			<meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
+			<script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
+			<script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+		{% endif %}
+	</head>
+	<body
+		data-controller="template-base" 
+    	data-template-base-selected-menu-value="{{ active_menu|default('dashboard') }}" 
+    	data-template-base-page-value="{{active_page|default('Pokedex')}}" 
+    	data-template-base-dark-class="dark" 
+    	data-template-base-hide-class="hidden" 
+    	data-template-base-target="bodyContainer" class="group dark:bg-gray-900">
+
+		{{ include('partials/_preloader.html.twig') }}
+
+		<!-- ===== Page Wrapper Start ===== -->
+    <div class="relative z-1 flex min-h-screen flex-col items-center justify-center overflow-hidden p-6"> 
+      
+      {% include('partials/_common_grid_shape.html.twig') %}
+
+			<!-- Centered Content -->
+			<div class="mx-auto w-full max-w-[242px] text-center sm:max-w-[472px]">
+				{% block body %}
+				{% endblock %}
+			</div>
+			<!-- Footer -->
+			<p class="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-sm text-gray-500 dark:text-gray-400">
+				&copy;
+				<span id="year"></span>
+				- Pokedex
+			</p>
+		</div>
+		<!-- ===== Page Wrapper End ===== -->
+	</body>
+</html>
