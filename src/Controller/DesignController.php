@@ -85,4 +85,14 @@ final class DesignController extends AbstractController
             'active_page' => 'page_500',
         ]);
     }
+
+    #[Route('/design/ui-elements/alerts', name: 'app_design_ui_elements_alerts')]
+    public function alerts(): Response
+    {
+        return $this->render('design/ui_elements/alerts.html.twig', [
+            'controller_name' => 'DesignController',
+            'active_menu' => 'ui_elements',
+            'active_page' => 'ui_alerts',
+        ]);
+    }
 }
