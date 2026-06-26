@@ -95,4 +95,14 @@ final class DesignController extends AbstractController
             'active_page' => 'ui_alerts',
         ]);
     }
+
+    #[Route('/design/ui-elements/badge', name: 'app_design_ui_elements_badge')]
+    public function badge(): Response
+    {
+        return $this->render('design/ui_elements/badge.html.twig', [
+            'controller_name' => 'DesignController',
+            'active_menu' => 'ui_elements',
+            'active_page' => 'ui_badge',
+        ]);
+    }
 }
