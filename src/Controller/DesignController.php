@@ -115,4 +115,14 @@ final class DesignController extends AbstractController
             'active_page' => 'ui_buttons',
         ]);
     }
+
+    #[Route('/design/ui-elements/images', name: 'app_design_ui_elements_images')]
+    public function images(): Response
+    {
+        return $this->render('design/ui_elements/images.html.twig', [
+            'controller_name' => 'DesignController',
+            'active_menu' => 'ui_elements',
+            'active_page' => 'ui_images',
+        ]);
+    }
 }
