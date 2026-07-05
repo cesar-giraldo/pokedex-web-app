@@ -125,4 +125,14 @@ final class DesignController extends AbstractController
             'active_page' => 'ui_images',
         ]);
     }
+
+    #[Route('/design/ui-elements/videos', name: 'app_design_ui_elements_videos')]
+    public function videos(): Response
+    {
+        return $this->render('design/ui_elements/videos.html.twig', [
+            'controller_name' => 'DesignController',
+            'active_menu' => 'ui_elements',
+            'active_page' => 'ui_videos',
+        ]);
+    }
 }
