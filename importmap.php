@@ -31,4 +31,7 @@ return [
     'stimulus-use' => [
         'version' => '0.52.3',
     ],
+    'apexcharts' => [
+        'version' => '5.16.0',
+    ],
 ];

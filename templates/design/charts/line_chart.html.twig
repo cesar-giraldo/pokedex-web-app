@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Line Chart
+{% endblock %}
+
+{% block page_title %}
+	Line Chart
+{% endblock %}
+
+{% block breadcrumb %}
+	<li class="text-sm text-gray-800 dark:text-white/90">Line Chart</li>
+{% endblock %}
+
+{% block body %}
+	<div class="space-y-6">
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Users Registered in the Last Year
+				</h3>
+			</div>
+			<div
+				class="p-5 border-t border-gray-100 dark:border-gray-800 sm:p-6">
+				<!-- ====== Line Chart Start -->
+				<div 
+					data-controller="template-line-chart" 
+					data-template-line-chart-data-value="{{ registeredUsers|json_encode }}"
+					data-template-line-chart-categories-value="{{ months|json_encode }}"
+					data-template-line-chart-label-value="New Users"
+					class="max-w-full overflow-x-auto custom-scrollbar">
+						<div data-template-line-chart-target="container" class="min-w-[1000px]"></div>
+				</div>
+				<!-- ====== Line Chart End -->
+			</div>
+		</div>
+	</div>
+{% endblock %}

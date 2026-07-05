@@ -135,4 +135,51 @@ final class DesignController extends AbstractController
             'active_page' => 'ui_videos',
         ]);
     }
+
+    #[Route('/design/charts/line-chart', name: 'app_design_charts_line_chart')]
+    public function lineChart(): Response
+    {
+        $months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        $registeredUsers = [400, 350, 120, 420, 350, 235, 500, 450, 300, 400, 350, 200];
+
+        return $this->render('design/charts/line_chart.html.twig', [
+            'controller_name' => 'DesignController',
+            'active_menu' => 'charts',
+            'active_page' => 'line_chart',
+            'months' => $months,
+            'registeredUsers' => $registeredUsers,
+        ]);
+    }
+
+    #[Route('/design/charts/bar-chart', name: 'app_design_charts_bar_chart')]
+    public function barChart(): Response
+    {
+        // Example data for the bar chart
+        $categories = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        $sells = [45, 60, 35, 80, 52, 95, 70, 65, 85, 90, 75, 100];
+
+        return $this->render('design/charts/bar_chart.html.twig', [
+            'controller_name' => 'DesignController',
+            'active_menu' => 'charts',
+            'active_page' => 'bar_chart',
+            'categories' => $categories,
+            'sells' => $sells,
+        ]);
+    }
+
+    #[Route('/design/charts/pie-chart', name: 'app_design_charts_pie_chart')]
+    public function pieChart(): Response
+    {
+        // Example data for the pie chart
+        $labels = ['Camisetas', 'Pantalones / Jeans', 'Chaquetas', 'Calzado', 'Accesorios'];
+        $data = [45, 60, 35, 80, 52];
+
+        return $this->render('design/charts/pie_chart.html.twig', [
+            'controller_name' => 'DesignController',
+            'active_menu' => 'charts',
+            'active_page' => 'pie_chart',
+            'labels' => $labels,
+            'data' => $data,
+        ]);
+    }
 }
