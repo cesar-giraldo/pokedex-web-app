@@ -182,4 +182,24 @@ final class DesignController extends AbstractController
             'data' => $data,
         ]);
     }
+
+    #[Route('/design/auth/sign-in', name: 'app_design_auth_sign_in')]
+    public function signIn(): Response
+    {
+        return $this->render('design/auth/sign_in.html.twig', [
+            'controller_name' => 'DesignController',
+            'active_menu' => 'auth',
+            'active_page' => 'sign_in',
+        ]);
+    }
+
+    #[Route('/design/auth/sign-up', name: 'app_design_auth_sign_up')]
+    public function signUp(): Response
+    {
+        return $this->render('design/auth/sign_up.html.twig', [
+            'controller_name' => 'DesignController',
+            'active_menu' => 'auth',
+            'active_page' => 'sign_up',
+        ]);
+    }
 }
