@@ -1,5 +1,7 @@
 # 04 · Tailwind CSS 4 + StimulusBundle
 
+> **Relación con este repositorio:** Los ejemplos de Live Components en este capítulo usan nombres como `PokemonSearch` y `App\Service\PokeAPIClient`. En el código actual los componentes son `PokemonInternalSearch` / `PokemonExternalSearch` y el cliente vive en `App\Service\PokeAPI\PokeAPIClient`. Ver [`07-aplicacion-pokedex.md`](./07-aplicacion-pokedex.md).
+
 En esta sección instalaremos:
 
 - **TailwindBundle 0.12+** (de SymfonyCasts) → descarga el binario standalone de Tailwind 4 sin necesidad de Node.js para compilar.

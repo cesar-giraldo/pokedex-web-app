@@ -106,7 +106,7 @@ Verás un resumen como:
 ```text
 Loaded config default from "/app/.php-cs-fixer.dist.php".
    1) src/Controller/HomeController.php (no_unused_imports, ordered_imports)
-   2) src/Entity/Producto.php (declare_strict_types)
+   2) src/Entity/Pokemon.php (declare_strict_types)
 
 Fixed all files in 0.123 seconds, 12.000 MB memory used
 ```

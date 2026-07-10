@@ -1,5 +1,7 @@
 # 03 · PostgreSQL 18 + Doctrine ORM
 
+> **Relación con este repositorio:** Este capítulo enseña Doctrine creando una entidad de ejemplo `Producto`. La aplicación Pokédex del repo usa `Pokemon` y `PokemonType` en su lugar. Los conceptos (entidad, migración, repositorio, controlador) son los mismos. Ver [`07-aplicacion-pokedex.md`](./07-aplicacion-pokedex.md) para el dominio real.
+
 Doctrine ya viene incluido en `webapp-pack`. En esta sección aprenderás a:
 
 1. Configurar la conexión a PostgreSQL 18.

@@ -40,7 +40,7 @@ Una aplicación web con esta arquitectura:
 | **AssetMapper**       | (incluido)   | Sistema oficial de Symfony para gestionar assets sin Webpack       |
 | **TailwindBundle**    | 0.12+        | Bundle oficial de SymfonyCasts que descarga el binario de Tailwind |
 | **Tailwind CSS**      | 4.x          | Última versión, con motor Oxide ultra rápido                       |
-| **StimulusBundle**    | 2.x          | Integración oficial de Stimulus + Symfony UX                       |
+| **StimulusBundle**    | 3.x          | Integración oficial de Stimulus + Symfony UX                       |
 | **PostgreSQL**        | 18.3         | Última versión estable, con I/O asíncrono                          |
 | **Doctrine ORM**      | 3.x          | ORM por defecto en Symfony                                         |
 | **PHP CS Fixer**      | 3.x          | Análisis estático y formateo automático con regla `@Symfony`       |
@@ -78,6 +78,9 @@ La guía está dividida en archivos numerados. Síguelos en orden:
 | `04-tailwind-y-stimulus.md`        | Instalar TailwindBundle (Tailwind 4) + StimulusBundle.             |
 | `05-php-cs-fixer.md`               | Configurar PHP CS Fixer con la regla `@Symfony`.                   |
 | `06-comandos-y-troubleshooting.md` | Comandos del día a día y solución de problemas comunes.            |
+| `07-aplicacion-pokedex.md`         | Estado actual del repo: Pokemon, PokeAPI, UI kit `/design`.        |
+
+> **Nota:** Los pasos 01–06 usan una entidad de ejemplo `Producto` para enseñar Doctrine. Este repositorio implementa una Pokédex con `Pokemon` / `PokemonType`. Ver paso 07 para el mapeo.
 
 ---
 

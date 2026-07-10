@@ -13,10 +13,13 @@
 | 4    | [`04-tailwind-y-stimulus.md`](./04-tailwind-y-stimulus.md)        | Instalar Tailwind 4 y StimulusBundle                   |
 | 5    | [`05-php-cs-fixer.md`](./05-php-cs-fixer.md)                      | Configurar PHP CS Fixer con la regla `@Symfony`        |
 | 6    | [`06-comandos-y-troubleshooting.md`](./06-comandos-y-troubleshooting.md) | Comandos del día a día y solución de problemas |
+| 7    | [`07-aplicacion-pokedex.md`](./07-aplicacion-pokedex.md)                 | App real del repo: Pokemon, PokeAPI, `/design` |
 
 ## Lectura recomendada
 
 Si nunca has tocado Symfony o Docker, lee los archivos en orden. Si ya conoces el stack, puedes ir directo al paso que te interese.
+
+Si clonaste este repositorio y solo quieres entender **cómo funciona la Pokédex**, lee directamente el paso 07 y el [README](../../README.md) de la raíz.
 
 ## Cómo arrancar el proyecto resultante
 
@@ -28,9 +31,10 @@ cd <tu-repositorio>
 docker compose up -d
 docker compose exec php composer install
 docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec php php bin/console search-store-pokemons 10 --write=true   # opcional
 ```
 
-Y abrir <https://localhost> en el navegador.
+Y abrir <https://localhost> (Pokédex) o <https://localhost/design> (UI kit) en el navegador.
 
 ## Stack final
 
@@ -39,7 +43,7 @@ Y abrir <https://localhost> en el navegador.
 - **Twig 3.x** (motor de plantillas)
 - **AssetMapper** (gestión de assets sin Webpack)
 - **Tailwind CSS 4.x** vía `symfonycasts/tailwind-bundle`
-- **StimulusBundle 2.x** (`@hotwired/stimulus`)
+- **StimulusBundle 3.x** (`@hotwired/stimulus`) + **Symfony UX 3.x** (Live Component, Turbo, Icons)
 - **PostgreSQL 18.3** + **Doctrine ORM 3.x**
 - **PHP CS Fixer** con regla `@Symfony`
 - **Docker Compose v2** orquestando todo

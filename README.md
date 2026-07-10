@@ -2,94 +2,180 @@
 Pokedex Web App
 ===============
 
-Compact Symfony application used as a learning / demo project.
+Symfony 8 application that integrates with [PokeAPI](https://pokeapi.co/) to list, search, and persist Pokémon data. Includes a UI kit under `/design` and Docker-based local development with FrankenPHP and PostgreSQL 18.
 
 Overview
 --------
 
-- PHP / Symfony application with frontend assets in `assets/` and server entry at `public/index.php`.
-- Docker compose configuration for local development is provided in the repository root.
-- Database migrations are stored under `migrations/` and managed with Doctrine.
+- PHP 8.4 / Symfony 8 with Twig, AssetMapper, Tailwind CSS 4, Stimulus, and Symfony UX (Live Components, Turbo, Icons).
+- Pokémon domain: entities `Pokemon` and `PokemonType`, PokeAPI client, console command to sync data, and search UI (Live Components + Stimulus).
+- Docker Compose stack: FrankenPHP (`php` service) + PostgreSQL 18 (`database` service).
+- Database migrations under `migrations/`, managed with Doctrine.
+- Internal Symfony guide in [`docs/symfony_guide/`](docs/symfony_guide/README.md); application-specific docs in [`docs/symfony_guide/07-aplicacion-pokedex.md`](docs/symfony_guide/07-aplicacion-pokedex.md).
 
-Quick start
------------
+Quick start (Docker — recommended)
+----------------------------------
 
-Prerequisites
-- PHP and Composer (project includes platform requirements in `composer.json`).
-- Docker and Docker Compose (optional but recommended for a reproducible environment).
+Prerequisites: Docker Desktop (or Docker Engine + Compose v2). You do **not** need PHP, Composer, or PostgreSQL installed on the host.
 
-Install dependencies
+```bash
+# 1. Start containers (php waits until database is healthy)
+docker compose up -d
 
-	composer install
+# 2. Verify services are running
+docker compose ps
 
-Environment
-- Copy or adapt environment files from `.env`, `.env.local`, or `.env.dev` as needed.
+# 3. Install PHP dependencies inside the container
+docker compose exec php composer install
 
-Run with Docker
+# 4. Run migrations
+docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
 
-	docker compose up -d
+# 5. (Optional) Seed Pokémon from PokeAPI — dry-run by default
+docker compose exec php php bin/console search-store-pokemons 10
 
-Run locally (without Docker)
-- If you have the Symfony CLI: `symfony serve -d`
-- Or use PHP built-in server from the project root:
+# 6. (Optional) Persist to database
+docker compose exec php php bin/console search-store-pokemons 10 --write=true
 
-	php -S localhost:8000 -t public
+# 7. (Optional) Rebuild Tailwind in watch mode (separate terminal)
+docker compose exec php php bin/console tailwind:build --watch
+```
 
-Database and migrations
+Open the app:
 
-Create / update schema and run migrations with:
+- Home (Pokédex): <https://localhost>
+- UI kit: <https://localhost/design>
 
-	bin/console doctrine:migrations:migrate
+> If you see `service "php" is not running`, run `docker compose up -d` first. `docker compose exec` only works when the container is up.
 
-Testing
+Quick start (without Docker)
+----------------------------
 
-Run the test suite with the provided phpunit binary:
+Prerequisites: PHP 8.4+, Composer, and a PostgreSQL 18 instance.
 
-	bin/phpunit
+```bash
+composer install
+cp .env .env.local   # adjust DATABASE_URL to your local Postgres
+php bin/console doctrine:migrations:migrate --no-interaction
+symfony serve -d     # or: php -S localhost:8000 -t public
+```
 
-Frontend / Assets
+Environment variables
+---------------------
 
-- Frontend sources are in `assets/` (JS and CSS). The project uses importmap/config in `importmap.php`.
-- Build or dev tooling depends on your local workflow; see `assets/` for controllers and styles.
+| Variable | Default (`.env`) | Purpose |
+| -------- | ---------------- | ------- |
+| `APP_ENV` | `dev` | Symfony environment |
+| `APP_SECRET` | empty in `.env`, set in `.env.dev` | Session/crypto secret |
+| `DATABASE_URL` | `postgresql://app:app@database:5432/app?serverVersion=18&charset=utf8` | Doctrine connection (host `database` inside Docker, `127.0.0.1:5432` from host) |
+| `MESSENGER_TRANSPORT_DSN` | `doctrine://default?auto_setup=0` | Async queue backed by `messenger_messages` table |
+| `MAILER_DSN` | `null://null` | Mailer (disabled by default) |
 
-Repository structure (high level)
-
-- [src/Kernel.php](src/Kernel.php) — Symfony kernel and application bootstrapping.
-- [config/](config/) — Framework and package configuration.
-- [src/Controller/](src/Controller/) — HTTP controllers (e.g. `HomeController.php`).
-- [templates/](templates/) — Twig templates (base and pages).
-- [public/index.php](public/index.php) — Front controller.
-- [bin/console](bin/console) — Symfony console helper.
-- [migrations/](migrations/) — Doctrine migrations.
-- [tests/](tests/) — PHPUnit tests.
-- [docker/](docker/) — Docker related files (Caddyfile, php config).
-
-Notes and references
-
-- This README is a concise companion to the internal guide files in `docs/symfony_guide/`.
-- For project-specific commands, configuration options, or development tips, consult the Symfony guide.
-
-Messenger (background jobs)
-
-- This project has Symfony Messenger enabled and the transports are configured in `config/packages/messenger.yaml`.
-- The environment sets `MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0` by default, so a database-backed transport (Doctrine) is used. That is why the migration created the `messenger_messages` table.
-- If you prefer Messenger to create the table automatically for local/dev use, set `auto_setup=1` in the DSN or run the Messenger setup command; for production it's recommended to manage the schema via Doctrine migrations.
+Override values in `.env.local` (gitignored). Inside Docker, do not set `DATABASE_URL` in `compose.yaml` — Symfony reads it from `.env` / `.env.local` so local overrides work.
 
 Useful commands
+---------------
 
-	# run migrations that include the messenger table
-	bin/console doctrine:migrations:migrate
+All commands below assume Docker. Prefix with `docker compose exec php` or use the aliases from the [troubleshooting guide](docs/symfony_guide/06-comandos-y-troubleshooting.md#62--trabajar-dentro-del-contenedor).
 
-	# run workers
-	bin/console messenger:consume async -vv
+```bash
+# Symfony console
+docker compose exec php php bin/console list
 
-Options
+# Populate Pokémon (dry-run unless --write=true)
+docker compose exec php php bin/console search-store-pokemons [limit] [--write=true]
 
-- Keep the Doctrine transport (DB table) if you want persistent queues.
-- To avoid creating a DB table, switch `MESSENGER_TRANSPORT_DSN` to a different transport (e.g. `sync://`, Redis or AMQP).
+# Tailwind
+docker compose exec php php bin/console tailwind:build
+docker compose exec php php bin/console tailwind:build --watch
 
+# Code quality
+docker compose exec php composer cs:check
+docker compose exec php composer cs:fix
+docker compose exec php vendor/bin/phpstan analyse
 
-Next steps you might want
-- Add a section for developer-specific env var examples.
-- Add explicit asset build commands if you use a frontend bundler.
-- Add CI instructions to run tests and linting automatically.
+# Tests
+docker compose exec php php bin/phpunit
+
+# Messenger worker
+docker compose exec php php bin/console messenger:consume async -vv
+```
+
+Testing
+-------
+
+```bash
+docker compose exec php php bin/phpunit
+```
+
+Tests live under `tests/` (e.g. `HomeControllerTest`, `PokeAPIClientTest`).
+
+Frontend / assets
+-----------------
+
+- Sources: `assets/` (JS controllers, `app.js`, `stimulus_bootstrap.js`).
+- Styles: Tailwind 4 via `symfonycasts/tailwind-bundle`; entry CSS is compiled into `public/`.
+- Import map: `importmap.php` (no Webpack/Vite).
+- Stimulus controllers: `hi`, `search-pokemon`, design kit controllers under `assets/controllers/`.
+
+Repository structure
+--------------------
+
+```
+pokedex-web-app/
+├── assets/                  # JS, Stimulus controllers, CSS
+├── bin/console, bin/phpunit
+├── config/                  # Symfony configuration
+├── docker/                  # Caddyfile, php.ini
+├── docs/symfony_guide/      # Step-by-step Symfony + Docker guide
+├── migrations/              # Doctrine migrations (pokemon, pokemon_type, messenger_messages)
+├── public/                  # Front controller (index.php), static assets
+├── src/
+│   ├── Command/             # search-store-pokemons
+│   ├── Controller/          # HomeController, DesignController
+│   ├── Entity/              # Pokemon, PokemonType
+│   ├── Repository/
+│   ├── Service/PokeAPI/     # PokeAPIClient, DTOs
+│   └── Twig/Components/     # Live Components (internal/external search, multi-select)
+├── templates/
+│   ├── home/                # Main Pokédex page
+│   ├── design/              # UI kit pages (/design/*)
+│   ├── components/          # Live Component Twig templates
+│   └── partials/            # Shared layout fragments
+├── tests/
+├── compose.yaml
+├── Dockerfile
+└── importmap.php
+```
+
+Main routes
+-----------
+
+| Route | Name | Description |
+| ----- | ---- | ----------- |
+| `/` | `app_home` | Pokémon list + search demos (Live Components, Stimulus) |
+| `/internal-pokemon-search/{name}` | `app_internal_pokemon_search` | JSON lookup in local DB |
+| `/design` | `app_design_index` | UI kit index (forms, charts, auth mockups, etc.) |
+
+See [`07-aplicacion-pokedex.md`](docs/symfony_guide/07-aplicacion-pokedex.md) for full feature documentation.
+
+Messenger (background jobs)
+---------------------------
+
+Symfony Messenger is enabled (`config/packages/messenger.yaml`). The default transport uses Doctrine (`MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0`), which is why migrations create the `messenger_messages` table.
+
+- Keep the Doctrine transport for persistent queues.
+- For dev without a DB table, switch to `sync://` or another transport in `.env.local`.
+- For production, prefer managing the schema via migrations (`auto_setup=0`).
+
+Documentation
+-------------
+
+| Document | Audience |
+| -------- | -------- |
+| This README | Quick onboarding for the **current** project |
+| [`docs/README.md`](docs/README.md) | Index of all documentation |
+| [`docs/symfony_guide/`](docs/symfony_guide/README.md) | Tutorial: build the stack from scratch (uses `Producto` as a learning example) |
+| [`docs/symfony_guide/07-aplicacion-pokedex.md`](docs/symfony_guide/07-aplicacion-pokedex.md) | **This app's** domain, commands, and UI features |
+
+> The Symfony guide (steps 01–06) teaches the stack with a generic `Producto` entity. The running application uses `Pokemon` / `PokemonType` and PokeAPI integration — see step 07 for the mapping.

@@ -60,6 +60,23 @@ docker compose exec php composer show
 
 ## 6.4 · Symfony console
 
+### Comandos específicos de la Pokédex
+
+```bash
+# Sincronizar Pokémon desde PokeAPI (dry-run por defecto)
+docker compose exec php php bin/console search-store-pokemons 5
+
+# Persistir en base de datos
+docker compose exec php php bin/console search-store-pokemons 10 --write=true
+
+# Búsqueda JSON en BD (también usada por el controlador Stimulus)
+curl -k https://localhost/internal-pokemon-search/pikachu
+```
+
+Detalle en [`07-aplicacion-pokedex.md`](./07-aplicacion-pokedex.md).
+
+### Referencia general
+
 ```bash
 # Listar todos los comandos disponibles
 docker compose exec php php bin/console
@@ -164,7 +181,7 @@ docker compose exec php php bin/phpunit --coverage-html var/coverage
 docker compose exec database psql -U app -d app
 
 # Ejecutar SQL desde la terminal
-docker compose exec database psql -U app -d app -c "SELECT * FROM producto"
+docker compose exec database psql -U app -d app -c "SELECT * FROM pokemon"
 
 # Hacer un dump
 docker compose exec database pg_dump -U app app > dump.sql
@@ -176,6 +193,19 @@ cat dump.sql | docker compose exec -T database psql -U app -d app
 ---
 
 ## 6.10 · Solución de problemas comunes
+
+### ❌ `service "php" is not running`
+
+**Causa:** Intentaste `docker compose exec php …` sin tener los contenedores levantados.
+
+**Solución:**
+
+```bash
+docker compose up -d
+docker compose ps   # app_php debe estar "Up"; database debe estar "healthy"
+```
+
+Luego repite el comando (`composer install`, `bin/console`, etc.).
 
 ### ❌ "permission denied" al crear archivos
 
@@ -454,69 +484,64 @@ Si el archivo no aparece, revisa que el `WORKDIR /app` del Dockerfile coincida c
 
 ---
 
-## 6.11 · Estructura final del proyecto
+## 6.11 · Estructura del proyecto (estado actual)
 
-Después de seguir toda la guía, tu carpeta debería verse así:
+Después de seguir la guía y extender la app hacia la Pokédex, la estructura relevante es:
 
 ```text
-mi-app-symfony/
-├── .github/
-│   └── workflows/
-│       └── cs.yml
+pokedex-web-app/
 ├── assets/
 │   ├── app.js
-│   ├── bootstrap.js
-│   ├── controllers/
-│   │   └── hello_controller.js
+│   ├── stimulus_bootstrap.js
+│   ├── controllers/           # hi, search-pokemon, design kit, etc.
 │   └── styles/
-│       └── app.css
 ├── bin/
 │   ├── console
 │   └── phpunit
 ├── config/
 │   ├── packages/
-│   │   ├── doctrine.yaml
-│   │   ├── symfonycasts_tailwind.yaml
-│   │   └── ...
-│   ├── routes.yaml
 │   └── services.yaml
 ├── docker/
+│   ├── Caddyfile
 │   └── php/
 │       └── php.ini
+├── docs/symfony_guide/        # Guía paso a paso + 07-aplicacion-pokedex.md
 ├── migrations/
 ├── public/
 │   ├── index.php
-│   └── assets/        (generado, no commiteado)
+│   └── images/
 ├── src/
-│   ├── Controller/
-│   ├── Entity/
+│   ├── Command/               # SearchStorePokemonsCommand
+│   ├── Controller/            # HomeController, DesignController
+│   ├── Entity/                # Pokemon, PokemonType
 │   ├── Repository/
-│   └── Kernel.php
+│   ├── Service/PokeAPI/
+│   └── Twig/Components/       # Live Components
 ├── templates/
-│   ├── base.html.twig
-│   └── home/
-│       └── index.html.twig
+│   ├── home/
+│   ├── design/                # UI kit (/design/*)
+│   ├── components/
+│   └── partials/
 ├── tests/
-├── var/                (generado, no commiteado)
-├── vendor/             (generado, no commiteado)
-├── .env
-├── .gitignore
+├── .env, .env.dev
 ├── .php-cs-fixer.dist.php
+├── phpstan.dist.neon
 ├── compose.yaml
 ├── composer.json
-├── composer.lock
 ├── Dockerfile
-├── importmap.php
 └── README.md
 ```
+
+> La guía original (pasos 01–06) describe una estructura mínima con entidad `Producto`. Este árbol refleja el repositorio actual.
 
 ## 6.12 · Próximos pasos sugeridos
 
 1. **Autenticación:** `php bin/console make:user` y `make:auth`.
-2. **Formularios:** `php bin/console make:form ProductoType`.
-3. **API REST:** instala `api-platform/core` para una API en minutos.
+2. **Formularios:** `php bin/console make:form PokemonType` (o el formulario que necesites).
+3. **API REST:** instala `api-platform/core` para exponer Pokémon vía API.
 4. **Mailer:** Symfony Mailer + MailHog en otro contenedor para probar emails.
-5. **Producción:** revisa <https://github.com/dunglas/symfony-docker> para Dockerfile multi-stage optimizado para producción.
+5. **CI:** añadir workflow en `.github/workflows/` para `phpunit`, `cs:check` y `phpstan`.
+6. **Producción:** revisa <https://github.com/dunglas/symfony-docker> para Dockerfile multi-stage optimizado.
 
 ---
 
@@ -541,6 +566,7 @@ cd <tu-repo>
 docker compose up -d
 docker compose exec php composer install
 docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec php php bin/console search-store-pokemons 10 --write=true   # opcional
 ```
 
-Y ya está funcionando. Esa es la magia de Docker. 🚀
+Y ya está funcionando. Consulta [`07-aplicacion-pokedex.md`](./07-aplicacion-pokedex.md) para las rutas y funcionalidades de la app. 🚀
