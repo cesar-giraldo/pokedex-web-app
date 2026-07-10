@@ -326,13 +326,13 @@ Y ajusta `serverVersion=18` en el `compose.yaml` si es necesario.
 
 **Causa:** Conflicto de versiones PHP.
 
-**Solución:** Confirma que el contenedor usa PHP 8.4:
+**Solución:** Confirma que el contenedor usa PHP 8.5:
 
 ```bash
 docker compose exec php php -v
 ```
 
-Si no, revisa que el `Dockerfile` use `dunglas/frankenphp:1-php8.4`.
+Si no, revisa que el `Dockerfile` use `dunglas/frankenphp:1-php8.5.8`.
 
 ### ❌ El contenedor PHP se reinicia constantemente
 

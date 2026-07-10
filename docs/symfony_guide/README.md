@@ -38,7 +38,7 @@ Y abrir <https://localhost> (Pokédex) o <https://localhost/design> (UI kit) en 
 
 ## Stack final
 
-- **PHP 8.4** + **FrankenPHP 1.x** (servidor web + intérprete en un proceso)
+- **PHP 8.5** + **FrankenPHP 1.x** (servidor web + intérprete en un proceso)
 - **Symfony 8.0.x** con `webapp-pack`
 - **Twig 3.x** (motor de plantillas)
 - **AssetMapper** (gestión de assets sin Webpack)

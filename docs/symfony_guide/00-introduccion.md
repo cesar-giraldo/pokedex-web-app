@@ -16,7 +16,7 @@ Una aplicación web con esta arquitectura:
 │   │   Contenedor PHP/web   │   │  Contenedor PostgreSQL  │  │
 │   │                        │   │                         │  │
 │   │   FrankenPHP 1.x       │◄──┤  PostgreSQL 18.3        │  │
-│   │   PHP 8.4              │   │  Puerto 5432            │  │
+│   │   PHP 8.5              │   │  Puerto 5432            │  │
 │   │   Symfony 8.0.x        │   │                         │  │
 │   │   Twig + Tailwind 4    │   └─────────────────────────┘  │
 │   │   StimulusBundle       │                                │
@@ -33,7 +33,7 @@ Una aplicación web con esta arquitectura:
 
 | Componente            | Versión      | Por qué la elegimos                                                |
 | --------------------- | ------------ | ------------------------------------------------------------------ |
-| **PHP**               | 8.4.x        | Requisito mínimo de Symfony 8                                      |
+| **PHP**               | 8.5.x        | Última rama estable ([php.net](https://www.php.net/))              |
 | **Symfony**           | 8.0.10 (8.0.\*) | Última rama estable                                                |
 | **FrankenPHP**        | 1.x          | Servidor web moderno con HTTPS y HTTP/3 incluidos (más simple que Nginx + PHP-FPM) |
 | **Twig**              | 3.x          | Motor de plantillas oficial de Symfony                             |

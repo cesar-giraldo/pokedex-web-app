@@ -43,7 +43,7 @@ return (new PhpCsFixer\Config())
     ->setRules([
         '@Symfony' => true,
         '@Symfony:risky' => true,
-        '@PHP84Migration' => true,
+        '@PHP85Migration' => true,
         'declare_strict_types' => true,
         'global_namespace_import' => [
             'import_classes' => true,
@@ -71,7 +71,7 @@ return (new PhpCsFixer\Config())
 | ----- | ------ |
 | `@Symfony` | Aplica las ~150 reglas del estándar oficial Symfony (extiende `@PER-CS`, que a su vez extiende `@PSR12`). |
 | `@Symfony:risky` | Reglas que cambian semántica del código (más estricto). Útil pero hay que probar. |
-| `@PHP84Migration` | Moderniza sintaxis a PHP 8.4 (constructor promotion, readonly, etc.). |
+| `@PHP85Migration` | Moderniza sintaxis a PHP 8.5 (incluye reglas de 8.4 y anteriores). |
 | `declare_strict_types` | Añade `declare(strict_types=1);` al inicio de cada archivo. |
 | `global_namespace_import` | Importa clases globales (`use \DateTime;`) en vez de prefijar con `\`. |
 | `ordered_imports` | Ordena alfabéticamente los `use`. |
@@ -231,7 +231,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
           coverage: none
 
       - name: Install dependencies

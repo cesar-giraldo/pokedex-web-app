@@ -1,6 +1,6 @@
 # 01 · Estructura del proyecto y Docker
 
-En esta sección crearemos la carpeta del proyecto y prepararemos los archivos Docker que correrán **PHP 8.4 + FrankenPHP** y **PostgreSQL 18**.
+En esta sección crearemos la carpeta del proyecto y prepararemos los archivos Docker que correrán **PHP 8.5 + FrankenPHP** y **PostgreSQL 18**.
 
 > **¿Por qué FrankenPHP?** Es un servidor moderno escrito en Go (sobre Caddy) que combina servidor web + intérprete PHP en un solo proceso. Trae HTTPS automático, HTTP/2, HTTP/3 y modo "worker" (PHP siempre en memoria, mucho más rápido). Es el setup recomendado por Dunglas (creador de API Platform y mantenedor de Symfony).
 
@@ -65,10 +65,10 @@ Crea un archivo llamado `Dockerfile` (sin extensión) en la raíz del proyecto:
 # syntax=docker/dockerfile:1
 
 # ============================================================
-# Imagen base: FrankenPHP con PHP 8.4
+# Imagen base: FrankenPHP con PHP 8.5.8
 # Trae Caddy + PHP-FPM + extensiones comunes preinstaladas
 # ============================================================
-FROM dunglas/frankenphp:1-php8.4 AS base
+FROM dunglas/frankenphp:1-php8.5.8 AS base
 
 # Argumentos para la zona horaria (puedes cambiarla)
 ARG TZ=America/Bogota
@@ -129,7 +129,7 @@ EXPOSE 443/udp
 
 | Sección | Propósito |
 | ------- | --------- |
-| `FROM dunglas/frankenphp:1-php8.4` | Partimos de una imagen oficial con PHP 8.4 + FrankenPHP. |
+| `FROM dunglas/frankenphp:1-php8.5.8` | Partimos de una imagen oficial con PHP 8.5.8 + FrankenPHP. |
 | `apt-get install ...` | Instala librerías del SO necesarias para extensiones PHP. |
 | `install-php-extensions` | Script que viene en la imagen para instalar extensiones de PHP fácilmente. `pdo_pgsql` es **obligatorio** para PostgreSQL. |
 | `COPY --from=composer/composer` | Copia el binario de Composer desde otra imagen oficial. |
@@ -294,7 +294,7 @@ docker compose exec php php -v
 Salida esperada:
 
 ```text
-PHP 8.4.x (cli) ...
+PHP 8.5.x (cli) ...
 ```
 
 > **Nota importante:** Si en este momento abres <https://localhost> verás un error 404 o una página vacía. **Eso es totalmente normal.** Como aún no has instalado Symfony, no hay archivos para servir. La validación que importa aquí es que `docker compose ps` muestre `app_php` como `Up` (sin "Restarting"). En el siguiente paso instalaremos Symfony y la página empezará a responder.

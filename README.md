@@ -7,7 +7,7 @@ Symfony 8 application that integrates with [PokeAPI](https://pokeapi.co/) to lis
 Overview
 --------
 
-- PHP 8.4 / Symfony 8 with Twig, AssetMapper, Tailwind CSS 4, Stimulus, and Symfony UX (Live Components, Turbo, Icons).
+- PHP 8.5 / Symfony 8 with Twig, AssetMapper, Tailwind CSS 4, Stimulus, and Symfony UX (Live Components, Turbo, Icons).
 - Pokémon domain: entities `Pokemon` and `PokemonType`, PokeAPI client, console command to sync data, and search UI (Live Components + Stimulus).
 - Docker Compose stack: FrankenPHP (`php` service) + PostgreSQL 18 (`database` service).
 - Database migrations under `migrations/`, managed with Doctrine.
@@ -51,7 +51,7 @@ Open the app:
 Quick start (without Docker)
 ----------------------------
 
-Prerequisites: PHP 8.4+, Composer, and a PostgreSQL 18 instance.
+Prerequisites: PHP 8.5+, Composer, and a PostgreSQL 18 instance.
 
 ```bash
 composer install

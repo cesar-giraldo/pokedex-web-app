@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
 
 # ============================================================
-# Imagen base: FrankenPHP con PHP 8.4
+# Imagen base: FrankenPHP con PHP 8.5.8
 # Trae Caddy + PHP-FPM + extensiones comunes preinstaladas
 # ============================================================
-FROM dunglas/frankenphp:1-php8.4 AS base
+FROM dunglas/frankenphp:1-php8.5.8 AS base
 
 # Argumentos para la zona horaria (puedes cambiarla)
 ARG TZ=America/Bogota
