@@ -9,14 +9,14 @@ Overview
 
 - PHP 8.5 / Symfony 8 with Twig, AssetMapper, Tailwind CSS 4, Stimulus, and Symfony UX (Live Components, Turbo, Icons).
 - Pokémon domain: entities `Pokemon` and `PokemonType`, PokeAPI client, console command to sync data, and search UI (Live Components + Stimulus).
-- Docker Compose stack: FrankenPHP (`php` service) + PostgreSQL 18 (`database` service).
+- Docker Compose stack: FrankenPHP (`php` service) + **PostgreSQL 18** or **MySQL 8.4 LTS** (selectable via `DATABASE_ENGINE` in `.env`).
 - Database migrations under `migrations/`, managed with Doctrine.
 - Internal Symfony guide in [`docs/symfony_guide/`](docs/symfony_guide/README.md); application-specific docs in [`docs/symfony_guide/07-aplicacion-pokedex.md`](docs/symfony_guide/07-aplicacion-pokedex.md).
 
 Quick start (Docker — recommended)
 ----------------------------------
 
-Prerequisites: Docker Desktop (or Docker Engine + Compose v2). You do **not** need PHP, Composer, or PostgreSQL installed on the host.
+Prerequisites: Docker Desktop (or Docker Engine + Compose v2). You do **not** need PHP, Composer, or a database server installed on the host.
 
 ```bash
 # 1. Start containers (php waits until database is healthy)
@@ -51,7 +51,7 @@ Open the app:
 Quick start (without Docker)
 ----------------------------
 
-Prerequisites: PHP 8.5+, Composer, and a PostgreSQL 18 instance.
+Prerequisites: PHP 8.5+, Composer, and PostgreSQL 18 or MySQL 8.4.
 
 ```bash
 composer install
@@ -63,44 +63,65 @@ symfony serve -d     # or: php -S localhost:8000 -t public
 Environment variables
 ---------------------
 
-Database credentials are defined **once** in `.env`. Both Docker Compose and Symfony read from the same file.
+Database settings are defined **once** in `.env`. Docker Compose and Symfony read the same variables.
 
-| Variable | Default | Purpose |
-| -------- | ------- | ------- |
-| `POSTGRES_DB` | `app` | Database name (Postgres container + Doctrine) |
-| `POSTGRES_USER` | `app` | Database user |
-| `POSTGRES_PASSWORD` | `app` | Database password |
-| `POSTGRES_HOST` | `database` | Host for Symfony (`database` = Docker service; use `127.0.0.1` from your machine) |
-| `POSTGRES_PORT` | `5432` | Port exposed on the host |
-| `DATABASE_URL` | *(built from above)* | Doctrine connection string — do not edit manually unless needed |
+| Variable | Default (PostgreSQL) | Purpose |
+| -------- | -------------------- | ------- |
+| `DATABASE_ENGINE` | `postgresql` | Active engine: `postgresql` or `mysql` |
+| `COMPOSE_PROFILES` | `postgresql` | Must match `DATABASE_ENGINE` (controls which DB container starts) |
+| `DATABASE_NAME` | `app_pokedex` | Database name |
+| `DATABASE_USER` | `app` | Application user |
+| `DATABASE_PASSWORD` | `app` | Application password |
+| `DATABASE_ROOT_PASSWORD` | `root` | MySQL root password (ignored by PostgreSQL) |
+| `DATABASE_HOST` | `database` | Docker network alias (same for both engines) |
+| `DATABASE_PORT` | `5432` | Host port (`3306` for MySQL) |
+| `DATABASE_SERVER_VERSION` | `18` | Doctrine server version (`8.4` for MySQL) |
+| `DATABASE_CHARSET` | `utf8` | Charset (`utf8mb4` for MySQL) |
+| `DATABASE_URL` | *(auto-built)* | Doctrine DSN — derived from the variables above |
 | `APP_ENV` | `dev` | Symfony environment |
 | `APP_SECRET` | empty in `.env`, set in `.env.dev` | Session/crypto secret |
 | `MESSENGER_TRANSPORT_DSN` | `doctrine://default?auto_setup=0` | Async queue backed by `messenger_messages` table |
 | `MAILER_DSN` | `null://null` | Mailer (disabled by default) |
 
-**To rename the database** (e.g. to `app_pokedex`), change only `POSTGRES_DB` in `.env`:
+### Switch to MySQL 8.4 LTS
+
+Edit `.env`:
 
 ```dotenv
-POSTGRES_DB=app_pokedex
+DATABASE_ENGINE=mysql
+COMPOSE_PROFILES=mysql
+DATABASE_PORT=3306
+DATABASE_SERVER_VERSION=8.4
+DATABASE_CHARSET=utf8mb4
 ```
 
-`DATABASE_URL` is derived automatically. `compose.yaml` uses `${POSTGRES_*}` — no edits needed there.
+Then restart:
 
-For production or per-developer overrides, use `.env.local` (gitignored). Example:
+```bash
+docker compose down
+docker compose up -d
+```
+
+Full guide: [`docs/symfony_guide/08-database-engines.md`](docs/symfony_guide/08-database-engines.md).
+
+### Rename the database
+
+Change only `DATABASE_NAME`:
 
 ```dotenv
-POSTGRES_DB=app_pokedex
-POSTGRES_PASSWORD=strong-secret-here
-POSTGRES_HOST=database
+DATABASE_NAME=my_portal_db
 ```
 
-> Do not set `DATABASE_URL` or `POSTGRES_*` in `compose.yaml` under `php.environment` — that would override `.env.local` and break the single-source pattern.
+`DATABASE_URL` updates automatically.
 
+For production, override credentials in `.env.local` (gitignored).
 
-If the database name has been changed:
+> Do not set `DATABASE_URL` or `DATABASE_*` in `compose.yaml` under `php.environment` — that would override `.env.local`.
 
-1. New Environment: `docker compose down -v && docker compose up -d`
-2. Keep the data: ALTER DATABASE `old_name` RENAME TO `new_name`; within the docker container
+### If the database name changed with existing data
+
+1. **New environment:** `docker compose down -v && docker compose up -d`
+2. **Keep data (PostgreSQL):** `ALTER DATABASE old_name RENAME TO new_name;` inside the container
 
 
 
@@ -208,5 +229,6 @@ Documentation
 | [`docs/README.md`](docs/README.md) | Index of all documentation |
 | [`docs/symfony_guide/`](docs/symfony_guide/README.md) | Tutorial: build the stack from scratch (uses `Producto` as a learning example) |
 | [`docs/symfony_guide/07-aplicacion-pokedex.md`](docs/symfony_guide/07-aplicacion-pokedex.md) | **This app's** domain, commands, and UI features |
+| [`docs/symfony_guide/08-database-engines.md`](docs/symfony_guide/08-database-engines.md) | PostgreSQL vs MySQL, `DATABASE_ENGINE`, `DATABASE_*` variables |
 
 > The Symfony guide (steps 01–06) teaches the stack with a generic `Producto` entity. The running application uses `Pokemon` / `PokemonType` and PokeAPI integration — see step 07 for the mapping.

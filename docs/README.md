@@ -10,6 +10,7 @@ Este directorio contiene la documentación interna del **Pokedex Web App**.
 | Entender la app Pokédex (entidades, PokeAPI, rutas, UI kit) | [symfony_guide/07-aplicacion-pokedex.md](./symfony_guide/07-aplicacion-pokedex.md) |
 | Aprender a construir el stack desde cero | [symfony_guide/README.md](./symfony_guide/README.md) (pasos 00–06) |
 | Comandos Docker, Composer, Doctrine, troubleshooting | [symfony_guide/06-comandos-y-troubleshooting.md](./symfony_guide/06-comandos-y-troubleshooting.md) |
+| Entender motores de BD (PostgreSQL / MySQL) y variables `DATABASE_*` | [symfony_guide/08-database-engines.md](./symfony_guide/08-database-engines.md) |
 
 ## Estructura de `docs/`
 
@@ -24,7 +25,8 @@ docs/
     ├── 04-tailwind-y-stimulus.md      # Tailwind 4 + Stimulus + UX
     ├── 05-php-cs-fixer.md             # PHP CS Fixer + PHPStan
     ├── 06-comandos-y-troubleshooting.md
-    └── 07-aplicacion-pokedex.md       # App real: Pokemon, PokeAPI, /design
+    ├── 07-aplicacion-pokedex.md       # App real: Pokemon, PokeAPI, /design
+    └── 08-database-engines.md         # PostgreSQL vs MySQL, DATABASE_ENGINE
 ```
 
 ## Relación entre la guía y el código actual

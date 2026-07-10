@@ -174,20 +174,40 @@ docker compose exec php php bin/phpunit tests/Controller/HomeControllerTest.php
 docker compose exec php php bin/phpunit --coverage-html var/coverage
 ```
 
-## 6.9 · Acceso directo a PostgreSQL
+## 6.9 · Acceso directo a la base de datos
+
+> El servicio activo depende de `DATABASE_ENGINE` / `COMPOSE_PROFILES` en `.env`. Ver [`08-database-engines.md`](./08-database-engines.md).
+
+### PostgreSQL (`COMPOSE_PROFILES=postgresql`)
 
 ```bash
 # Cliente psql interactivo
-docker compose exec database psql -U app -d app
+docker compose exec database-postgresql psql -U app -d app_pokedex
 
 # Ejecutar SQL desde la terminal
-docker compose exec database psql -U app -d app -c "SELECT * FROM pokemon"
+docker compose exec database-postgresql psql -U app -d app_pokedex -c "SELECT * FROM pokemon"
 
-# Hacer un dump
-docker compose exec database pg_dump -U app app > dump.sql
+# Dump
+docker compose exec database-postgresql pg_dump -U app app_pokedex > dump.sql
 
-# Restaurar un dump
-cat dump.sql | docker compose exec -T database psql -U app -d app
+# Restaurar
+cat dump.sql | docker compose exec -T database-postgresql psql -U app -d app_pokedex
+```
+
+### MySQL (`COMPOSE_PROFILES=mysql`)
+
+```bash
+# Cliente mysql interactivo
+docker compose exec database-mysql mysql -uapp -papp app_pokedex
+
+# SQL directo
+docker compose exec database-mysql mysql -uapp -papp app_pokedex -e "SHOW TABLES;"
+
+# Dump
+docker compose exec database-mysql mysqldump -uapp -papp app_pokedex > dump.sql
+
+# Restaurar
+cat dump.sql | docker compose exec -T database-mysql mysql -uapp -papp app_pokedex
 ```
 
 ---
@@ -202,7 +222,7 @@ cat dump.sql | docker compose exec -T database psql -U app -d app
 
 ```bash
 docker compose up -d
-docker compose ps   # app_php debe estar "Up"; database debe estar "healthy"
+docker compose ps   # app_php debe estar "Up"; database-postgresql o database-mysql debe estar "healthy"
 ```
 
 Luego repite el comando (`composer install`, `bin/console`, etc.).

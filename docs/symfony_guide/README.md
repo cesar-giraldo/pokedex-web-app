@@ -14,6 +14,7 @@
 | 5    | [`05-php-cs-fixer.md`](./05-php-cs-fixer.md)                      | Configurar PHP CS Fixer con la regla `@Symfony`        |
 | 6    | [`06-comandos-y-troubleshooting.md`](./06-comandos-y-troubleshooting.md) | Comandos del día a día y solución de problemas |
 | 7    | [`07-aplicacion-pokedex.md`](./07-aplicacion-pokedex.md)                 | App real del repo: Pokemon, PokeAPI, `/design` |
+| 8    | [`08-database-engines.md`](./08-database-engines.md)                   | PostgreSQL vs MySQL, `DATABASE_ENGINE`, variables genéricas |
 
 ## Lectura recomendada
 
@@ -44,6 +45,6 @@ Y abrir <https://localhost> (Pokédex) o <https://localhost/design> (UI kit) en 
 - **AssetMapper** (gestión de assets sin Webpack)
 - **Tailwind CSS 4.x** vía `symfonycasts/tailwind-bundle`
 - **StimulusBundle 3.x** (`@hotwired/stimulus`) + **Symfony UX 3.x** (Live Component, Turbo, Icons)
-- **PostgreSQL 18.3** + **Doctrine ORM 3.x**
+- **PostgreSQL 18.3** o **MySQL 8.4 LTS** (elegible vía `DATABASE_ENGINE` en `.env`) + **Doctrine ORM 3.x**
 - **PHP CS Fixer** con regla `@Symfony`
 - **Docker Compose v2** orquestando todo

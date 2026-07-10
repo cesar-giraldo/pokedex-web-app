@@ -10,11 +10,12 @@ FROM dunglas/frankenphp:1-php8.5.8 AS base
 ARG TZ=America/Bogota
 ENV TZ=${TZ}
 
-# 1. Dependencias del sistema necesarias para Symfony y PostgreSQL
+# 1. Dependencias del sistema necesarias para Symfony, PostgreSQL y MySQL
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     unzip \
     libpq-dev \
+    default-libmysqlclient-dev \
     libicu-dev \
     libzip-dev \
     libpng-dev \
@@ -22,10 +23,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfreetype6-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Extensiones PHP requeridas por Symfony + PostgreSQL
+# 2. Extensiones PHP requeridas por Symfony + PostgreSQL + MySQL
 RUN install-php-extensions \
     pdo_pgsql \
     pgsql \
+    pdo_mysql \
+    mysqli \
     intl \
     zip \
     opcache \

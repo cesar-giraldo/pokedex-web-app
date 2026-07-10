@@ -170,6 +170,8 @@ opcache.revalidate_freq = 0
 
 ## Paso 1.5 · Crear el archivo `compose.yaml`
 
+> **Actualización:** el repositorio incluye **PostgreSQL y MySQL** seleccionables con `DATABASE_ENGINE` y perfiles de Compose. Consulta el `compose.yaml` real en la raíz y [`08-database-engines.md`](./08-database-engines.md). El ejemplo siguiente refleja la estructura base; el proyecto añade `database-mysql` con perfil `mysql`.
+
 Este archivo define los servicios (contenedores) que vamos a usar y cómo se comunican entre sí. Crea `compose.yaml` en la raíz:
 
 ```yaml
@@ -245,11 +247,12 @@ volumes:
 ### Puntos clave del `compose.yaml`
 
 - **`./:/app:cached`** — Mapea tu carpeta del proyecto al contenedor. Cualquier cambio que hagas en tu editor se refleja al instante (hot reload).
-- **`${POSTGRES_*}`** — Credenciales y nombre de BD leídos del `.env` en la raíz. Un solo archivo para Docker y Symfony.
-- **`DATABASE_URL`** — Se construye en `.env` a partir de `POSTGRES_*`. El host por defecto es `database` (nombre del servicio).
-- **`depends_on.condition: service_healthy`** — PHP no arranca hasta que PostgreSQL esté listo para aceptar conexiones.
-- **`postgres:18.3-alpine`** — Imagen oficial, variante Alpine (más liviana, ~80 MB).
-- **Volumen `db_data`** — Tus datos de PostgreSQL persisten entre reinicios.
+- **`${DATABASE_*}`** — Credenciales y nombre de BD leídos del `.env` en la raíz. Un solo archivo para Docker y Symfony.
+- **`DATABASE_ENGINE` / `COMPOSE_PROFILES`** — Eligen PostgreSQL o MySQL (ver paso 08).
+- **`DATABASE_URL`** — Se construye en `.env` a partir de `DATABASE_*`. El host por defecto es `database` (alias de red común).
+- **`depends_on.condition: service_healthy`** — PHP no arranca hasta que el motor activo esté listo.
+- **`postgres:18.3-alpine` / `mysql:8.4`** — Imágenes oficiales según el perfil activo.
+- **Volúmenes separados** — `db_data_postgresql` y `db_data_mysql` persisten datos por motor.
 
 ## Paso 1.6 · Construir y levantar los contenedores
 
