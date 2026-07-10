@@ -161,7 +161,7 @@ Las **migraciones** son scripts que llevan la base de datos del estado actual al
 docker compose exec php php bin/console make:migration
 ```
 
-Esto crea un archivo en `migrations/`, por ejemplo `Version20260507000000.php`. Ábrelo y revisa el SQL: debería contener un `CREATE TABLE producto (...)`.
+Esto crea un archivo en `migrations/postgresql/` (o `migrations/mysql/` si `DATABASE_ENGINE=mysql`), por ejemplo `Version20260507000000.php`. Ábrelo y revisa el SQL: debería contener un `CREATE TABLE producto (...)`.
 
 🐳 Ejecuta la migración:
 

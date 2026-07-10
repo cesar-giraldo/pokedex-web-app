@@ -121,17 +121,42 @@ Desde el host, conecta a `127.0.0.1` y el `DATABASE_PORT` configurado.
 
 ---
 
-## 8.7 · Migraciones y compatibilidad
+## 8.7 · Migraciones por motor (`migrations/postgresql` y `migrations/mysql`)
 
-Las migraciones actuales en `migrations/` fueron generadas con **PostgreSQL** (sintaxis `IDENTITY`, tipos específicos, etc.).
+Doctrine Migrations lee la carpeta según `DATABASE_ENGINE` en `.env`:
 
-Si activas **MySQL** en un portal nuevo:
+```yaml
+# config/packages/doctrine_migrations.yaml
+'DoctrineMigrations': '%kernel.project_dir%/migrations/%env(DATABASE_ENGINE)%'
+```
 
-1. Preferible: genera migraciones desde cero con `make:migration` sobre el esquema de entidades.
-2. O usa `doctrine:schema:create` en entornos de desarrollo inicial.
-3. No asumas que las migraciones PostgreSQL existentes funcionan en MySQL sin revisión.
+| Motor | Carpeta | Estado en este repo |
+| ----- | ------- | ------------------- |
+| `postgresql` | `migrations/postgresql/` | Migraciones de la Pokédex |
+| `mysql` | `migrations/mysql/` | Vacía (generar al crear un portal MySQL) |
 
-Para portales futuros, diseña entidades de forma agnóstica y deja que Doctrine genere el SQL según la plataforma activa.
+### Comandos
+
+```bash
+# Ver migraciones del motor activo
+docker compose exec php php bin/console doctrine:migrations:status
+
+# Crear nueva migración (se guarda en la subcarpeta del motor activo)
+docker compose exec php php bin/console make:migration
+
+# Aplicar
+docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
+```
+
+### Cambiar de motor
+
+1. Ajusta `DATABASE_ENGINE`, `COMPOSE_PROFILES` y variables de conexión en `.env`.
+2. `docker compose down && docker compose up -d`
+3. Ejecuta `doctrine:migrations:migrate` — solo aplicará las de la carpeta del motor activo.
+
+Cada motor mantiene su propio historial en la tabla `doctrine_migration_versions` de su base de datos.
+
+> **No copies** migraciones PostgreSQL a `mysql/` sin adaptar el SQL. Genera migraciones MySQL con `make:migration` cuando `DATABASE_ENGINE=mysql`.
 
 ---
 

@@ -19,6 +19,8 @@ Repositorios: `PokemonRepository`, `PokemonTypeRepository` (incluyen `findOneByN
 
 ### Migraciones
 
+Ubicación: `migrations/postgresql/` (Doctrine las carga cuando `DATABASE_ENGINE=postgresql`).
+
 | Archivo | Contenido |
 | ------- | --------- |
 | `Version20260509025445` | Crea `pokemon`, `pokemon_type`, `messenger_messages` |
@@ -30,6 +32,8 @@ Ejecutar:
 ```bash
 docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
 ```
+
+Para MySQL u otros motores, ver [`08-database-engines.md`](./08-database-engines.md#87--migraciones-por-motor-migrationspostgresql-y-migrationsmysql).
 
 ---
 

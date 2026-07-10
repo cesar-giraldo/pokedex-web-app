@@ -10,7 +10,7 @@ Overview
 - PHP 8.5 / Symfony 8 with Twig, AssetMapper, Tailwind CSS 4, Stimulus, and Symfony UX (Live Components, Turbo, Icons).
 - Pokémon domain: entities `Pokemon` and `PokemonType`, PokeAPI client, console command to sync data, and search UI (Live Components + Stimulus).
 - Docker Compose stack: FrankenPHP (`php` service) + **PostgreSQL 18** or **MySQL 8.4 LTS** (selectable via `DATABASE_ENGINE` in `.env`).
-- Database migrations under `migrations/`, managed with Doctrine.
+- Database migrations under `migrations/{postgresql|mysql}/`, selected automatically by `DATABASE_ENGINE`.
 - Internal Symfony guide in [`docs/symfony_guide/`](docs/symfony_guide/README.md); application-specific docs in [`docs/symfony_guide/07-aplicacion-pokedex.md`](docs/symfony_guide/07-aplicacion-pokedex.md).
 
 Quick start (Docker — recommended)
@@ -180,7 +180,9 @@ pokedex-web-app/
 ├── config/                  # Symfony configuration
 ├── docker/                  # Caddyfile, php.ini
 ├── docs/symfony_guide/      # Step-by-step Symfony + Docker guide
-├── migrations/              # Doctrine migrations (pokemon, pokemon_type, messenger_messages)
+├── migrations/
+│   ├── postgresql/          # Migraciones PostgreSQL (motor por defecto)
+│   └── mysql/               # Migraciones MySQL (por portal)
 ├── public/                  # Front controller (index.php), static assets
 ├── src/
 │   ├── Command/             # search-store-pokemons

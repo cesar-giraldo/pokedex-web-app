@@ -527,6 +527,8 @@ pokedex-web-app/
 │       └── php.ini
 ├── docs/symfony_guide/        # Guía paso a paso + 07-aplicacion-pokedex.md
 ├── migrations/
+│   ├── postgresql/
+│   └── mysql/
 ├── public/
 │   ├── index.php
 │   └── images/
