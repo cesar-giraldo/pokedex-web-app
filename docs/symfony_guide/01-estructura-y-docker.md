@@ -216,11 +216,11 @@ services:
     container_name: app_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: app
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"   # Para conectarte desde tu cliente SQL
+      - "${POSTGRES_PORT:-5432}:5432"   # Para conectarte desde tu cliente SQL
     volumes:
       # ⚠️ IMPORTANTE: en Postgres 18+ el volumen se monta en /var/lib/postgresql
       # (NO en /var/lib/postgresql/data como en versiones anteriores).
@@ -228,7 +228,7 @@ services:
       # (p. ej. /var/lib/postgresql/18/docker) para soportar pg_upgrade --link.
       - db_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -245,7 +245,8 @@ volumes:
 ### Puntos clave del `compose.yaml`
 
 - **`./:/app:cached`** — Mapea tu carpeta del proyecto al contenedor. Cualquier cambio que hagas en tu editor se refleja al instante (hot reload).
-- **`DATABASE_URL`** — La URL de conexión que Symfony leerá. El host es `database` (el nombre del servicio).
+- **`${POSTGRES_*}`** — Credenciales y nombre de BD leídos del `.env` en la raíz. Un solo archivo para Docker y Symfony.
+- **`DATABASE_URL`** — Se construye en `.env` a partir de `POSTGRES_*`. El host por defecto es `database` (nombre del servicio).
 - **`depends_on.condition: service_healthy`** — PHP no arranca hasta que PostgreSQL esté listo para aceptar conexiones.
 - **`postgres:18.3-alpine`** — Imagen oficial, variante Alpine (más liviana, ~80 MB).
 - **Volumen `db_data`** — Tus datos de PostgreSQL persisten entre reinicios.

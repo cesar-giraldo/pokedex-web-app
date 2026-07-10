@@ -16,10 +16,20 @@ Doctrine ya viene incluido en `webapp-pack`. En esta sección aprenderás a:
 Cuando instalaste `webapp-pack`, la recipe de Doctrine añadió una línea por defecto en tu archivo `.env`. Ábrelo y asegúrate de que el bloque de Doctrine apunte al servicio Docker de Postgres:
 
 ```dotenv
+###> docker/postgres ###
+POSTGRES_DB=app
+POSTGRES_USER=app
+POSTGRES_PASSWORD=app
+POSTGRES_HOST=database
+POSTGRES_PORT=5432
+###< docker/postgres ###
+
 ###> doctrine/doctrine-bundle ###
-DATABASE_URL="postgresql://app:app@database:5432/app?serverVersion=18&charset=utf8"
+DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?serverVersion=18&charset=utf8"
 ###< doctrine/doctrine-bundle ###
 ```
+
+> **Fuente única:** Cambia `POSTGRES_DB`, `POSTGRES_USER` o `POSTGRES_PASSWORD` una sola vez. Docker Compose (`compose.yaml`) y Symfony comparten las mismas variables del archivo `.env` en la raíz del proyecto.
 
 > Si por defecto la recipe puso una URL distinta (por ejemplo apuntando a `127.0.0.1` o a SQLite), cámbiala por la de arriba.
 
@@ -87,7 +97,7 @@ Salida esperada:
 Database "app" for connection named default already exists. Skipped.
 ```
 
-> Es normal que ya exista, porque la imagen `postgres` la crea automáticamente al arrancar (gracias a `POSTGRES_DB: app`).
+> Es normal que ya exista, porque la imagen `postgres` la crea automáticamente al arrancar (gracias a `POSTGRES_DB` en `.env`).
 
 Verifica que Doctrine puede conectarse:
 
@@ -160,8 +170,10 @@ docker compose exec php php bin/console doctrine:migrations:migrate --no-interac
 Conéctate al contenedor de Postgres y mira las tablas:
 
 ```bash
-docker compose exec database psql -U app -d app -c "\dt"
+docker compose exec database psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "\dt"
 ```
+
+> Sustituye `${POSTGRES_USER}` y `${POSTGRES_DB}` por los valores de tu `.env` (por defecto `app`), o ejecuta: `docker compose exec database psql -U app -d app -c "\dt"`.
 
 Salida esperada:
 

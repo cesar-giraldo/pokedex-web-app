@@ -63,15 +63,46 @@ symfony serve -d     # or: php -S localhost:8000 -t public
 Environment variables
 ---------------------
 
-| Variable | Default (`.env`) | Purpose |
-| -------- | ---------------- | ------- |
+Database credentials are defined **once** in `.env`. Both Docker Compose and Symfony read from the same file.
+
+| Variable | Default | Purpose |
+| -------- | ------- | ------- |
+| `POSTGRES_DB` | `app` | Database name (Postgres container + Doctrine) |
+| `POSTGRES_USER` | `app` | Database user |
+| `POSTGRES_PASSWORD` | `app` | Database password |
+| `POSTGRES_HOST` | `database` | Host for Symfony (`database` = Docker service; use `127.0.0.1` from your machine) |
+| `POSTGRES_PORT` | `5432` | Port exposed on the host |
+| `DATABASE_URL` | *(built from above)* | Doctrine connection string — do not edit manually unless needed |
 | `APP_ENV` | `dev` | Symfony environment |
 | `APP_SECRET` | empty in `.env`, set in `.env.dev` | Session/crypto secret |
-| `DATABASE_URL` | `postgresql://app:app@database:5432/app?serverVersion=18&charset=utf8` | Doctrine connection (host `database` inside Docker, `127.0.0.1:5432` from host) |
 | `MESSENGER_TRANSPORT_DSN` | `doctrine://default?auto_setup=0` | Async queue backed by `messenger_messages` table |
 | `MAILER_DSN` | `null://null` | Mailer (disabled by default) |
 
-Override values in `.env.local` (gitignored). Inside Docker, do not set `DATABASE_URL` in `compose.yaml` — Symfony reads it from `.env` / `.env.local` so local overrides work.
+**To rename the database** (e.g. to `app_pokedex`), change only `POSTGRES_DB` in `.env`:
+
+```dotenv
+POSTGRES_DB=app_pokedex
+```
+
+`DATABASE_URL` is derived automatically. `compose.yaml` uses `${POSTGRES_*}` — no edits needed there.
+
+For production or per-developer overrides, use `.env.local` (gitignored). Example:
+
+```dotenv
+POSTGRES_DB=app_pokedex
+POSTGRES_PASSWORD=strong-secret-here
+POSTGRES_HOST=database
+```
+
+> Do not set `DATABASE_URL` or `POSTGRES_*` in `compose.yaml` under `php.environment` — that would override `.env.local` and break the single-source pattern.
+
+
+If the database name has been changed:
+
+1. New Environment: `docker compose down -v && docker compose up -d`
+2. Keep the data: ALTER DATABASE `old_name` RENAME TO `new_name`; within the docker container
+
+
 
 Useful commands
 ---------------

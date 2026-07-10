@@ -20,8 +20,7 @@ services:
       # - ./docker/Caddyfile:/etc/frankenphp/Caddyfile:ro
     environment:
       SERVER_NAME: "https://localhost"
-      # se comenta aqui para que sea sobre escrita por los .env (.env.local.php -> .env.local -> .env)
-      # DATABASE_URL: "postgresql://app:app@database:5432/app?serverVersion=18&charset=utf8"
+      # DATABASE_URL se lee desde .env / .env.local (no definir aquí)
       APP_ENV: dev
       APP_SECRET: "ChangeMe!ThisIsADevSecret"
       # Habilitar el modo worker de FrankenPHP solo en staging o prod (5x +rápido)
@@ -39,11 +38,11 @@ services:
     container_name: app_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: app
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"   # Para conectarte desde tu cliente SQL
+      - "${POSTGRES_PORT:-5432}:5432"   # Para conectarte desde tu cliente SQL
     volumes:
       # ⚠️ IMPORTANTE: en Postgres 18+ el volumen se monta en /var/lib/postgresql
       # (NO en /var/lib/postgresql/data como en versiones anteriores).
@@ -51,7 +50,7 @@ services:
       # (p. ej. /var/lib/postgresql/18/docker) para soportar pg_upgrade --link.
       - db_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
