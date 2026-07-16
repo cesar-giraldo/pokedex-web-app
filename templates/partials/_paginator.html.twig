@@ -1,0 +1,53 @@
+{# 1. Main block expected by Pagerfanta #}
+{% block pager_widget %}
+	{% if start_page is defined %}
+		{# Get current route and existing GET params #}
+		{% set current_route = app.request.attributes.get('_route') %}
+		{% set current_params = app.request.query.all() %}
+
+		<nav class="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6 mt-4">
+			<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+				<div>
+					<span
+						class="relative z-0 inline-flex rounded-md shadow-xs -space-x-px">
+
+						{{ block('previous_page_link') }}
+
+						{{ block('pages') }}
+
+						{{ block('next_page_link') }}
+					</span>
+				</div>
+			</div>
+		</nav>
+	{% endif %}
+{% endblock pager_widget %}
+
+{# 2. Block for numeric pages #}
+{% block pages %}
+	{% for page in start_page..end_page %}
+		{% if page == current_page %}
+			<span class="relative inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20">{{ page }}</span>
+		{% else %}
+			<a href="{{ path(current_route, current_params|merge({ 'page': page })) }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-gray-700">{{ page }}</a>
+		{% endif %}
+	{% endfor %}
+{% endblock pages %}
+
+{# 3. Block to prev button #}
+{% block previous_page_link %}
+	{% if pagerfanta.hasPreviousPage() %}
+		<a href="{{ path(current_route, current_params|merge({ 'page': pagerfanta.getPreviousPage() })) }}" class="relative inline-flex items-center rounded-l-md px-3 py-2 text-gray-500 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700">«</a>
+	{% else %}
+		<span class="relative inline-flex items-center rounded-l-md px-3 py-2 text-gray-300 ring-1 ring-inset ring-gray-200 dark:text-gray-600 dark:ring-gray-700 cursor-not-allowed">«</span>
+	{% endif %}
+{% endblock previous_page_link %}
+
+{# 4. Block to next button #}
+{% block next_page_link %}
+	{% if pagerfanta.hasNextPage() %}
+		<a href="{{ path(current_route, current_params|merge({ 'page': pagerfanta.getNextPage() })) }}" class="relative inline-flex items-center rounded-r-md px-3 py-2 text-gray-500 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700">»</a>
+	{% else %}
+		<span class="relative inline-flex items-center rounded-r-md px-3 py-2 text-gray-300 ring-1 ring-inset ring-gray-200 dark:text-gray-600 dark:ring-gray-700 cursor-not-allowed">»</span>
+	{% endif %}
+{% endblock next_page_link %}

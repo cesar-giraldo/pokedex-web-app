@@ -1,0 +1,157 @@
+{% extends 'base.html.twig' %}
+
+{# Macro import #}
+{% from 'macros/grid.html.twig' import sortable_link as sortLink %}
+
+{% block title %}Listado de Pokemons{% endblock %}
+
+{% block page_title %}
+	Pokemons
+{% endblock %}
+
+{% block breadcrumb %}
+	<li class="text-sm text-gray-800 dark:text-white/90">Pokemons</li>
+{% endblock %}
+
+{% block body %}
+	<div class="space-y-5 sm:space-y-6">
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-5 py-4 sm:px-6 sm:py-5 flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center">
+				<div class="w-full lg:w-auto">
+					<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+						Listado de Pokemons
+					</h3>
+				</div>
+				
+
+				<div class="w-full max-w-md lg:max-w-md lg:mb-0 shrink">
+					{{ form_start(search_form, {'attr': {'class': 'w-full'}}) }}
+					<div class="flex gap-2 w-full">
+						<div class="grow min-w-0">
+							{{ form_row(search_form.q, {'attr': {'class': 'dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 px-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30'}}) }}
+						</div>
+						<button type="submit" class="inline-flex items-center gap-2 px-3 py-3 md:px-4 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 shrink-0">
+							<svg class="block md:hidden fill-current" width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path fill-rule="evenodd" clip-rule="evenodd" d="M3.04175 9.37363C3.04175 5.87693 5.87711 3.04199 9.37508 3.04199C12.8731 3.04199 15.7084 5.87693 15.7084 9.37363C15.7084 12.8703 12.8731 15.7053 9.37508 15.7053C5.87711 15.7053 3.04175 12.8703 3.04175 9.37363ZM9.37508 1.54199C5.04902 1.54199 1.54175 5.04817 1.54175 9.37363C1.54175 13.6991 5.04902 17.2053 9.37508 17.2053C11.2674 17.2053 13.003 16.5344 14.357 15.4176L17.177 18.238C17.4699 18.5309 17.9448 18.5309 18.2377 18.238C18.5306 17.9451 18.5306 17.4703 18.2377 17.1774L15.418 14.3573C16.5365 13.0033 17.2084 11.2669 17.2084 9.37363C17.2084 5.04817 13.7011 1.54199 9.37508 1.54199Z" fill=""/>
+							</svg>
+							<span class="hidden md:block">Buscar</span>
+						</button>
+					</div>
+					{{ form_end(search_form) }}
+				</div>
+			</div>
+			<div class="p-5 border-t border-gray-100 dark:border-gray-800 sm:p-6">
+
+				<div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+					<div class="max-w-full overflow-x-auto">
+						<table
+							class="min-w-full">
+							<!-- table header start -->
+							<thead>
+								<tr class="border-b border-gray-100 dark:border-gray-800">
+									<th class="px-5 py-3 sm:px-6">
+										<div class="flex items-center">
+											<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+												Sprite
+											</p>
+										</div>
+									</th>
+									<th class="px-5 py-3 sm:px-6">
+										{# <div class="flex items-center">
+											<p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
+												Name
+											</p>
+										</div>#}
+										{{ sortLink('p.name', 'Name', current_sort, current_direction) }}
+									</th>
+									<th class="px-5 py-3 sm:px-6">
+										{{ sortLink('t.name', 'Type', current_sort, current_direction) }}
+									</th>
+									<th class="px-5 py-3 sm:px-6">
+										{{ sortLink('p.speed', 'Speed', current_sort, current_direction) }}
+									</th>
+									<th class="px-5 py-3 sm:px-6">
+										{{ sortLink('p.attack', 'Attack', current_sort, current_direction) }}
+									</th>
+								</tr>
+							</thead>
+							<!-- table header end -->
+							<!-- table body start -->
+							<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+								{% for pokemon in pokemons %}
+									<tr>
+										<td class="px-5 py-4 sm:px-6">
+											<div class="flex items-center">
+												<div class="flex items-center gap-3">
+													<div class="w-10 h-10 overflow-hidden rounded-full">
+														{% set sprite = pokemon.spriteFront ?: pokemon.spriteBack ?: asset('images/pokemon/pokeball.png') %}
+														<img src="{{ sprite }}" alt="{{ pokemon.name }}" />
+													</div>
+
+													<div>
+														<span class="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+															{{ pokemon.name }}
+														</span>
+														<span class="block text-gray-500 text-theme-xs dark:text-gray-400">
+															{{ pokemon.type.name }}
+														</span>
+													</div>
+												</div>
+											</div>
+										</td>
+										<td class="px-5 py-4 sm:px-6">
+											<div class="flex items-center">
+												<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+													{{ pokemon.name }}
+												</p>
+											</div>
+										</td>
+										<td class="px-5 py-4 sm:px-6">
+											<div class="flex items-center">
+												<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+													{{ pokemon.type.name }}
+												</p>
+											</div>
+										</td>
+										<td class="px-5 py-4 sm:px-6">
+											<div class="flex items-center">
+												<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+													{{ pokemon.speed }}
+												</p>
+											</div>
+										</td>
+										<td class="px-5 py-4 sm:px-6">
+											<div class="flex items-center">
+												<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+													{{ pokemon.attack }}
+												</p>
+											</div>
+										</td>
+									</tr>
+								{% else %}
+									<tr>
+										<td class="px-5 py-4 sm:px-6" colspan="5">
+											<div class="flex items-center justify-center">
+												<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+													No products found.
+												</p>
+											</div>
+										</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				{# Controles del Paginador (Renderizado automático de enlaces) #}
+				<div class="mt-6 flex justify-center">
+					{% if pokemons.haveToPaginate %}
+						{{ pagerfanta(pokemons) }}
+					{% endif %}
+				</div>
+
+			</div>
+		</div>
+	</div>
+{% endblock %}
