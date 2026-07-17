@@ -5,8 +5,9 @@
 		{% set current_route = app.request.attributes.get('_route') %}
 		{% set current_params = app.request.query.all() %}
 
-		<nav class="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6 mt-4">
-			<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+		<nav class="flex items-center justify-between border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
+			{# <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between"> #}
+			<div class="flex flex-1 sm:items-center justify-between">
 				<div>
 					<span
 						class="relative z-0 inline-flex rounded-md shadow-xs -space-x-px">
