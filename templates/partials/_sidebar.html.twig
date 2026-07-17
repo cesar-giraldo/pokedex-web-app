@@ -344,40 +344,34 @@
 
 					<!-- Menu Item Authentication -->
 					<li class="group-menu-auth">
+						{% set menuAuth = get_menu_classes(active_menu, active_page, 'auth') %}
 						<a href="#" 
 							data-action="click->template-base#setSelectedMenu"
 							data-template-base-selected-menu-param="auth"
-							class="menu-item group {% if active_menu === 'auth' %}menu-item-active{% else %}menu-item-inactive{% endif %}">
-							<svg 
-								class="{% if active_menu === 'auth' %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}"
-								width="24" height="24" viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path fill-rule="evenodd" clip-rule="evenodd" d="M14 2.75C14 2.33579 14.3358 2 14.75 2C15.1642 2 15.5 2.33579 15.5 2.75V5.73291L17.75 5.73291H19C19.4142 5.73291 19.75 6.0687 19.75 6.48291C19.75 6.89712 19.4142 7.23291 19 7.23291H18.5L18.5 12.2329C18.5 15.5691 15.9866 18.3183 12.75 18.6901V21.25C12.75 21.6642 12.4142 22 12 22C11.5858 22 11.25 21.6642 11.25 21.25V18.6901C8.01342 18.3183 5.5 15.5691 5.5 12.2329L5.5 7.23291H5C4.58579 7.23291 4.25 6.89712 4.25 6.48291C4.25 6.0687 4.58579 5.73291 5 5.73291L6.25 5.73291L8.5 5.73291L8.5 2.75C8.5 2.33579 8.83579 2 9.25 2C9.66421 2 10 2.33579 10 2.75L10 5.73291L14 5.73291V2.75ZM7 7.23291L7 12.2329C7 14.9943 9.23858 17.2329 12 17.2329C14.7614 17.2329 17 14.9943 17 12.2329L17 7.23291L7 7.23291Z" fill=""/>
-							</svg>
+							class="menu-item group  {{ menuAuth.item_class }}">
+							
+							{{ ux_icon('heroicons:shield-check', { class: 'w-6 h-6 '~ menuAuth.item_icon_class }) }}
 
 							<span class="menu-item-text group-data-[sidebar=collapsed]:lg:hidden">
 								Authentication
 							</span>
 
-							<svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current
-								group-data-[sidebar=collapsed]:lg:hidden
-								{% if active_menu === 'auth' %}menu-item-arrow-active{% else %}menu-item-arrow-inactive{% endif %}" 
-								width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							</svg>
+							{{ ux_icon('heroicons:chevron-down', { class: 'w-5 h-5 menu-item-arrow 
+								group-data-[sidebar=collapsed]:lg:hidden '~ menuAuth.arrow_icon_class }) }}
 						</a>
 
 						<!-- Dropdown Menu Start - Auth -->
-						<div class="overflow-hidden transform translate {% if active_menu === 'auth' %}block{% else %}hidden{% endif %}">
+						<div class="overflow-hidden transform translate {{ menuAuth.dropdown_class }}">
 							<ul class="flex flex-col gap-1 mt-2 menu-dropdown pl-9
 								group-data-[sidebar=collapsed]:lg:hidden
 								group-data-[sidebar=expanded]:flex">
 								<li>
-									<a href="{{ path('app_design_auth_sign_in') }}" class="menu-dropdown-item group {% if active_menu === 'auth' and active_page === 'sign_in' %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+									<a href="{{ path('app_design_auth_sign_in') }}" class="menu-dropdown-item group {{ menuAuth.dropdown_item_class }}">
 										Sign In
 									</a>
 								</li>
 								<li>
-									<a href="{{ path('app_design_auth_sign_up') }}" class="menu-dropdown-item group {% if active_menu === 'auth' and active_page === 'sign_up' %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+									<a href="{{ path('app_design_auth_sign_up') }}" class="menu-dropdown-item group {{ menuAuth.dropdown_item_class }}">
 										Sign Up
 									</a>
 								</li>
