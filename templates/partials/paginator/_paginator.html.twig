@@ -1,0 +1,29 @@
+<div data-controller="admin-paginator" data-admin-paginator-entity-value="{{active_page|default('admin_list')}}" class="mt-4 flex flex-col gap-4 items-center justify-center md:flex-row md:justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
+	<div class="flex flex-col sm:flex-row items-center gap-3 text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
+
+		<div>
+			Mostrando de
+			<span class="font-medium text-gray-900 dark:text-white">{{ entities.currentPageOffsetStart }}</span>
+			a
+			<span class="font-medium text-gray-900 dark:text-white">{{ entities.currentPageOffsetEnd }}</span>
+			de un total de
+			<span class="font-medium text-gray-900 dark:text-white">{{ entities.nbResults }}</span>
+			registros.
+		</div>
+		{# Selector de límites por página #}
+		<div class="flex items-center gap-1.5">
+			<label for="table-limit" class="text-xs text-gray-500 dark:text-gray-400">Mostrar:</label>
+			<select id="table-limit" class="h-8 rounded-md border border-gray-200 bg-transparent py-1 pl-2 pr-8 text-xs text-gray-800 focus:border-brand-300 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:text-white/90" data-action="change->admin-paginator#updateTableLimit">
+				{% for limit in allowed_limits %}
+					<option value="{{limit}}" {% if current_limit == limit %} selected {% endif %}>{{limit}}</option>
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+
+	<div class="flex justify-center md:justify-end">
+		{% if entities.haveToPaginate %}
+			{{ pagerfanta(entities, 'twig', {'proximity': 2 }) }}
+		{% endif %}
+	</div>
+</div>
