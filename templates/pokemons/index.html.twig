@@ -96,7 +96,7 @@
 												<div class="flex items-center gap-3">
 													<div class="w-10 h-10 overflow-hidden rounded-full">
 														{% set sprite = pokemon.spriteFront ?: pokemon.spriteBack ?: asset('images/pokemon/pokeball.png') %}
-														<img src="{{ sprite }}" alt="{{ pokemon.name }}" />
+														<img src="{{ sprite }}" alt="Sprite de {{ pokemon.name }}" loading="lazy" />
 													</div>
 
 													<div>
@@ -144,7 +144,7 @@
 										<td class="px-5 py-4 sm:px-6" colspan="5">
 											<div class="flex items-center justify-center">
 												<p class="text-gray-500 text-theme-sm dark:text-gray-400">
-													No products found.
+													No se encontraron pokémones.
 												</p>
 											</div>
 										</td>

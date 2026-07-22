@@ -74,7 +74,7 @@ final class PokemonController extends AbstractController
         $pagination = $this->getPagination($queryBuilder, $request);
 
         return $this->render('pokemons/index.html.twig', [
-            'controller_name' => 'HomeController',
+            'controller_name' => 'PokemonController',
             'active_menu' => 'dashboard',
             'active_page' => 'pokemon_list',
             'search_form' => $form->createView(),
