@@ -94,9 +94,9 @@
 										<td class="px-5 py-4 sm:px-6">
 											<div class="flex items-center">
 												<div class="flex items-center gap-3">
-													<div class="w-10 h-10 overflow-hidden rounded-full">
+													<div class="w-18 h-18 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
 														{% set sprite = pokemon.spriteFront ?: pokemon.spriteBack ?: asset('images/pokemon/pokeball.png') %}
-														<img src="{{ sprite }}" alt="Sprite de {{ pokemon.name }}" loading="lazy" />
+														<img src="{{ sprite }}" alt="Sprite de {{ pokemon.name }}" loading="lazy" class="h-full w-full object-contain" />
 													</div>
 
 													<div>
