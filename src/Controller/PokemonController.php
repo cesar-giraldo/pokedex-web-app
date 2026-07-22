@@ -19,7 +19,7 @@ use function in_array;
 final class PokemonController extends AbstractController
 {
     /**
-     * @return array{entities: Pagerfanta<object>, current_limit: int, allowed_limits: list<int>}
+     * @return array{entities: Pagerfanta<object>, current_limit: string, allowed_limits: list<int>}
      */
     private function getPagination(
         QueryBuilder $queryBuilder,
@@ -29,20 +29,28 @@ final class PokemonController extends AbstractController
         $adapter = new QueryAdapter($queryBuilder);
         $pagerfanta = new Pagerfanta($adapter);
 
+        $strLimit = $request->query->get('limit', '10');
         $allowedLimits = [10, 25, 50];
-        $currentLimit = $request->query->getInt('limit', 10);
 
-        if (!in_array($currentLimit, $allowedLimits)) {
-            $currentLimit = 10;
+        if ('all' === $strLimit) {
+            $totalRecords = $pagerfanta->getNbResults();
+            // If list is empty, we ensure there is at least one entry to avoid division errors
+            $pagerfanta->setMaxPerPage($totalRecords > 0 ? $totalRecords : 1);
+        } else {
+            // Standard validation for numbers (10, 25, 50)
+            $currentLimit = (int) $strLimit;
+            if (!in_array($currentLimit, $allowedLimits, true)) {
+                $currentLimit = 10;
+            }
+            $pagerfanta->setMaxPerPage($currentLimit);
         }
 
-        $pagerfanta->setMaxPerPage($currentLimit);
         $currentPage = $request->query->getInt('page', 1);
         $pagerfanta->setCurrentPage($currentPage);
 
         return [
             'entities' => $pagerfanta,
-            'current_limit' => $currentLimit,
+            'current_limit' => $strLimit,
             'allowed_limits' => $allowedLimits,
         ];
     }
