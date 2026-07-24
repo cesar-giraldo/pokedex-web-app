@@ -1,0 +1,50 @@
+{% extends '@admin/base.html.twig' %}
+
+{% block title %}Badge
+{% endblock %}
+
+{% block page_title %}
+	Badge
+{% endblock %}
+
+{% block breadcrumb %}
+	<li class="text-sm text-gray-800 dark:text-white/90">Badge</li>
+{% endblock %}
+
+{% block body %}
+	<div class="space-y-5 sm:space-y-6">
+		
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					With Solid Background
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 p-6 dark:border-gray-800 xl:p-10">
+				{% include('@admin/partials/badge/_badge.html.twig') %}
+			</div>
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Solid Background with Left Icon
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 p-6 dark:border-gray-800 xl:p-10">
+				{% include('@admin/partials/badge/_badge_left_icon.html.twig') %}
+			</div>
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Solid Background with Right Icon
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 p-6 dark:border-gray-800 xl:p-10">
+				{% include('@admin/partials/badge/_badge_right_icon.html.twig') %}
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
+		<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+		<title>
+			{% block title %}Secure Area{% endblock %}
+			| Pokedex</title>
+
+		<!-- ===== Title Icon ===== -->
+		<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIGZpbGw9J25vbmUnIHZpZXdCb3g9JzAgMCAyNCAyNCcgc3Ryb2tlLXdpZHRoPScxLjUnPjxjaXJjbGUgY3g9JzEyJyBjeT0nMTInIHI9JzExJyBmaWxsPScjM0M1MEUwJy8+PHBhdGggc3Ryb2tlPScjZmZmZmZmJyBzdHJva2UtbGluZWNhcD0ncm91bmQnIHN0cm9rZS1saW5lam9pbj0ncm91bmQnIGQ9J00xMiAyMXYtOC4yNU0xNS43NSAyMXYtOC4yNU04LjI1IDIxdi04LjI1TTMgOWw5LTYgOSA2bS0xLjUgMTJWMTAuMzMyQTQ4LjM2IDQ4LjM2IDAgMCAwIDEyIDkuNzVjLTIuNTUxIDAtNS4wNTYuMi03LjUuNTgyVjIxTTMgMjFoMThNMTIgNi43NWguMDA4di4wMDhIMTJWNi43NVonIC8+PC9zdmc+">
+
+		{% block stylesheets %}{% endblock %}
+
+		{% block javascripts %}
+			{% block importmap %}
+				{{ importmap('app') }}
+			{% endblock %}
+		{% endblock %}
+
+		{% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
+		{% if frankenphpHotReload %}
+			<meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
+			<script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
+			<script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+		{% endif %}
+	</head>
+	<body
+		data-controller="template-base" 
+    	data-template-base-selected-menu-value="{{ active_menu|default('dashboard') }}" 
+    	data-template-base-page-value="{{active_page|default('Pokedex')}}" 
+    	data-template-base-dark-class="dark" 
+    	data-template-base-hide-class="hidden" 
+    	data-template-base-target="bodyContainer" class="group dark:bg-gray-900">
+
+		{{ include('@admin/partials/_preloader.html.twig') }}
+
+		<!-- ===== Page Wrapper Start ===== -->
+    	<div class="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
+			<div class="relative flex flex-col justify-center w-full h-screen dark:bg-gray-900 sm:p-0 lg:flex-row">
+				<div class="flex flex-col flex-1 w-full lg:w-1/2">
+					{% block body %}
+					{% endblock %}
+				</div>
+
+				<div class="relative items-center hidden w-full h-full bg-brand-950 dark:bg-white/5 lg:grid lg:w-1/2">
+					<div class="flex items-center justify-center z-1">
+					
+					{% include('@admin/partials/_common_grid_shape.html.twig') %}
+
+					<div class="flex flex-col items-center max-w-xs">
+						<a href="{{ path('app_design_index') }}" class="block mb-4">
+						<img src="{{ asset('images/logo/auth-logo.svg') }}" alt="Logo" />
+						</a>
+						<p class="text-center text-gray-400 dark:text-white/60">
+						Free and Open-Source Tailwind CSS Admin Dashboard Template
+						</p>
+					</div>
+					</div>
+				</div>
+				<!-- Toggler -->
+				<div class="fixed z-50 hidden bottom-6 right-6 sm:block">
+					<button
+					class="inline-flex items-center justify-center text-white transition-colors rounded-full size-14 bg-brand-500 hover:bg-brand-600"
+					data-action="click->template-base#toggleDarkMode">
+					{{ ux_icon('heroicons:sun', {
+						class: 'w-6 h-6 hidden fill-current dark:block'
+					}) }}
+					{{ ux_icon('heroicons:moon', {
+						class: 'w-5 h-5 fill-current dark:hidden'
+					}) }}
+					</button>
+				</div>
+			</div>
+		</div>
+		<!-- ===== Page Wrapper End ===== -->
+	</body>
+</html>

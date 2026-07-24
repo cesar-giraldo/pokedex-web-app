@@ -16,8 +16,16 @@ services:
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
-    App\:
-        resource: '../src/'
+    App\Admin\:
+        resource: '../src/Admin/'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\Web\:
+        resource: '../src/Web/'
+
+    App\Entity\:
+        resource: '../src/Entity/'
+    
+    App\Repository\:
+        resource: '../src/Repository/'

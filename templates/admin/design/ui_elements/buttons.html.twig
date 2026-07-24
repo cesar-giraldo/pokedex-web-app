@@ -1,0 +1,144 @@
+{% extends '@admin/base.html.twig' %}
+
+{% block title %}Buttons
+{% endblock %}
+
+{% block page_title %}
+	Buttons
+{% endblock %}
+
+{% block breadcrumb %}
+	<li class="text-sm text-gray-800 dark:text-white/90">Buttons</li>
+{% endblock %}
+
+{% block body %}
+	<div class="space-y-5 sm:space-y-6">
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Primary Button
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 px-6 py-6.5 dark:border-gray-800">
+				<div class="flex items-center gap-5">
+					<button class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+						Button Text
+					</button>
+
+					<button class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-3.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600">
+						Button Text
+					</button>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Primary Button with Left Icon
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 px-6 py-6.5 dark:border-gray-800">
+				<div class="flex items-center gap-5">
+					<button class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+						{{ ux_icon('heroicons:arrow-up-tray', { class: 'w-5 h-5' }) }}
+						Button Text
+					</button>
+
+					<button class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-3.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600">
+						{{ ux_icon('heroicons:trash', { class: 'w-5 h-5' }) }}
+						Button Text
+					</button>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Primary Button with Right Icon
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 px-6 py-6.5 dark:border-gray-800">
+				<div class="flex items-center gap-5">
+					<button class="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+						Button Text
+						{{ ux_icon('heroicons:user-circle', { class: 'w-5 h-5' }) }}
+					</button>
+
+					<button class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-3.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600">
+						Button Text
+						{{ ux_icon('heroicons:cog-6-tooth', { class: 'w-5 h-5' }) }}
+					</button>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Secondary Button
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 px-6 py-6.5 dark:border-gray-800">
+				<div class="flex items-center gap-5">
+					<button class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03]">
+						Button Text
+					</button>
+
+					<button class="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3.5 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03]">
+						Button Text
+					</button>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Secondary Button with Left Icon
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 px-6 py-6.5 dark:border-gray-800">
+				<div class="flex items-center gap-5">
+					<button class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03]">
+						{{ ux_icon('heroicons:arrow-path', { class: 'w-5 h-5' }) }}
+						Button Text
+					</button>
+
+					<button class="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3.5 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03]">
+						{{ ux_icon('heroicons:chart-bar', { class: 'w-5 h-5' }) }}
+						Button Text
+					</button>
+				</div>
+
+			</div>
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Secondary Button with Right Icon
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 px-6 py-6.5 dark:border-gray-800">
+				<div class="flex items-center gap-5">
+					<button class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03]">
+						Button Text
+						{{ ux_icon('heroicons:folder', { class: 'w-5 h-5' }) }}
+					</button>
+
+					<button class="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3.5 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03]">
+						Button Text
+						{{ ux_icon('heroicons:home', { class: 'w-5 h-5' }) }}
+					</button>
+				</div>
+
+			</div>
+		</div>
+	</div>
+{% endblock %}

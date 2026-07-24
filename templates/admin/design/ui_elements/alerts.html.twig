@@ -1,0 +1,68 @@
+{% extends '@admin/base.html.twig' %}
+
+{% block title %}Alerts
+{% endblock %}
+
+{% block page_title %}
+	Alerts
+{% endblock %}
+
+{% block breadcrumb %}
+	<li class="text-sm text-gray-800 dark:text-white/90">Alerts</li>
+{% endblock %}
+
+{% block body %}
+	<div class="space-y-5 sm:space-y-6">
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Success Alert
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 p-4 dark:border-gray-800 sm:p-6">
+				<div class="space-y-6">
+					{% include('@admin/partials/alert/_alert_success.html.twig') %}
+				</div>
+			</div>
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Warning Alert
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 p-4 dark:border-gray-800 sm:p-6">
+				<div class="space-y-6">
+					{% include('@admin/partials/alert/_alert_warning.html.twig') %}
+				</div>
+			</div>
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Error Alert
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 p-4 dark:border-gray-800 sm:p-6">
+				<div class="space-y-6">
+					{% include('@admin/partials/alert/_alert_error.html.twig') %}
+				</div>
+			</div>
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+			<div class="px-6 py-5">
+				<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+					Info Alert
+				</h3>
+			</div>
+			<div class="border-t border-gray-100 p-4 dark:border-gray-800 sm:p-6">
+				<div class="space-y-6">
+					{% include('@admin/partials/alert/_alert_info.html.twig') %}
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

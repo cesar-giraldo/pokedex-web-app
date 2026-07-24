@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
+		<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+		<title>
+			{% block title %}Error{% endblock %}
+			| Pokedex</title>
+
+		<!-- ===== Title Icon ===== -->
+		<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIGZpbGw9J25vbmUnIHZpZXdCb3g9JzAgMCAyNCAyNCcgc3Ryb2tlLXdpZHRoPScxLjUnPjxjaXJjbGUgY3g9JzEyJyBjeT0nMTInIHI9JzExJyBmaWxsPScjM0M1MEUwJy8+PHBhdGggc3Ryb2tlPScjZmZmZmZmJyBzdHJva2UtbGluZWNhcD0ncm91bmQnIHN0cm9rZS1saW5lam9pbj0ncm91bmQnIGQ9J00xMiAyMXYtOC4yNU0xNS43NSAyMXYtOC4yNU04LjI1IDIxdi04LjI1TTMgOWw5LTYgOSA2bS0xLjUgMTJWMTAuMzMyQTQ4LjM2IDQ4LjM2IDAgMCAwIDEyIDkuNzVjLTIuNTUxIDAtNS4wNTYuMi03LjUuNTgyVjIxTTMgMjFoMThNMTIgNi43NWguMDA4di4wMDhIMTJWNi43NVonIC8+PC9zdmc+">
+		{% block stylesheets %}{% endblock %}
+
+		{% block javascripts %}
+			{% block importmap %}
+				{{ importmap('app') }}
+			{% endblock %}
+		{% endblock %}
+
+		{% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
+		{% if frankenphpHotReload %}
+			<meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
+			<script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
+			<script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+		{% endif %}
+	</head>
+	<body
+		data-controller="template-base" 
+    	data-template-base-selected-menu-value="{{ active_menu|default('dashboard') }}" 
+    	data-template-base-page-value="{{active_page|default('Pokedex')}}" 
+    	data-template-base-dark-class="dark" 
+    	data-template-base-hide-class="hidden" 
+    	data-template-base-target="bodyContainer" class="group dark:bg-gray-900">
+
+		{{ include('@admin/partials/_preloader.html.twig') }}
+
+		<!-- ===== Page Wrapper Start ===== -->
+    <div class="relative z-1 flex min-h-screen flex-col items-center justify-center overflow-hidden p-6"> 
+      
+      {% include('@admin/partials/_common_grid_shape.html.twig') %}
+
+			<!-- Centered Content -->
+			<div class="mx-auto w-full max-w-[242px] text-center sm:max-w-[472px]">
+				{% block body %}
+				{% endblock %}
+			</div>
+			<!-- Footer -->
+			<p class="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-sm text-gray-500 dark:text-gray-400">
+				&copy;
+				<span id="year"></span>
+				- Pokedex
+			</p>
+		</div>
+		<!-- ===== Page Wrapper End ===== -->
+	</body>
+</html>

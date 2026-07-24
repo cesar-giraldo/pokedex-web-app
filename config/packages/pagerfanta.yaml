@@ -1,3 +1,3 @@
 babdev_pagerfanta:
     default_view: twig
-    default_twig_template: 'partials/paginator/_paginator_controls.html.twig'
+    default_twig_template: '@admin/partials/paginator/_paginator_controls.html.twig'

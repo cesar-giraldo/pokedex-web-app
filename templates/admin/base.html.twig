@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>{% block title %}Welcome {% endblock %} | Pokedex</title>
+    
+    <!-- ===== Title Icon ===== -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIGZpbGw9J25vbmUnIHZpZXdCb3g9JzAgMCAyNCAyNCcgc3Ryb2tlLXdpZHRoPScxLjUnPjxjaXJjbGUgY3g9JzEyJyBjeT0nMTInIHI9JzExJyBmaWxsPScjM0M1MEUwJy8+PHBhdGggc3Ryb2tlPScjZmZmZmZmJyBzdHJva2UtbGluZWNhcD0ncm91bmQnIHN0cm9rZS1saW5lam9pbj0ncm91bmQnIGQ9J00xMiAyMXYtOC4yNU0xNS43NSAyMXYtOC4yNU04LjI1IDIxdi04LjI1TTMgOWw5LTYgOSA2bS0xLjUgMTJWMTAuMzMyQTQ4LjM2IDQ4LjM2IDAgMCAwIDEyIDkuNzVjLTIuNTUxIDAtNS4wNTYuMi03LjUuNTgyVjIxTTMgMjFoMThNMTIgNi43NWguMDA4di4wMDhIMTJWNi43NVonIC8+PC9zdmc+">
+
+    {% block stylesheets %}
+    {% endblock %}
+
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
+
+    {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
+    {% if frankenphpHotReload %}
+    <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
+    <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
+    <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+    {% endif %}
+  </head>
+  <body
+    data-controller="template-base" 
+    data-template-base-selected-menu-value="{{ active_menu|default('dashboard') }}"
+    data-template-base-page-value="{{active_page|default('Pokedex')}}"
+    data-template-base-dark-class="dark"
+    data-template-base-hide-class="hidden"
+    data-template-base-target="bodyContainer"
+    class="group dark:bg-gray-900"
+  >
+    <!-- ===== Preloader Start ===== -->
+    {{ include('@admin/partials/_preloader.html.twig') }}
+    <!-- ===== Preloader End ===== -->
+
+    <!-- ===== Page Wrapper Start ===== -->
+    <div class="flex h-screen overflow-hidden">
+      <!-- ===== Sidebar Start ===== -->
+      {{ include('@admin/partials/_sidebar.html.twig') }}
+      <!-- ===== Sidebar End ===== -->
+
+      <!-- ===== Content Area Start ===== -->
+      <div
+        class="relative flex flex-1 flex-col overflow-x-hidden overflow-y-auto"
+      >
+        <!-- Small Device Overlay Start -->
+        {{ include('@admin/partials/_overlay.html.twig') }}
+        <!-- Small Device Overlay End -->
+
+        <!-- ===== Header Start ===== -->
+        {{ include('@admin/partials/_header.html.twig') }}
+        <!-- ===== Header End ===== -->
+
+        <!-- ===== Main Content Start ===== -->
+        <main>
+          <div class="mx-auto max-w-(--breakpoint-2xl) p-4 md:p-6">
+            <!-- Breadcrumb Start -->
+            <div class="{% if active_page === "dashboard" %}hidden{% endif %}">
+              {# <p>Page Name: <span data-template-base-target="outputPageName"></span></p> #}
+              <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
+                  {% block page_title %}
+                    {{ active_page|title }}
+                  {% endblock %}
+                </h2>
+
+                <nav>
+                  <ol class="flex items-center gap-1.5">
+                    <li>
+                      <a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_design_index')}}">
+                        Home
+                        {{ ux_icon('heroicons:chevron-right', {
+                            class: 'w-4 h-4'
+                        }) }}
+                      </a>
+                    </li>
+                    {% block breadcrumb %}
+                    {% endblock %}
+                  </ol>
+                </nav>
+              </div>
+            </div>
+            <!-- Breadcrumb End -->
+
+            {% block body %}{% endblock %}
+            
+          </div>
+        </main>
+        <!-- ===== Main Content End ===== -->
+      </div>
+      <!-- ===== Content Area End ===== -->
+    </div>
+    <!-- ===== Page Wrapper End ===== -->
+  </body>
+</html>
+

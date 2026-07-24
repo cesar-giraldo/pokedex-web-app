@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\PokeAPI;
 
-use App\Service\PokeAPI\PokeAPIClient;
-use App\Service\PokeAPI\PokemonDetails;
+use App\Admin\Service\PokeAPI\PokeAPIClient;
+use App\Admin\Service\PokeAPI\PokemonDetails;
 use Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
