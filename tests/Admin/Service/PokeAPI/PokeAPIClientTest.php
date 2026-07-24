@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Service\PokeAPI;
+namespace App\Tests\Admin\Service\PokeAPI;
 
 use App\Admin\Service\PokeAPI\PokeAPIClient;
 use App\Admin\Service\PokeAPI\PokemonDetails;

@@ -16,6 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 use function in_array;
 
+#[Route('/admin')]
 final class PokemonController extends AbstractController
 {
     /**
@@ -55,7 +56,7 @@ final class PokemonController extends AbstractController
         ];
     }
 
-    #[Route('/secure/pokemons', name: 'app_backend_pokemons')]
+    #[Route('/pokemons', name: 'app_backend_pokemons')]
     public function pokemons(PokemonRepository $pokemonRepository, Request $request): Response
     {
         $form = $this->createForm(SearchPokemonType::class);
