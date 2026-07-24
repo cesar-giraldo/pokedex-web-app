@@ -8,6 +8,7 @@ use App\Repository\PokemonRepository;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: PokemonRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -16,46 +17,60 @@ class Pokemon
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['pokemon:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100, nullable: false)]
+    #[Groups(['pokemon:read'])]
     private string $name;
 
     #[ORM\Column(type: Types::INTEGER, nullable: false)]
+    #[Groups(['pokemon:read'])]
     private int $height;
 
     #[ORM\Column(type: Types::INTEGER)]
+    #[Groups(['pokemon:read'])]
     private int $weight;
 
     #[ORM\ManyToOne(inversedBy: 'pokemons')]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?PokemonType $type = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?int $listOrder = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?string $spriteFront = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?string $spriteBack = null;
 
     #[ORM\Column(type: Types::INTEGER, precision: 10, nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?int $attack = null;
 
     #[ORM\Column(type: Types::INTEGER, precision: 10, nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?int $defense = null;
 
     #[ORM\Column(type: Types::INTEGER, precision: 10, nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?int $speed = null;
 
     #[ORM\Column(type: Types::INTEGER, precision: 10, nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?int $healthPoints = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?DateTime $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?DateTime $lastUpdatedAt = null;
 
     public function getId(): ?int

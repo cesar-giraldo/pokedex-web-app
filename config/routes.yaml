@@ -9,3 +9,8 @@
 
 controllers:
     resource: routing.controllers
+
+api_v1_controllers:
+    resource: 'App\Api\Controller\PokemonApiController'
+    type: attribute
+    prefix: /api/v1

@@ -29,3 +29,7 @@ services:
     
     App\Repository\:
         resource: '../src/Repository/'
+    
+    App\Api\:
+        resource: '../src/Api/'
+        tags: ['controller.service_arguments']

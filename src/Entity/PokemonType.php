@@ -8,6 +8,7 @@ use App\Repository\PokemonTypeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: PokemonTypeRepository::class)]
 class PokemonType
@@ -15,15 +16,19 @@ class PokemonType
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['pokemon:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50, nullable: false)]
+    #[Groups(['pokemon:read'])]
     private string $name;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?string $generation = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['pokemon:read'])]
     private ?string $sprite = null;
 
     /**
