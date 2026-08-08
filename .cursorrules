@@ -1,0 +1,46 @@
+# Symfony 8 / Project Rules
+
+## Project Reality
+- This is a Symfony 8 Flex application running on PHP 8.5+.
+- The app uses Doctrine ORM, Twig, AssetMapper, Tailwind CSS 4, Stimulus, and Symfony UX (Turbo, Live Components, Icons).
+- The codebase is organized by context: src/Admin for the administrative backend, src/Web for the public website, and src/Api for API services.
+- Shared domain logic belongs in src/Entity and shared Doctrine queries in src/Repository.
+- Templates are separated by context in templates/admin and templates/web.
+- Tests are grouped by context in tests/Admin, tests/Web, and future tests/Api.
+- Database migrations live under migrations/postgresql and migrations/mysql, and the active engine is selected via DATABASE_ENGINE.
+- The project is developed and run primarily with Docker Compose, including FrankenPHP and a database service.
+- Quality checks rely on PHPUnit, PHPStan, and PHP-CS-Fixer.
+
+## Coding Standards
+- Start every PHP file with declare(strict_types=1);
+- Prefer typed properties, constructor promotion, and modern PHP 8.5 syntax where appropriate.
+- Follow PSR-12 and Symfony coding standards.
+- Use attributes for routing, validation, serialization, and Doctrine mapping. Do not use annotations.
+- Keep controllers thin. Move business logic to services, repositories, or dedicated action classes.
+- Keep each context isolated: admin logic should stay under src/Admin, public website logic under src/Web, and API logic under src/Api.
+- Shared domain models and persistence abstractions should remain in src/Entity and src/Repository so they are reusable across contexts.
+- Prefer dependency injection via constructor; avoid direct container access.
+- Use repositories for database queries and keep entities focused on state and invariants.
+- For external integrations such as the PokeAPI client, isolate HTTP logic in services or dedicated classes.
+- When relevant, use Symfony MakerBundle to scaffold entities, commands, forms, and CRUD boilerplate.
+
+## Frontend / Asset Conventions
+- Prefer Twig templates plus Stimulus controllers over introducing a separate frontend framework.
+- Use AssetMapper and importmap.php rather than Webpack/Vite unless explicitly requested.
+- Keep Tailwind styling integrated with Symfony templates and Stimulus-based interactions.
+- Match the template location to the context: use templates/admin for admin screens and templates/web for public pages.
+- Keep shared UI fragments in reusable template components rather than duplicating markup across contexts.
+
+## Testing & Quality
+- Add or update PHPUnit tests when changing behavior.
+- Place tests in the corresponding context folder: tests/Admin for admin features, tests/Web for public website features, and tests/Api for API behavior.
+- Keep code compatible with the existing Docker-based workflow and environment configuration.
+- Respect .env-based configuration and avoid hard-coding environment-specific values.
+- When changing persistence logic, ensure migrations and entity updates remain consistent.
+
+## AI Behavior
+- Be concise and avoid re-explaining basic Symfony concepts unless necessary.
+- Prefer small, targeted changes that match the existing architecture.
+- Preserve naming conventions, folder structure, and the current project style.
+- Do not repeat existing code; provide only the relevant diff or modified snippet.
+- Favor practical, production-ready implementations over over-engineered abstractions.
