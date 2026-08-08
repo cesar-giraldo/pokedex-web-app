@@ -7,6 +7,15 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
+    assets:
+        packages:
+            admin:
+                base_path: '/admin'
+            web:
+                base_path: '/web'
+            shared:
+                base_path: '/shared'
+
     #esi: true
     #fragments: true
 

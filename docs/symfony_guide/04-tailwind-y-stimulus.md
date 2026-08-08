@@ -11,6 +11,148 @@ En esta sección instalaremos:
 
 ---
 
+## Separación de frontend por contexto (Admin / Web)
+
+Este proyecto separa el frontend igual que el código PHP y las plantillas Twig: **Admin**, **Web** y **Api** (sin assets propios).
+
+### Estructura de `assets/`
+
+```text
+assets/
+├── admin/
+│   ├── app.js                  # entrypoint importmap('admin')
+│   ├── stimulus_bootstrap.js
+│   └── styles/app.css          # Tailwind + tema del panel administrativo
+├── web/
+│   ├── app.js                  # entrypoint importmap('web')
+│   ├── stimulus_bootstrap.js
+│   └── styles/app.css          # Tailwind + tema del sitio público
+├── controllers/
+│   ├── admin/                  # Stimulus del admin (template-base, admin-paginator, …)
+│   ├── web/                    # Stimulus del sitio público (hi, search-pokemon, …)
+│   └── shared/                 # Controladores usados en ambos (csrf-protection)
+└── controllers.json            # Configuración de UX (Turbo, Live Components, …)
+```
+
+### Estructura de `public/` (archivos estáticos)
+
+```text
+public/
+├── admin/images/               # Logos, errores, UI del admin
+├── web/images/                 # Imágenes del sitio público
+├── shared/images/              # Recursos compartidos (ej. pokeball.png)
+└── index.php
+```
+
+Los JS/CSS compilados por AssetMapper y Tailwind siguen yendo a `public/assets/` (generado automáticamente, no lo edites a mano).
+
+### Configuración clave
+
+`importmap.php` — dos entrypoints:
+
+```php
+return [
+    'admin' => [
+        'path' => './assets/admin/app.js',
+        'entrypoint' => true,
+    ],
+    'web' => [
+        'path' => './assets/web/app.js',
+        'entrypoint' => true,
+    ],
+    // … dependencias (@hotwired/stimulus, @symfony/ux-turbo, etc.)
+];
+```
+
+`config/packages/symfonycasts_tailwind.yaml` — un CSS por contexto:
+
+```yaml
+symfonycasts_tailwind:
+    binary_version: 'v4.1.11'
+    input_css:
+        - '%kernel.project_dir%/assets/admin/styles/app.css'
+        - '%kernel.project_dir%/assets/web/styles/app.css'
+```
+
+`config/packages/stimulus.yaml` — carpetas de controladores por contexto:
+
+```yaml
+stimulus:
+    controller_paths:
+        - '%kernel.project_dir%/assets/controllers/admin'
+        - '%kernel.project_dir%/assets/controllers/web'
+        - '%kernel.project_dir%/assets/controllers/shared'
+    controllers_json: '%kernel.project_dir%/assets/controllers.json'
+```
+
+`config/packages/framework.yaml` — paquetes de assets para imágenes estáticas:
+
+```yaml
+framework:
+    assets:
+        packages:
+            admin:
+                base_path: '/admin'
+            web:
+                base_path: '/web'
+            shared:
+                base_path: '/shared'
+```
+
+### Plantillas base e importmap
+
+| Contexto | Plantilla base | Importmap |
+|----------|----------------|-----------|
+| Admin | `templates/admin/base.html.twig` | `{{ importmap('admin') }}` |
+| Web | `templates/web/base.html.twig` | `{{ importmap('web') }}` |
+
+Ejemplo de imagen estática en admin:
+
+```twig
+<img src="{{ asset('images/logo/logo.svg', 'admin') }}" alt="Logo">
+```
+
+Ejemplo compartido entre admin y web:
+
+```twig
+<img src="{{ asset('images/pokemon/pokeball.png', 'shared') }}" alt="Pokeball">
+```
+
+### Tailwind: escaneo de clases por contexto
+
+Cada CSS limita qué plantillas escanea con `@source`:
+
+`assets/admin/styles/app.css`:
+
+```css
+@import "tailwindcss";
+@source "../../../templates/admin";
+```
+
+`assets/web/styles/app.css`:
+
+```css
+@import "tailwindcss";
+@source "../../../templates/web";
+```
+
+Así el CSS del admin no incluye clases usadas solo en web, y viceversa.
+
+### Convenciones al crear assets nuevos
+
+| Qué creas | Dónde va |
+|-----------|----------|
+| Controlador Stimulus admin | `assets/controllers/admin/` |
+| Controlador Stimulus web | `assets/controllers/web/` |
+| Imagen estática admin | `public/admin/images/…` + `asset('…', 'admin')` |
+| Imagen estática web | `public/web/images/…` + `asset('…', 'web')` |
+| Página Twig admin | extiende `@admin/base.html.twig` |
+| Página Twig web | extiende `@web/base.html.twig` |
+
+> **Nota sobre Stimulus:** StimulusBundle descubre todos los controladores registrados en `controller_paths`. La separación efectiva entre admin y web se logra con entrypoints distintos (`importmap('admin')` / `importmap('web')`), CSS independiente y controladores **lazy** (`/* stimulusFetch: 'lazy' */` al inicio del archivo) para que el JS solo se descargue cuando la página usa `data-controller`.
+
+---
+
 ## Paso 4.1 · Verificar que AssetMapper está instalado
 
 `AssetMapper` ya viene con `webapp-pack`. Verifícalo:
@@ -19,7 +161,7 @@ En esta sección instalaremos:
 docker compose exec php php bin/console debug:asset-map
 ```
 
-Deberías ver una lista de assets registrados (`app.js`, `styles/app.css`, etc.).
+Deberías ver assets organizados por contexto (`admin/app.js`, `web/app.js`, `controllers/admin/…`, etc.).
 
 > **AssetMapper** es la nueva forma oficial (Symfony 6.3+) de manejar JS/CSS sin Webpack ni Node. Usa `importmap` nativo del navegador y solo copia archivos a `public/assets/` con un hash para cache busting.
 
@@ -42,7 +184,10 @@ Edita `config/packages/symfonycasts_tailwind.yaml`:
 ```yaml
 symfonycasts_tailwind:
     binary_version: 'v4.1.14'  # Última versión 4.x al momento de escribir
-    # Si quieres siempre la última, puedes omitir esta línea (descarga la "latest")
+    input_css:
+        - '%kernel.project_dir%/assets/admin/styles/app.css'
+        - '%kernel.project_dir%/assets/web/styles/app.css'
+    # Si quieres siempre la última versión del binario, puedes omitir binary_version
 ```
 
 > **Tip:** Consulta versiones disponibles en <https://github.com/tailwindlabs/tailwindcss/releases>. El bundle descargará el binario standalone para tu plataforma (Linux x64 dentro del contenedor).
@@ -58,41 +203,50 @@ docker compose exec php php bin/console tailwind:init
 Este comando hace tres cosas:
 
 1. Descarga el binario de Tailwind 4 a `var/tailwind/`.
-2. Modifica `assets/styles/app.css` para que importe Tailwind.
-3. Registra el CSS compilado en `templates/base.html.twig`.
+2. Modifica el CSS de entrada para que importe Tailwind (en este proyecto: `assets/admin/styles/app.css` y `assets/web/styles/app.css`).
+3. Registra el CSS compilado en las plantillas base de cada contexto.
 
-El archivo `assets/styles/app.css` quedará así:
+Si usas `tailwind:init` en un proyecto nuevo, la recipe creará `assets/styles/app.css`. En **este repositorio** ya usamos la estructura por contexto descrita arriba; adapta manualmente los paths si ejecutas el comando en otro proyecto similar.
+
+Cada archivo CSS de entrada quedará con esta base:
 
 ```css
 @import "tailwindcss";
+@source "../../../templates/admin";  /* o templates/web en assets/web/styles/app.css */
 ```
 
 > **Diferencia con Tailwind 3:** En la v4 ya no se usa `@tailwind base; @tailwind components; @tailwind utilities;`. Es solo una línea. Tampoco hay `tailwind.config.js` por defecto (la detección de archivos es automática).
 
-## Paso 4.5 · Verificar el `<link>` en la plantilla base
+## Paso 4.5 · Verificar el importmap en las plantillas base
 
-Revisa `templates/base.html.twig`. Dentro de `<head>` deberías ver algo como:
+Revisa las plantillas base de cada contexto. Dentro de `<head>` deberías ver:
+
+**Admin** — `templates/admin/base.html.twig`:
 
 ```twig
-<head>
-    <meta charset="UTF-8">
-    <title>{% block title %}Welcome!{% endblock %}</title>
-    {% block stylesheets %}{% endblock %}
-
-    {% block javascripts %}
-        {% block importmap %}{{ importmap('app') }}{% endblock %}
-    {% endblock %}
-</head>
+{% block javascripts %}
+    {% block importmap %}{{ importmap('admin') }}{% endblock %}
+{% endblock %}
 ```
 
-Y en `assets/app.js`:
+**Web** — `templates/web/base.html.twig`:
+
+```twig
+{% block javascripts %}
+    {% block importmap %}{{ importmap('web') }}{% endblock %}
+{% endblock %}
+```
+
+Y en los entrypoints JS:
+
+`assets/admin/app.js` (o `assets/web/app.js`):
 
 ```js
+import './stimulus_bootstrap.js';
 import './styles/app.css';
-import './bootstrap.js';
 ```
 
-Esto significa que cualquier clase de Tailwind que uses en tus plantillas Twig será detectada automáticamente.
+El CSS se importa desde JS; no hace falta un `<link>` manual. Tailwind detectará las clases usadas en las plantillas del contexto gracias a `@source`.
 
 ## Paso 4.6 · Compilar Tailwind en modo watch (desarrollo)
 
@@ -113,44 +267,36 @@ Watching for changes...
 
 ## Paso 4.7 · Probar Tailwind en una plantilla
 
-Edita `templates/home/index.html.twig`:
+Edita `templates/web/home/index.html.twig`:
 
 ```twig
-{% extends 'base.html.twig' %}
+{% extends '@web/base.html.twig' %}
 
-{% block title %}Productos{% endblock %}
+{% block title %}Home · PokeDex{% endblock %}
 
 {% block body %}
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <div class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-8">
         <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
             <h1 class="text-4xl font-bold text-indigo-700 mb-4">
-                Listado de productos
+                Listado de Pokemons
             </h1>
-            <ul class="divide-y divide-gray-200">
-                {% for producto in productos %}
-                    <li class="py-3 flex justify-between">
-                        <span class="font-medium text-gray-800">{{ producto.nombre }}</span>
-                        <span class="text-indigo-600 font-semibold">${{ producto.precio }}</span>
-                    </li>
-                {% else %}
-                    <li class="py-3 text-gray-500">No hay productos.</li>
-                {% endfor %}
-            </ul>
+            {# … #}
         </div>
     </div>
 {% endblock %}
 ```
 
-Recarga <https://localhost> y verás los estilos de Tailwind aplicados. 🎨
+Recarga <https://localhost> (ruta web pública) y verás los estilos de Tailwind aplicados. 🎨
 
 ## Paso 4.8 · Configuración avanzada de Tailwind 4 (opcional)
 
-Si necesitas personalizar colores, fuentes o variables de tema, ya **no se hace en `tailwind.config.js`**. En Tailwind 4 se hace directamente en CSS con la directiva `@theme`:
+Si necesitas personalizar colores, fuentes o variables de tema, ya **no se hace en `tailwind.config.js`**. En Tailwind 4 se hace directamente en CSS con la directiva `@theme`.
 
-`assets/styles/app.css`:
+Para el **admin** (tema completo con sidebar, dark mode, etc.), edita `assets/admin/styles/app.css`:
 
 ```css
 @import "tailwindcss";
+@source "../../../templates/admin";
 
 @theme {
     --color-primary: oklch(0.55 0.2 260);
@@ -158,7 +304,6 @@ Si necesitas personalizar colores, fuentes o variables de tema, ya **no se hace 
     --font-display: "Inter", "system-ui", "sans-serif";
 }
 
-/* Componente personalizado */
 @layer components {
     .btn-primary {
         @apply px-4 py-2 rounded-lg bg-primary text-primary-fg
@@ -166,6 +311,8 @@ Si necesitas personalizar colores, fuentes o variables de tema, ya **no se hace 
     }
 }
 ```
+
+Para el **sitio web público**, personaliza `assets/web/styles/app.css` de forma independiente.
 
 > **Tip:** Tailwind 4 usa el espacio de color **oklch**, que es perceptualmente uniforme y produce gradientes más naturales.
 
@@ -191,13 +338,19 @@ composer require symfony/stimulus-bundle
 
 ### Paso 4.10 · Crear tu primer controlador Stimulus
 
-🐳 Genera un controlador Stimulus llamado `hello`:
+🐳 Genera un controlador Stimulus para el **sitio web público**:
 
 ```bash
-docker compose exec php php bin/console make:stimulus-controller hello
+docker compose exec php php bin/console make:stimulus-controller hi
 ```
 
-Esto crea `assets/controllers/hello_controller.js`:
+El Maker crea `assets/controllers/hi_controller.js`. **Muévelo** a la carpeta del contexto web:
+
+```bash
+mv assets/controllers/hi_controller.js assets/controllers/web/
+```
+
+El archivo quedará en `assets/controllers/web/hi_controller.js` y se registrará como controlador `hi`:
 
 ```js
 import { Controller } from '@hotwired/stimulus';
@@ -213,34 +366,36 @@ export default class extends Controller {
 
 ### Paso 4.11 · Usar el controlador en una plantilla
 
-Añade un widget interactivo a `templates/home/index.html.twig` justo antes del `</div>` final:
+Añade un widget interactivo a `templates/web/home/index.html.twig`:
 
 ```twig
 <div class="mt-8 p-6 bg-amber-50 rounded-xl border border-amber-200"
-     {{ stimulus_controller('hello') }}>
+     {{ stimulus_controller('hi') }}>
 
     <input type="text"
-           {{ stimulus_target('hello', 'name') }}
+           {{ stimulus_target('hi', 'name') }}
            placeholder="Tu nombre"
            class="border rounded px-3 py-2 mr-2">
 
     <button type="button"
-            {{ stimulus_action('hello', 'greet') }}
+            {{ stimulus_action('hi', 'greet') }}
             class="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600">
         Saludar
     </button>
 
-    <p class="mt-3 text-lg font-medium" {{ stimulus_target('hello', 'output') }}></p>
+    <p class="mt-3 text-lg font-medium" {{ stimulus_target('hi', 'output') }}></p>
 </div>
 ```
 
-Recarga la página, escribe tu nombre y haz clic en **Saludar**. Verás el saludo aparecer sin recargar la página. 🎉
+Recarga la página web, escribe tu nombre y haz clic en **Saludar**. Verás el saludo aparecer sin recargar la página. 🎉
 
 > **Funciones Twig de Stimulus:**
 >
-> - `{{ stimulus_controller('hello') }}` → genera `data-controller="hello"`
-> - `{{ stimulus_action('hello', 'greet') }}` → genera `data-action="hello#greet"` (asume `click` por defecto)
-> - `{{ stimulus_target('hello', 'name') }}` → genera `data-hello-target="name"`
+> - `{{ stimulus_controller('hi') }}` → genera `data-controller="hi"`
+> - `{{ stimulus_action('hi', 'greet') }}` → genera `data-action="hi#greet"` (asume `click` por defecto)
+> - `{{ stimulus_target('hi', 'name') }}` → genera `data-hi-target="name"`
+
+> **Controladores admin:** los del panel administrativo viven en `assets/controllers/admin/` (por ejemplo `template_base_controller.js` → `template-base`). Se usan en plantillas bajo `templates/admin/`.
 
 ### Paso 4.12 · UX Components (opcional, muy recomendado)
 
@@ -276,7 +431,7 @@ docker compose exec php composer require symfony/ux-live-component
 
 #### A. Petición a un controlador interno (Live Component que llama a un endpoint interno)
 
-1. Crear el Live Component PHP (ejemplo `src/Twig/Components/PokemonSearch.php`). Usa los atributos proporcionados por el paquete para declarar `props` y `actions`.
+1. Crear el Live Component PHP (ejemplo `src/Admin/Twig/Components/PokemonInternalSearch.php` o equivalente en `src/Web/`). Usa los atributos proporcionados por el paquete para declarar `props` y `actions`.
 
 ```php
 <?php
@@ -321,11 +476,11 @@ final class PokemonSearch
 }
 ```
 
-2. Crear la plantilla Twig del componente (por ejemplo `templates/components/PokemonSearch.html.twig`):
+2. Crear la plantilla Twig del componente (por ejemplo `templates/web/components/pokemon_internal_search.html.twig`):
 
 ```twig
-{# templates/components/PokemonSearch.html.twig #}
-<div {{attributes}}>
+{# templates/web/components/pokemon_internal_search.html.twig #}
+<div {{ attributes }}>
     <input type="text" 
         class="border rounded px-3 py-2 mr-2"
         placeholder="Nombre del Pokemon"
@@ -345,10 +500,11 @@ final class PokemonSearch
 </div>
 ```
 
-3. Montar el componente en cualquier plantilla Twig:
+3. Montar el componente en una plantilla del contexto web:
 
 ```twig
-{{ component('PokemonSearch', { name: 'Pikachu' }) }}
+{# templates/web/home/index.html.twig #}
+{{ component('pokemon_internal_search', { name: 'Pikachu' }) }}
 ```
 
 4. Comportamiento: al hacer clic en **Buscar**, `symfony/ux-live-component` hará la petición AJAX automáticamente al servidor, ejecutará el método `search()` del componente, volverá a renderizar el fragmento y actualizará el DOM.
@@ -359,7 +515,7 @@ final class PokemonSearch
 
 La mejor práctica recomendada es aislar la infraestructura creando un Servicio de Symfony (Service API client) e inyectarlo en tu LiveComponent. Nunca debes escribir la lógica de curl o peticiones HTTP directamente dentro del componente.Para la gestión de peticiones HTTP, el módulo estándar y recomendado es el Symfony HttpClient (ya incluido en la instalacion actual de symfony).
 
-`src/Service/PokeAPIClient.php`
+`src/Admin/Service/PokeAPI/PokeAPIClient.php`
 
 ```php
 <?php
@@ -391,7 +547,7 @@ class PokeAPIClient
 
 ```
 
-2. Componente que consume el Servicio `/src/Twig/Components/PokemonExternalSearch.php`:
+2. Componente que consume el Servicio (`src/Admin/Twig/Components/PokemonExternalSearch.php`):
 
 ```php
 <?php
@@ -434,10 +590,11 @@ final class PokemonExternalSearch
 }
 ```
 
-3. Montar el componente en una plantilla Twig como en el ejemplo anterior:
+3. Montar el componente en una plantilla web:
 
 ```twig
-{{ component('pokemon_external_search', { name: '' }) }}
+{# templates/web/home/index.html.twig #}
+{{ component('pokemon_external_search', { name: 'Charmander' }) }}
 ```
 
 Consideraciones y consejos
@@ -455,13 +612,14 @@ Si prefieres más control cliente-side o quieres llamar directamente a APIs púb
 
 Pasos detallados:
 
-1) Crear el controlador Stimulus (JS o TS)
+1) Crear el controlador Stimulus en el contexto web:
 
-`assets/controllers/search_pokemon_controller.js`:
+```bash
+docker compose exec php php bin/console make:stimulus-controller search-pokemon
+mv assets/controllers/search_pokemon_controller.js assets/controllers/web/
+```
 
-```
-dconsole make:stimulus-controller search-pokemon
-```
+`assets/controllers/web/search_pokemon_controller.js`:
 
 ```js
 /* stimulusFetch: 'lazy' */
@@ -530,7 +688,7 @@ export default class extends Controller {
 
 2) Registrar/usar el controlador en Twig
 
-En la plantilla donde quieras el buscador (por ejemplo `templates/home/index.html.twig`):
+En la plantilla web (`templates/web/home/index.html.twig`):
 
 ```twig
 <div class="mt-8 p-6 bg-amber-50 rounded-xl border border-amber-200" {{ stimulus_controller('search-pokemon') }}>
@@ -550,8 +708,9 @@ En la plantilla donde quieras el buscador (por ejemplo `templates/home/index.htm
 
 3) Compilar/gestionar assets
 
-- Si usas sólo JS (archivo `assets/controllers/pokemon_controller.js`) y AssetMapper, no necesitas build adicional: AssetMapper copia el archivo a `public/assets` cuando sea necesario.
-- Si usas TypeScript, compila `.ts` a `.js` (ver la sección anterior sobre `tsconfig.json` y `npx tsc --watch`).
+- Con AssetMapper no necesitas build de JS adicional: los archivos se sirven desde `assets/` (y se copian versionados a `public/assets/`).
+- Tailwind compila **dos** hojas de estilo (admin y web). Mantén `tailwind:build --watch` activo en desarrollo.
+- Si usas TypeScript, compila `.ts` a `.js` antes de servirlos con AssetMapper.
 
 4) Consideraciones
 
@@ -567,8 +726,8 @@ En la plantilla donde quieras el buscador (por ejemplo `templates/home/index.htm
 Ejemplo de endpoint interno (rápido):
 
 ```php
-// src/Controller/Api/PokemonController.php
-namespace App\Controller\Api;
+// src/Api/Controller/PokemonApiController.php
+namespace App\Api\Controller;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -628,6 +787,6 @@ Ya viene con `symfony/runtime` la posibilidad de definir tareas. Pero para Docke
 
 ---
 
-✅ Frontend listo: Tailwind 4 + Stimulus funcionando con hot reload.
+✅ Frontend listo: Tailwind 4 + Stimulus funcionando con hot reload, separados por contexto **Admin** y **Web**.
 
 ➡️ Continúa en [`05-php-cs-fixer.md`](./05-php-cs-fixer.md).

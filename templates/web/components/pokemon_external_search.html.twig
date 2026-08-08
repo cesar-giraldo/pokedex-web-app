@@ -28,7 +28,7 @@
             <tbody>
                 <tr>
                     <td class="border items-center">
-                        {% set sprite = this.pokemon.sprites.front_default ?: this.pokemon.sprites.back_default ?: asset('images/pokemon/pokeball.png') %}
+                        {% set sprite = this.pokemon.sprites.front_default ?: this.pokemon.sprites.back_default ?: asset('images/pokemon/pokeball.png', 'shared') %}
                         <img src="{{ sprite }}" alt="{{ this.pokemon.name }}" class="w-20 h-20">
                     </td>
                     <td class="border px-4 py-2">{{ this.pokemon.name }}</td>

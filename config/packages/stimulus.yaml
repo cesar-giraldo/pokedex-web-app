@@ -1,0 +1,6 @@
+stimulus:
+    controller_paths:
+        - '%kernel.project_dir%/assets/controllers/admin'
+        - '%kernel.project_dir%/assets/controllers/web'
+        - '%kernel.project_dir%/assets/controllers/shared'
+    controllers_json: '%kernel.project_dir%/assets/controllers.json'

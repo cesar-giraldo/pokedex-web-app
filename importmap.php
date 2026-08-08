@@ -12,8 +12,12 @@
  * The "importmap:require" command can be used to add new entries to this file.
  */
 return [
-    'app' => [
-        'path' => './assets/app.js',
+    'admin' => [
+        'path' => './assets/admin/app.js',
+        'entrypoint' => true,
+    ],
+    'web' => [
+        'path' => './assets/web/app.js',
         'entrypoint' => true,
     ],
     '@hotwired/stimulus' => [

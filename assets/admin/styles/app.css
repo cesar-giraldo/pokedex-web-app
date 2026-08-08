@@ -2,6 +2,8 @@
 
 @import "tailwindcss";
 
+@source "../../../templates/admin";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
