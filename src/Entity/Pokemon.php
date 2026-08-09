@@ -73,6 +73,14 @@ class Pokemon
     #[Groups(['pokemon:read'])]
     private ?DateTime $lastUpdatedAt = null;
 
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['default' => false])]
+    #[Groups(['pokemon:read'])]
+    private ?bool $isHidden = false;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['pokemon:read'])]
+    private ?string $description = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -230,6 +238,30 @@ class Pokemon
     public function setLastUpdatedAt(?DateTime $lastUpdatedAt): static
     {
         $this->lastUpdatedAt = $lastUpdatedAt;
+
+        return $this;
+    }
+
+    public function isHidden(): ?bool
+    {
+        return $this->isHidden;
+    }
+
+    public function setIsHidden(?bool $isHidden): static
+    {
+        $this->isHidden = $isHidden;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
 
         return $this;
     }

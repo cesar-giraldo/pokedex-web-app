@@ -1,35 +1,36 @@
-<div class="mt-4 flex flex-col gap-4 items-center justify-center md:flex-row md:justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
-	<div class="flex flex-col sm:flex-row items-center gap-3 text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
-
-		<div>
-			Mostrando de
-			<span class="font-medium text-gray-900 dark:text-white">{{ entities.currentPageOffsetStart }}</span>
-			a
-			<span class="font-medium text-gray-900 dark:text-white">{{ entities.currentPageOffsetEnd }}</span>
-			de un total de
-			<span class="font-medium text-gray-900 dark:text-white">{{ entities.nbResults }}</span>
-			registros.
+{% if entities.nbResults > 0 %}
+	<div class="mt-4 flex flex-col gap-4 items-center justify-center md:flex-row md:justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
+		<div class="flex flex-col sm:flex-row items-center gap-3 text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
+			<div>
+				Mostrando de
+				<span class="font-medium text-gray-900 dark:text-white">{{ entities.currentPageOffsetStart }}</span>
+				a
+				<span class="font-medium text-gray-900 dark:text-white">{{ entities.currentPageOffsetEnd }}</span>
+				de un total de
+				<span class="font-medium text-gray-900 dark:text-white">{{ entities.nbResults }}</span>
+				registros.
+			</div>
+			{# Selector de límites por página #}
+			<div class="flex items-center gap-1.5 ml-5 relative z-20 bg-transparent">
+				<label for="table-limit" class="text-xs text-gray-500 dark:text-gray-400">Mostrar:</label>
+				<select id="table-limit" 
+					class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" :class="isOptionSelected && 'text-gray-800 dark:text-white/90'"
+					data-action="change->admin-paginator#updateTableLimit">
+					{% for limit in allowed_limits %}
+						<option value="{{limit}}" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400" {% if current_limit == limit %} selected {% endif %}>{{limit}}</option>
+					{% endfor %}
+					<option value="all" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400" {% if current_limit == 'all' %}selected{% endif %}>Todos</option>
+				</select>
+				<span class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+					{{ ux_icon('heroicons:chevron-down', { class: 'w-5 h-5' }) }}
+				</span>
+			</div>
 		</div>
-		{# Selector de límites por página #}
-		<div class="flex items-center gap-1.5 ml-5 relative z-20 bg-transparent">
-			<label for="table-limit" class="text-xs text-gray-500 dark:text-gray-400">Mostrar:</label>
-			<select id="table-limit" 
-				class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" :class="isOptionSelected && 'text-gray-800 dark:text-white/90'"
-				data-action="change->admin-paginator#updateTableLimit">
-				{% for limit in allowed_limits %}
-					<option value="{{limit}}" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400" {% if current_limit == limit %} selected {% endif %}>{{limit}}</option>
-				{% endfor %}
-				<option value="all" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400" {% if current_limit == 'all' %}selected{% endif %}>Todos</option>
-			</select>
-			<span class="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-				{{ ux_icon('heroicons:chevron-down', { class: 'w-5 h-5' }) }}
-			</span>
+
+		<div class="flex justify-center md:justify-end">
+			{% if entities.haveToPaginate %}
+				{{ pagerfanta(entities, 'twig', {'proximity': 2 }) }}
+			{% endif %}
 		</div>
 	</div>
-
-	<div class="flex justify-center md:justify-end">
-		{% if entities.haveToPaginate %}
-			{{ pagerfanta(entities, 'twig', {'proximity': 2 }) }}
-		{% endif %}
-	</div>
-</div>
+{% endif %}

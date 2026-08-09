@@ -24,15 +24,23 @@ class PokemonRepository extends ServiceEntityRepository
     /**
      * Finds Pokemons using a QueryBuilder with optional search term.
      *
+     * @param array{includeHidden?: bool} $searchParams
+     *
      * @throws \Doctrine\ORM\Query\QueryException
      */
     public function findPokemonsQueryBuilder(
         ?string $term,
         string $sort,
-        string $direction
+        string $direction,
+        array $searchParams = [],
     ): QueryBuilder {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.type', 't');
+
+        $includeHidden = $searchParams['includeHidden'] ?? false;
+        if (!$includeHidden) {
+            $qb->andWhere('p.isHidden IS NULL OR p.isHidden = false');
+        }
 
         if ($term) {
             $qb->andWhere('p.name LIKE :term OR p.height LIKE :term OR t.name LIKE :term')

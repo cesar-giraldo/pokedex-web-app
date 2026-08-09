@@ -70,7 +70,12 @@ final class PokemonController extends AbstractController
 
         $sort = $request->query->get('sort', 'p.listOrder');
         $direction = $request->query->get('direction', 'asc');
-        $queryBuilder = $pokemonRepository->findPokemonsQueryBuilder($term, $sort, $direction);
+        $queryBuilder = $pokemonRepository->findPokemonsQueryBuilder(
+            $term,
+            $sort,
+            $direction,
+            ['includeHidden' => true],
+        );
 
         $pagination = $this->getPagination($queryBuilder, $request);
 

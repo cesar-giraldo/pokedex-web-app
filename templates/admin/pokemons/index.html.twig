@@ -84,6 +84,9 @@
 									<th class="px-5 py-3 sm:px-6">
 										{{ sortLink('p.attack', 'Attack', current_sort, current_direction) }}
 									</th>
+									<th class="px-5 py-3 sm:px-6">
+										{{ sortLink('p.isHidden', 'Estado', current_sort, current_direction) }}
+									</th>
 								</tr>
 							</thead>
 							<!-- table header end -->
@@ -135,6 +138,13 @@
 											<div class="flex items-center">
 												<p class="text-gray-500 text-theme-sm dark:text-gray-400">
 													{{ pokemon.attack }}
+												</p>
+											</div>
+										</td>
+										<td class="px-5 py-4 sm:px-6">
+											<div class="flex items-center">
+												<p class="text-gray-500 text-theme-sm dark:text-gray-400">
+													{{ pokemon.isHidden ? 'Oculto' : 'Visible' }}
 												</p>
 											</div>
 										</td>
