@@ -11,6 +11,7 @@
         "doctrine/doctrine-bundle": "^3.3.0",
         "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.6.7",
+        "nelmio/cors-bundle": "^2.6",
         "pagerfanta/doctrine-orm-adapter": "^4.8",
         "pagerfanta/twig": "^4.8",
         "phpdocumentor/reflection-docblock": "^6.0",
