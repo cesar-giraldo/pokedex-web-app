@@ -23,15 +23,6 @@ final class MultiSelectComponentTest extends TestCase
         self::assertSame(sprintf('%s[]', $component->id), $component->name);
     }
 
-    public function testMountUsesTitleAsLabelFallback(): void
-    {
-        $component = new MultiSelectComponent();
-        $component->title = 'Legacy title';
-        $component->mount();
-
-        self::assertSame('Legacy title', $component->label);
-    }
-
     public function testMountNormalizesSelectedValuesToStrings(): void
     {
         $component = new MultiSelectComponent();

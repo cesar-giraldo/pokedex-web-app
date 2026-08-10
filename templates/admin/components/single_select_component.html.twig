@@ -1,0 +1,47 @@
+<div
+	data-controller="component-single-select"
+	class="relative"
+	{{ attributes }}
+>
+	<label for="{{ id }}" class="{{ labelClasses }}">
+		{{ label }}
+		{% if required %}
+			<span class="text-error-500" aria-hidden="true">*</span>
+		{% endif %}
+	</label>
+
+	<div class="relative w-full bg-transparent">
+		<select
+			id="{{ id }}"
+			name="{{ name }}"
+			data-component-single-select-target="select"
+			data-action="change->component-single-select#onChange"
+			class="{{ selectClasses }}"
+			{% if required %}required{% endif %}
+			{% if disabled %}disabled{% endif %}
+			{% if error %}
+				aria-invalid="true"
+				aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %}"
+			{% elseif help %}
+				aria-describedby="{{ id }}-help"
+			{% endif %}
+		>
+			<option value=""{% if selected is empty %} selected{% endif %}>{{ placeholder }}</option>
+			{% for value, optionLabel in options %}
+				<option value="{{ value }}"{% if value == selected %} selected{% endif %}>{{ optionLabel }}</option>
+			{% endfor %}
+		</select>
+
+		<span class="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+			{{ ux_icon('heroicons:chevron-down', { class: 'w-5 h-5' }) }}
+		</span>
+	</div>
+
+	{% if error %}
+		<p id="{{ id }}-error" class="text-theme-xs text-error-500 mt-1.5" role="alert">{{ error }}</p>
+	{% endif %}
+
+	{% if help %}
+		<p id="{{ id }}-help" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ help }}</p>
+	{% endif %}
+</div>

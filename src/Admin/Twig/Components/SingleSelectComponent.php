@@ -7,14 +7,11 @@ namespace App\Admin\Twig\Components;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 
-use function in_array;
-use function sprintf;
-
 #[AsTwigComponent(
-    name: 'component_multi_select',
-    template: '@admin/components/multi_select_component.html.twig'
+    name: 'component_single_select',
+    template: '@admin/components/single_select_component.html.twig'
 )]
-final class MultiSelectComponent
+final class SingleSelectComponent
 {
     public string $label = '';
 
@@ -32,50 +29,40 @@ final class MultiSelectComponent
 
     public ?string $help = null;
 
-    public ?int $maxSelections = null;
-
     /**
      * @var array<string, string>
      */
     public array $options = [];
 
-    /**
-     * @var list<string|int>
-     */
-    public array $selected = [];
+    public string $selected = '';
 
     public function mount(): void
     {
         if ('' === $this->id) {
-            $this->id = 'multi-select-' . bin2hex(random_bytes(4));
+            $this->id = 'single-select-' . bin2hex(random_bytes(4));
         }
 
         if ('' === $this->name) {
-            $this->name = sprintf('%s[]', $this->id);
+            $this->name = $this->id;
         }
 
-        $this->selected = array_map(strval(...), $this->selected);
+        $this->selected = '' !== $this->selected ? (string) $this->selected : '';
     }
 
-    public function isSelected(string|int $value): bool
+    #[ExposeInTemplate('selectClasses')]
+    public function getSelectClasses(): string
     {
-        return in_array((string) $value, array_map(strval(...), $this->selected), true);
-    }
-
-    #[ExposeInTemplate('triggerClasses')]
-    public function getTriggerClasses(): string
-    {
-        $base = 'shadow-theme-xs mb-2 flex h-11 w-full rounded-lg border py-1.5 pr-3 pl-3 outline-hidden transition dark:bg-gray-900';
+        $base = 'dark:bg-dark-900 shadow-theme-xs h-11 w-full appearance-none rounded-lg border bg-transparent bg-none px-4 py-2.5 pr-11 text-sm focus:ring-3 focus:outline-hidden dark:bg-gray-900';
 
         if ($this->disabled) {
-            return $base . ' cursor-not-allowed border-gray-100 bg-gray-50 opacity-60 dark:border-gray-800 dark:bg-white/[0.03]';
+            return $base . ' cursor-not-allowed border-gray-100 bg-gray-50 text-gray-300 opacity-60 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/15';
         }
 
         if (null !== $this->error) {
             return $base . ' border-error-300 focus:border-error-300 focus:ring-error-500/10 dark:border-error-700 dark:focus:border-error-800';
         }
 
-        return $base . ' border-gray-300 focus:border-brand-300 focus:shadow-focus-ring dark:border-gray-700 dark:focus:border-brand-300';
+        return $base . ' border-gray-300 focus:border-brand-300 focus:ring-brand-500/10 dark:border-gray-700 dark:focus:border-brand-800 text-gray-400 dark:text-white/30';
     }
 
     #[ExposeInTemplate('labelClasses')]

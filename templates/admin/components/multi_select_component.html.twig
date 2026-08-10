@@ -81,15 +81,10 @@
 					aria-selected="{{ value in selected ? 'true' : 'false' }}"
 					data-action="click->component-multi-select#select"
 					data-value="{{ value }}"
-					class="cursor-pointer border-b border-gray-200 last:border-b-0 hover:bg-primary/5 dark:border-gray-800"
+					data-component-multi-select-target="optionRow"
+					class="relative flex w-full cursor-pointer items-center border-b border-l-2 border-transparent border-gray-200 p-2 pl-2 transition-colors last:border-b-0 hover:border-l-brand-500 hover:bg-brand-50 dark:border-gray-800 dark:hover:bg-brand-500/10"
 				>
-					<div
-						data-component-multi-select-target="optionRow"
-						data-value="{{ value }}"
-						class="relative flex w-full items-center border-l-2 border-transparent p-2 pl-2"
-					>
-						<span class="mx-2 leading-6 text-gray-800 dark:text-white/90">{{ optionLabel }}</span>
-					</div>
+					<span class="mx-2 leading-6 text-gray-800 dark:text-white/90">{{ optionLabel }}</span>
 				</div>
 			{% else %}
 				<div class="p-3 text-sm text-gray-500 dark:text-gray-400">

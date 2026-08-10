@@ -249,7 +249,9 @@ export default class extends Controller {
             return;
         }
 
-        row.classList.toggle('border-primary', selected);
+        row.classList.toggle('border-l-brand-500', selected);
+        row.classList.toggle('bg-brand-50', selected);
+        row.classList.toggle('dark:bg-brand-500/10', selected);
         option.setAttribute('aria-selected', selected ? 'true' : 'false');
     }
 
