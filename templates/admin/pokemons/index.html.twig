@@ -15,16 +15,6 @@
 
 {% block body %}
 	<div class="space-y-5 sm:space-y-6">
-		{% for message in app.flashes('success') %}
-			{% include '@admin/partials/alert/_alert_success_message.html.twig' with { message: message } %}
-		{% else %}
-			{% if app.request.query.get('saved') and app.request.query.get('pokemon') %}
-				{% include '@admin/partials/alert/_alert_success_message.html.twig' with {
-					message: 'El Pokémon "' ~ app.request.query.get('pokemon') ~ '" se actualizó correctamente.'
-				} %}
-			{% endif %}
-		{% endfor %}
-
 		<div data-controller="admin-paginator" 
 			data-admin-paginator-entity-value="{{active_page|default('admin_list')}}"
 			class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">

@@ -110,10 +110,7 @@ final class PokemonController extends AbstractController
 
             $this->addFlash('success', sprintf('El Pokémon "%s" se actualizó correctamente.', $pokemon->getName()));
 
-            return $this->redirectToRoute('app_backend_pokemons', [
-                'saved' => '1',
-                'pokemon' => $pokemon->getName(),
-            ]);
+            return $this->redirectToRoute('app_backend_pokemons');
         }
 
         $typeOptions = [];

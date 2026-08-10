@@ -1,0 +1,10 @@
+{% set successMessages = app.flashes('success') %}
+
+<div
+	data-controller="admin-success-notifications"
+	class="mb-6 space-y-3{% if successMessages is empty %} hidden{% endif %}"
+>
+	{% for message in successMessages %}
+		<twig:component_alert_success message="{{ message }}" />
+	{% endfor %}
+</div>

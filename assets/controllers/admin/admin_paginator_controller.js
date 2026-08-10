@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { persistSuccessNotificationsFromDom } from '../../admin/utils/success_notifications_storage.js';
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
@@ -46,6 +47,7 @@ export default class extends Controller {
 
         // 4. If anything changed regarding the initial URL, we redirect exactly once.
         if (shouldRedirect) {
+            persistSuccessNotificationsFromDom();
             url.searchParams.set('page', '1');
             window.location.href = url.toString();
         }

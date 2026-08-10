@@ -72,8 +72,7 @@ final class PokemonControllerEditTest extends WebTestCase
 
         $client->submit($form);
 
-        self::assertResponseRedirects();
-        self::assertStringContainsString('saved=1', (string) $client->getResponse()->headers->get('Location'));
+        self::assertResponseRedirects('/admin/pokemons');
         $client->followRedirect();
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('.border-success-500', 'se actualizó correctamente');
