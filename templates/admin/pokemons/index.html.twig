@@ -15,6 +15,16 @@
 
 {% block body %}
 	<div class="space-y-5 sm:space-y-6">
+		{% for message in app.flashes('success') %}
+			{% include '@admin/partials/alert/_alert_success_message.html.twig' with { message: message } %}
+		{% else %}
+			{% if app.request.query.get('saved') and app.request.query.get('pokemon') %}
+				{% include '@admin/partials/alert/_alert_success_message.html.twig' with {
+					message: 'El Pokémon "' ~ app.request.query.get('pokemon') ~ '" se actualizó correctamente.'
+				} %}
+			{% endif %}
+		{% endfor %}
+
 		<div data-controller="admin-paginator" 
 			data-admin-paginator-entity-value="{{active_page|default('admin_list')}}"
 			class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
@@ -87,6 +97,13 @@
 									<th class="px-5 py-3 sm:px-6">
 										{{ sortLink('p.isHidden', 'Estado', current_sort, current_direction) }}
 									</th>
+									<th class="px-5 py-3 sm:px-6">
+										<div class="flex items-center">
+											<p class="font-medium text-gray-500 text-theme-sm dark:text-gray-400">
+												Acciones
+											</p>
+										</div>
+									</th>
 								</tr>
 							</thead>
 							<!-- table header end -->
@@ -148,10 +165,19 @@
 												</p>
 											</div>
 										</td>
+										<td class="px-5 py-4 sm:px-6">
+											<div class="flex items-center">
+												<a href="{{ path('app_backend_pokemon_edit', { id: pokemon.id }) }}"
+													class="inline-flex items-center justify-center rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-brand-500 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-brand-400"
+													title="Editar {{ pokemon.name }}">
+													{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+												</a>
+											</div>
+										</td>
 									</tr>
 								{% else %}
 									<tr>
-										<td class="px-5 py-4 sm:px-6" colspan="5">
+										<td class="px-5 py-4 sm:px-6" colspan="7">
 											<div class="flex items-center justify-center">
 												<p class="text-gray-500 text-theme-sm dark:text-gray-400">
 													No se encontraron pokémones.

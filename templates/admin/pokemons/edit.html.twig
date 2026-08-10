@@ -1,0 +1,200 @@
+{% extends '@admin/base.html.twig' %}
+
+{% from '@admin/macros/form.html.twig' import field_error %}
+
+{% block title %}Editar {{ pokemon.name }}{% endblock %}
+
+{% block page_title %}
+	Editar Pokémon
+{% endblock %}
+
+{% block breadcrumb %}
+	<li>
+		<a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_backend_pokemons') }}">
+			Pokemons
+			{{ ux_icon('heroicons:chevron-right', { class: 'w-4 h-4' }) }}
+		</a>
+	</li>
+	<li>
+		<span class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+			{{ pokemon.name }}
+			{{ ux_icon('heroicons:chevron-right', { class: 'w-4 h-4' }) }}
+		</span>
+	</li>
+	<li class="text-sm text-gray-800 dark:text-white/90">Editar</li>
+{% endblock %}
+
+{% block body %}
+	<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+		<div class="px-5 py-4 sm:px-6 sm:py-5 border-b border-gray-100 dark:border-gray-800">
+			<h3 class="text-base font-medium text-gray-800 dark:text-white/90">
+				Editar {{ pokemon.name }}
+			</h3>
+		</div>
+
+		{{ form_start(form, { attr: { class: 'space-y-0' }, render_rest: false }) }}
+		<div class="space-y-6 border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+			<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+				<twig:component_text_input
+					label="Nombre"
+					name="pokemon_name_display"
+					id="pokemon-name"
+					value="{{ pokemon.name }}"
+					:disabled="true"
+				/>
+
+				<twig:component_text_input
+					label="Fecha de creación"
+					name="pokemon_created_at_display"
+					id="pokemon-created-at"
+					value="{{ pokemon.createdAt ? pokemon.createdAt|date('d-m-y h:i a') : '' }}"
+					:disabled="true"
+				/>
+
+				<twig:component_text_input
+					label="Altura"
+					name="{{ form.height.vars.full_name }}"
+					id="pokemon-height"
+					value="{{ form.height.vars.data is not null ? form.height.vars.data : '' }}"
+					inputMode="numeric"
+					pattern="[0-9]+"
+					patternErrorMessage="Introduce un número entero positivo."
+					:required="true"
+					error="{{ field_error(form.height) }}"
+				/>
+
+				<twig:component_text_input
+					label="Peso"
+					name="{{ form.weight.vars.full_name }}"
+					id="pokemon-weight"
+					value="{{ form.weight.vars.data is not null ? form.weight.vars.data : '' }}"
+					inputMode="numeric"
+					pattern="[0-9]+"
+					patternErrorMessage="Introduce un número entero positivo."
+					:required="true"
+					error="{{ field_error(form.weight) }}"
+				/>
+
+				<twig:component_single_select
+					label="Tipo"
+					name="{{ form.type.vars.full_name }}"
+					id="pokemon-type"
+					placeholder="Seleccione un tipo"
+					:options="type_options"
+					selected="{{ form.type.vars.data ? form.type.vars.data.id : '' }}"
+					:required="true"
+					error="{{ field_error(form.type) }}"
+				/>
+
+				<twig:component_text_input
+					label="Velocidad"
+					name="{{ form.speed.vars.full_name }}"
+					id="pokemon-speed"
+					value="{{ form.speed.vars.data is not null ? form.speed.vars.data : '' }}"
+					inputMode="numeric"
+					pattern="[0-9]+"
+					patternErrorMessage="Introduce un número entero positivo."
+					:required="true"
+					error="{{ field_error(form.speed) }}"
+				/>
+
+				<twig:component_text_input
+					label="Ataque"
+					name="{{ form.attack.vars.full_name }}"
+					id="pokemon-attack"
+					value="{{ form.attack.vars.data is not null ? form.attack.vars.data : '' }}"
+					inputMode="numeric"
+					pattern="[0-9]+"
+					patternErrorMessage="Introduce un número entero positivo."
+					:required="true"
+					error="{{ field_error(form.attack) }}"
+				/>
+
+				<twig:component_text_input
+					label="Defensa"
+					name="{{ form.defense.vars.full_name }}"
+					id="pokemon-defense"
+					value="{{ form.defense.vars.data is not null ? form.defense.vars.data : '' }}"
+					inputMode="numeric"
+					pattern="[0-9]+"
+					patternErrorMessage="Introduce un número entero positivo."
+					:required="true"
+					error="{{ field_error(form.defense) }}"
+				/>
+
+				<twig:component_text_input
+					label="Puntos de salud"
+					name="{{ form.healthPoints.vars.full_name }}"
+					id="pokemon-health-points"
+					value="{{ form.healthPoints.vars.data is not null ? form.healthPoints.vars.data : '' }}"
+					inputMode="numeric"
+					pattern="[0-9]+"
+					patternErrorMessage="Introduce un número entero positivo."
+					:required="true"
+					error="{{ field_error(form.healthPoints) }}"
+				/>
+
+				<twig:component_toggle_switch
+					label="Oculto"
+					name="{{ form.isHidden.vars.full_name }}"
+					id="pokemon-is-hidden"
+					:checked="form.isHidden.vars.data"
+					help="Cuando está activo, el Pokémon no será visible públicamente."
+				/>
+			</div>
+
+			<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+				<twig:component_url_input
+					label="Sprite frontal"
+					name="{{ form.spriteFront.vars.full_name }}"
+					id="pokemon-sprite-front"
+					value="{{ form.spriteFront.vars.data ?? '' }}"
+					placeholder="raw.githubusercontent.com/..."
+					prefix="https://"
+					error="{{ field_error(form.spriteFront) }}"
+				/>
+
+				<twig:component_url_input
+					label="Sprite trasero"
+					name="{{ form.spriteBack.vars.full_name }}"
+					id="pokemon-sprite-back"
+					value="{{ form.spriteBack.vars.data ?? '' }}"
+					placeholder="raw.githubusercontent.com/..."
+					prefix="https://"
+					error="{{ field_error(form.spriteBack) }}"
+				/>
+			</div>
+
+			<twig:component_textarea
+				label="Descripción"
+				name="{{ form.description.vars.full_name }}"
+				id="pokemon-description"
+				value="{{ form.description.vars.data ?? '' }}"
+				placeholder="Descripción del Pokémon..."
+				:rows="6"
+				error="{{ field_error(form.description) }}"
+			/>
+		</div>
+
+		<div class="flex flex-col gap-4 border-t border-gray-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-gray-800">
+			<p class="text-sm text-gray-500 dark:text-gray-400">
+				Última actualización:
+				<span class="font-medium text-gray-700 dark:text-gray-300">
+					{{ pokemon.lastUpdatedAt ? pokemon.lastUpdatedAt|date('d-m-y h:i a') : '—' }}
+				</span>
+			</p>
+
+			<div class="flex flex-wrap items-center gap-3">
+				<a href="{{ path('app_backend_pokemons') }}" class="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03]">
+					Cancelar
+				</a>
+				<button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600">
+					Guardar Cambios
+				</button>
+			</div>
+		</div>
+
+		{{ form_widget(form._token) }}
+		{{ form_end(form, { render_rest: false }) }}
+	</div>
+{% endblock %}

@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Admin\Controller;
 
+use App\Admin\Form\PokemonEditType;
 use App\Admin\Form\SearchPokemonType;
+use App\Entity\Pokemon;
 use App\Repository\PokemonRepository;
+use App\Repository\PokemonTypeRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Pagerfanta\Pagerfanta;
@@ -15,6 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 use function in_array;
+use function sprintf;
 
 #[Route('/admin')]
 final class PokemonController extends AbstractController
@@ -87,6 +92,41 @@ final class PokemonController extends AbstractController
             'current_sort' => $sort,
             'current_direction' => $direction,
             ...$pagination,
+        ]);
+    }
+
+    #[Route('/pokemons/{id}/edit', name: 'app_backend_pokemon_edit', methods: ['GET', 'POST'])]
+    public function edit(
+        Pokemon $pokemon,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        PokemonTypeRepository $pokemonTypeRepository,
+    ): Response {
+        $form = $this->createForm(PokemonEditType::class, $pokemon);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+            $this->addFlash('success', sprintf('El Pokémon "%s" se actualizó correctamente.', $pokemon->getName()));
+
+            return $this->redirectToRoute('app_backend_pokemons', [
+                'saved' => '1',
+                'pokemon' => $pokemon->getName(),
+            ]);
+        }
+
+        $typeOptions = [];
+        foreach ($pokemonTypeRepository->findAllOrderedByName() as $type) {
+            $typeOptions[(string) $type->getId()] = $type->getName();
+        }
+
+        return $this->render('@admin/pokemons/edit.html.twig', [
+            'pokemon' => $pokemon,
+            'form' => $form,
+            'type_options' => $typeOptions,
+            'active_menu' => 'dashboard',
+            'active_page' => 'pokemon_edit',
         ]);
     }
 }

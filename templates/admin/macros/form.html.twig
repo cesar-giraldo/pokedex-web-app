@@ -1,0 +1,5 @@
+{% macro field_error(field) -%}
+	{%- if field.vars.errors|length > 0 -%}
+		{{- field.vars.errors[0].message -}}
+	{%- endif -%}
+{%- endmacro %}
