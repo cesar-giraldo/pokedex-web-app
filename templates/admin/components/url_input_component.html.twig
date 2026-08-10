@@ -1,0 +1,68 @@
+<div
+	data-controller="component-url-input"
+	data-component-url-input-prefix-value="{{ prefix }}"
+	data-component-url-input-invalid-url-message-value="{{ invalidUrlMessage }}"
+	data-component-url-input-disabled-value="{{ disabled ? 'true' : 'false' }}"
+	data-component-url-input-required-value="{{ required ? 'true' : 'false' }}"
+	data-component-url-input-has-server-error-value="{{ error is not null ? 'true' : 'false' }}"
+	class="relative"
+	{{ attributes }}
+>
+	<label for="{{ id }}" class="{{ labelClasses }}">
+		{{ label }}
+		{% if required %}
+			<span class="text-error-500" aria-hidden="true">*</span>
+		{% endif %}
+	</label>
+
+	<div class="relative">
+		<span class="pointer-events-none absolute top-1/2 left-0 inline-flex h-11 -translate-y-1/2 items-center justify-center border-r border-gray-200 py-3 pr-3 pl-3.5 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+			{{ prefix }}
+		</span>
+
+		<input
+			type="hidden"
+			name="{{ name }}"
+			value="{{ value }}"
+			data-component-url-input-target="hiddenInput"
+			{% if required %}required{% endif %}
+			{% if disabled %}disabled{% endif %}
+		>
+
+		<input
+			id="{{ id }}"
+			type="text"
+			value="{{ displayValue }}"
+			placeholder="{{ placeholder }}"
+			inputmode="url"
+			autocomplete="url"
+			data-component-url-input-target="input"
+			data-action="input->component-url-input#onInput blur->component-url-input#onBlur invalid->component-url-input#onInvalid"
+			class="{{ inputClasses }}"
+			{% if disabled %}disabled{% endif %}
+			{% if error %}
+				aria-invalid="true"
+				aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %} {{ id }}-client-error"
+			{% elseif help %}
+				aria-describedby="{{ id }}-help {{ id }}-client-error"
+			{% else %}
+				aria-describedby="{{ id }}-client-error"
+			{% endif %}
+		>
+	</div>
+
+	<p
+		id="{{ id }}-client-error"
+		data-component-url-input-target="clientError"
+		class="text-theme-xs text-error-500 mt-1.5 hidden"
+		role="alert"
+	></p>
+
+	{% if error %}
+		<p id="{{ id }}-error" class="text-theme-xs text-error-500 mt-1.5" role="alert">{{ error }}</p>
+	{% endif %}
+
+	{% if help %}
+		<p id="{{ id }}-help" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ help }}</p>
+	{% endif %}
+</div>

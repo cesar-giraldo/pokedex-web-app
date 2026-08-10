@@ -411,18 +411,33 @@
 						countrySelectorPosition="right"
 					/>
 
-					<!-- Elements -->
-					<div>
-						<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-							URL
-						</label>
-						<div class="relative">
-							<span class="absolute top-1/2 left-0 inline-flex h-11 -translate-y-1/2 items-center justify-center border-r border-gray-200 py-3 pr-3 pl-3.5 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-								http://
-							</span>
-							<input type="url" placeholder="www.tailadmin.com" class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-[90px] text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"/>
-						</div>
-					</div>
+					<!-- URL Input: estado por defecto -->
+					<twig:component_url_input
+						label="URL"
+						name="demo_url"
+						id="demo-url"
+						placeholder="www.tailadmin.com"
+					/>
+
+					<!-- URL Input: prefijo https -->
+					<twig:component_url_input
+						label="Secure URL"
+						name="demo_url_https"
+						id="demo-url-https"
+						prefix="https://"
+						placeholder="www.example.com"
+						help="Usa HTTPS para enlaces seguros."
+					/>
+
+					<!-- URL Input: requerido con error -->
+					<twig:component_url_input
+						label="Website URL"
+						name="demo_url_required"
+						id="demo-url-required"
+						placeholder="www.example.com"
+						:required="true"
+						error="Introduce una URL válida."
+					/>
 
 					<!-- Elements -->
 					<div id="copy-input">

@@ -7,6 +7,8 @@ namespace App\Admin\Twig\Components;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 
+use function in_array;
+
 /**
  * Toggle switch reutilizable para formularios del admin.
  *
@@ -71,7 +73,7 @@ final class ToggleSwitchComponent
             $this->name = $this->id;
         }
 
-        if (!\in_array($this->variant, ['brand', 'dark'], true)) {
+        if (!in_array($this->variant, ['brand', 'dark'], true)) {
             $this->variant = 'brand';
         }
     }
