@@ -1,0 +1,78 @@
+<div
+	data-controller="component-email-input"
+	data-component-email-input-invalid-email-message-value="{{ invalidEmailMessage }}"
+	data-component-email-input-disabled-value="{{ disabled ? 'true' : 'false' }}"
+	data-component-email-input-required-value="{{ required ? 'true' : 'false' }}"
+	data-component-email-input-has-server-error-value="{{ error is not null ? 'true' : 'false' }}"
+	data-component-email-input-copy-label-value="{{ copyLabel }}"
+	data-component-email-input-copied-label-value="{{ copiedLabel }}"
+	class="relative"
+	{{ attributes }}
+>
+	<label for="{{ id }}" class="{{ labelClasses }}">
+		{{ label }}
+		{% if required %}
+			<span class="text-error-500" aria-hidden="true">*</span>
+		{% endif %}
+	</label>
+
+	<div class="relative">
+		{% if showIcon %}
+			<span class="pointer-events-none absolute top-1/2 left-0 -translate-y-1/2 border-r border-gray-200 px-3.5 py-3 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+				{{ ux_icon('heroicons:envelope', { class: 'w-5 h-5' }) }}
+			</span>
+		{% endif %}
+
+		{% if showCopyButton %}
+			<button
+				type="button"
+				data-component-email-input-target="copyButton"
+				data-action="click->component-email-input#copyToClipboard"
+				class="absolute top-1/2 right-0 inline-flex -translate-y-1/2 cursor-pointer items-center gap-1 border-l border-gray-200 py-3 pr-3 pl-3.5 text-sm font-medium text-gray-700 dark:border-gray-800 dark:text-gray-400"
+				{% if disabled %}disabled{% endif %}
+				aria-label="{{ copyLabel }}"
+			>
+				{{ ux_icon('heroicons:document-duplicate', { class: 'w-5 h-5' }) }}
+				<span data-component-email-input-target="copyLabel">{{ copyLabel }}</span>
+			</button>
+		{% endif %}
+
+		<input
+			id="{{ id }}"
+			name="{{ name }}"
+			type="email"
+			value="{{ value }}"
+			placeholder="{{ placeholder }}"
+			inputmode="email"
+			autocomplete="email"
+			data-component-email-input-target="input"
+			data-action="input->component-email-input#onInput blur->component-email-input#onBlur invalid->component-email-input#onInvalid"
+			class="{{ inputClasses }}"
+			{% if required %}required{% endif %}
+			{% if disabled %}disabled{% endif %}
+			{% if error %}
+				aria-invalid="true"
+				aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %} {{ id }}-client-error"
+			{% elseif help %}
+				aria-describedby="{{ id }}-help {{ id }}-client-error"
+			{% else %}
+				aria-describedby="{{ id }}-client-error"
+			{% endif %}
+		>
+	</div>
+
+	<p
+		id="{{ id }}-client-error"
+		data-component-email-input-target="clientError"
+		class="text-theme-xs text-error-500 mt-1.5 hidden"
+		role="alert"
+	></p>
+
+	{% if error %}
+		<p id="{{ id }}-error" class="text-theme-xs text-error-500 mt-1.5" role="alert">{{ error }}</p>
+	{% endif %}
+
+	{% if help %}
+		<p id="{{ id }}-help" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ help }}</p>
+	{% endif %}
+</div>
