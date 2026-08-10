@@ -578,83 +578,71 @@
 				</div>
 				<div
 					class="space-y-6 border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
-					<!-- Elements -->
 					<div class="mb-6 flex flex-wrap items-center gap-6 sm:gap-8">
-						<div x-data="{ switcherToggle: false }">
-							<label for="toggle1" class="flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-								<div class="relative">
-									<input type="checkbox" id="toggle1" class="sr-only" @change="switcherToggle = !switcherToggle"/>
-									<div class="block h-6 w-11 rounded-full" :class="switcherToggle ? 'bg-brand-500 dark:bg-brand-500' : 'bg-gray-200 dark:bg-white/10'"></div>
-									<div :class="switcherToggle ? 'translate-x-full': 'translate-x-0'" class="shadow-theme-sm absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white duration-300 ease-linear"></div>
-								</div>
+						<!-- Toggle switch brand: default -->
+						<twig:component_toggle_switch
+							label="Default"
+							name="demo_toggle_brand_default"
+							id="demo-toggle-brand-default"
+							variant="brand"
+						/>
 
-								Default
-							</label>
-						</div>
+						<!-- Toggle switch brand: checked -->
+						<twig:component_toggle_switch
+							label="Checked"
+							name="demo_toggle_brand_checked"
+							id="demo-toggle-brand-checked"
+							variant="brand"
+							:checked="true"
+						/>
 
-						<div x-data="{ switcherToggle: true }">
-							<label for="toggle2" class="flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-								<div class="relative">
-									<input type="checkbox" id="toggle2" class="sr-only" @change="switcherToggle = !switcherToggle"/>
-									<div class="block h-6 w-11 rounded-full" :class="switcherToggle ? 'bg-brand-500 dark:bg-brand-500' : 'bg-gray-200 dark:bg-white/10'"></div>
-									<div :class="switcherToggle ? 'translate-x-full': 'translate-x-0'" class="shadow-theme-sm absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white duration-300 ease-linear"></div>
-								</div>
-
-								Checked
-							</label>
-						</div>
-
-						<div x-data="{ switcherToggle: false }">
-							<label for="toggle3" class="flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-400 select-none">
-								<div class="relative">
-									<input type="checkbox" id="toggle3" class="sr-only" @change="switcherToggle = !switcherToggle" disabled/>
-									<div class="block h-6 w-11 rounded-full" :class="switcherToggle ? 'bg-brand-500 dark:bg-brand-500' : 'bg-gray-100 dark:bg-gray-800'"></div>
-									<div :class="switcherToggle ? 'translate-x-full': 'translate-x-0'" class="shadow-theme-sm absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-gray-50 duration-300 ease-linear"></div>
-								</div>
-
-								Disabled
-							</label>
-						</div>
+						<!-- Toggle switch brand: disabled -->
+						<twig:component_toggle_switch
+							label="Disabled"
+							name="demo_toggle_brand_disabled"
+							id="demo-toggle-brand-disabled"
+							variant="brand"
+							:disabled="true"
+						/>
 					</div>
 
-					<!-- Elements -->
 					<div class="flex flex-wrap items-center gap-6 sm:gap-8">
-						<div x-data="{ switcherToggle: false }">
-							<label for="toggle11" class="flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-								<div class="relative">
-									<input type="checkbox" id="toggle11" class="sr-only" @change="switcherToggle = !switcherToggle"/>
-									<div class="block h-6 w-11 rounded-full bg-gray-700 dark:bg-white/10"></div>
-									<div :class="switcherToggle ? 'translate-x-full': 'translate-x-0'" class="shadow-theme-sm absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white duration-300 ease-linear"></div>
-								</div>
+						<!-- Toggle switch dark: default -->
+						<twig:component_toggle_switch
+							label="Default"
+							name="demo_toggle_dark_default"
+							id="demo-toggle-dark-default"
+							variant="dark"
+						/>
 
-								Default
-							</label>
-						</div>
+						<!-- Toggle switch dark: checked -->
+						<twig:component_toggle_switch
+							label="Checked"
+							name="demo_toggle_dark_checked"
+							id="demo-toggle-dark-checked"
+							variant="dark"
+							:checked="true"
+						/>
 
-						<div x-data="{ switcherToggle: true }">
-							<label for="toggle22" class="flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-								<div class="relative">
-									<input type="checkbox" id="toggle22" class="sr-only" @change="switcherToggle = !switcherToggle"/>
-									<div class="block h-6 w-11 rounded-full bg-gray-700 dark:bg-white/10"></div>
-									<div :class="switcherToggle ? 'translate-x-full': 'translate-x-0'" class="shadow-theme-sm absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white duration-300 ease-linear"></div>
-								</div>
-
-								Checked
-							</label>
-						</div>
-
-						<div x-data="{ switcherToggle: false }">
-							<label for="toggle33" class="flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-400 select-none">
-								<div class="relative">
-									<input type="checkbox" id="toggle33" class="sr-only" @change="switcherToggle = !switcherToggle" disabled/>
-									<div class="block h-6 w-11 rounded-full bg-gray-100 dark:bg-gray-800"></div>
-									<div :class="switcherToggle ? 'translate-x-full': 'translate-x-0'" class="shadow-theme-sm absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-gray-50 duration-300 ease-linear"></div>
-								</div>
-
-								Disabled
-							</label>
-						</div>
+						<!-- Toggle switch dark: disabled -->
+						<twig:component_toggle_switch
+							label="Disabled"
+							name="demo_toggle_dark_disabled"
+							id="demo-toggle-dark-disabled"
+							variant="dark"
+							:disabled="true"
+						/>
 					</div>
+
+					<!-- Toggle switch: required + error -->
+					<twig:component_toggle_switch
+						label="Enable notifications"
+						name="demo_toggle_required"
+						id="demo-toggle-required"
+						variant="brand"
+						:required="true"
+						error="Debes activar esta opción."
+					/>
 				</div>
 			</div>
 

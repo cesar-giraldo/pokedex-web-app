@@ -1,0 +1,54 @@
+<div
+	data-controller="component-toggle-switch"
+	data-component-toggle-switch-disabled-value="{{ disabled ? 'true' : 'false' }}"
+	data-component-toggle-switch-variant-value="{{ variant }}"
+	{{ attributes }}
+>
+	<label for="{{ id }}" class="{{ labelClasses }}">
+		<div class="relative">
+			<input
+				id="{{ id }}"
+				name="{{ name }}"
+				type="checkbox"
+				value="{{ value }}"
+				role="switch"
+				class="peer sr-only"
+				data-component-toggle-switch-target="input"
+				data-action="change->component-toggle-switch#syncVisualState"
+				{% if checked %}checked{% endif %}
+				{% if required %}required{% endif %}
+				{% if disabled %}disabled{% endif %}
+				{% if error %}
+					aria-invalid="true"
+					aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %}"
+				{% elseif help %}
+					aria-describedby="{{ id }}-help"
+				{% endif %}
+			>
+			<div
+				data-component-toggle-switch-target="track"
+				class="block h-6 w-11 rounded-full transition-colors duration-300 ease-linear"
+				aria-hidden="true"
+			></div>
+			<div
+				data-component-toggle-switch-target="knob"
+				class="shadow-theme-sm absolute top-0.5 left-0.5 h-5 w-5 rounded-full duration-300 ease-linear"
+				aria-hidden="true"
+			></div>
+		</div>
+		<span>
+			{{ label }}
+			{% if required %}
+				<span class="text-error-500" aria-hidden="true">*</span>
+			{% endif %}
+		</span>
+	</label>
+
+	{% if error %}
+		<p id="{{ id }}-error" class="text-theme-xs text-error-500 mt-1.5" role="alert">{{ error }}</p>
+	{% endif %}
+
+	{% if help %}
+		<p id="{{ id }}-help" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ help }}</p>
+	{% endif %}
+</div>
