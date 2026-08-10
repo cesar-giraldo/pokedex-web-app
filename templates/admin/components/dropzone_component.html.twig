@@ -1,0 +1,87 @@
+<div
+	data-controller="component-dropzone"
+	data-component-dropzone-max-file-size-value="{{ maxFileSizeBytes }}"
+	data-component-dropzone-accept-value="{{ accept }}"
+	data-component-dropzone-accept-error-message-value="{{ acceptErrorMessage }}"
+	data-component-dropzone-max-file-size-error-message-value="{{ maxFileSizeErrorMessage }}"
+	data-component-dropzone-disabled-value="{{ disabled ? 'true' : 'false' }}"
+	{{ attributes }}
+>
+	{% if label is not empty %}
+		<label for="{{ id }}-input" class="{{ labelClasses }}">
+			{{ label }}
+			{% if required %}
+				<span class="text-error-500" aria-hidden="true">*</span>
+			{% endif %}
+		</label>
+	{% endif %}
+
+	<div
+		data-component-dropzone-target="zone"
+		data-action="click->component-dropzone#openFileDialog dragover->component-dropzone#onDragOver dragleave->component-dropzone#onDragLeave drop->component-dropzone#onDrop"
+		class="{{ zoneClasses }}"
+		role="button"
+		tabindex="{{ disabled ? '-1' : '0' }}"
+		{% if disabled %}aria-disabled="true"{% endif %}
+	>
+		<input
+			id="{{ id }}-input"
+			name="{{ name }}{% if multiple %}[]{% endif %}"
+			type="file"
+			class="sr-only"
+			data-component-dropzone-target="input"
+			data-action="change->component-dropzone#onInputChange"
+			{% if accept is not empty %}accept="{{ accept }}"{% endif %}
+			{% if multiple %}multiple{% endif %}
+			{% if required %}required{% endif %}
+			{% if disabled %}disabled{% endif %}
+			{% if error %}
+				aria-invalid="true"
+				aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %}{% if accept is not empty or maxFileSizeBytes > 0 %} {{ id }}-client-error{% endif %}"
+			{% elseif help %}
+				aria-describedby="{{ id }}-help{% if accept is not empty or maxFileSizeBytes > 0 %} {{ id }}-client-error{% endif %}"
+			{% elseif accept is not empty or maxFileSizeBytes > 0 %}
+				aria-describedby="{{ id }}-client-error"
+			{% endif %}
+		>
+
+		<div data-component-dropzone-target="message" class="dz-message m-0!">
+			<div class="mb-[22px] flex justify-center">
+				<div class="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+					{{ ux_icon('heroicons:arrow-up-tray', { class: 'w-6 h-6' }) }}
+				</div>
+			</div>
+
+			<h4 class="text-theme-xl mb-3 text-center font-semibold text-gray-800 dark:text-white/90">
+				{{ title }}
+			</h4>
+			<span class="mx-auto mb-5 block w-full max-w-[290px] text-center text-sm text-gray-700 dark:text-gray-400">
+				{{ description }}
+			</span>
+
+			<span class="text-theme-sm block text-center font-medium text-brand-500 underline">
+				{{ browseLabel }}
+			</span>
+
+			<p
+				data-component-dropzone-target="fileName"
+				class="mt-4 hidden text-center text-sm font-medium text-gray-800 dark:text-white/90"
+			></p>
+		</div>
+	</div>
+
+	<p
+		id="{{ id }}-client-error"
+		data-component-dropzone-target="clientError"
+		class="text-theme-xs text-error-500 mt-1.5 hidden"
+		role="alert"
+	></p>
+
+	{% if error %}
+		<p id="{{ id }}-error" class="text-theme-xs text-error-500 mt-1.5" role="alert">{{ error }}</p>
+	{% endif %}
+
+	{% if help %}
+		<p id="{{ id }}-help" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ help }}</p>
+	{% endif %}
+</div>

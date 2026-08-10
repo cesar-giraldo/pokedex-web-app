@@ -653,27 +653,48 @@
 					</h3>
 				</div>
 				<div class="space-y-6 border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
-					<form class="dropzone hover:border-brand-500! dark:hover:border-brand-500! rounded-xl border border-dashed! border-gray-300! bg-gray-50 p-7 lg:p-10 dark:border-gray-700! dark:bg-gray-900" id="demo-upload" action="/upload">
-						<div class="dz-message m-0!">
-							<div class="mb-[22px] flex justify-center">
-								<div class="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-									{{ ux_icon('heroicons:arrow-up-tray', { class: 'w-6 h-6' }) }}
-								</div>
-							</div>
+					<!-- Dropzone: estado por defecto -->
+					<twig:component_dropzone
+						name="demo_dropzone"
+						id="demo-dropzone"
+						title="Drop File Here"
+						description="Drag and drop your files here or browse"
+					/>
 
-							<h4 class="text-theme-xl mb-3 font-semibold text-gray-800 dark:text-white/90">
-								Drop File Here
-							</h4>
-							<span class="mx-auto mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
-								Drag and drop your PNG, JPG, WebP, SVG images here or
-																                          browse
-							</span>
+					<!-- Dropzone: restricción de tipos -->
+					<twig:component_dropzone
+						label="Upload image"
+						name="demo_dropzone_images"
+						id="demo-dropzone-images"
+						title="Drop Image Here"
+						description="Drag and drop your PNG, JPG, WebP or SVG images here or browse"
+						accept="image/png,image/jpeg,image/webp,image/svg+xml"
+						acceptErrorMessage="Solo se permiten imágenes PNG, JPG, WebP o SVG."
+						help="Formatos permitidos: PNG, JPG, WebP y SVG."
+					/>
 
-							<span class="text-theme-sm text-brand-500 font-medium underline">
-								Browse File
-							</span>
-						</div>
-					</form>
+					<!-- Dropzone: archivo requerido -->
+					<twig:component_dropzone
+						label="Required file"
+						name="demo_dropzone_required"
+						id="demo-dropzone-required"
+						title="Drop Required File Here"
+						description="Debes seleccionar un archivo para continuar"
+						:required="true"
+						error="Debes adjuntar un archivo."
+					/>
+
+					<!-- Dropzone: límite de peso -->
+					<twig:component_dropzone
+						label="Upload with size limit"
+						name="demo_dropzone_size"
+						id="demo-dropzone-size"
+						title="Drop File Here"
+						description="El archivo no debe superar 1 MB"
+						:maxFileSizeKb="1024"
+						maxFileSizeErrorMessage="El archivo supera el tamaño máximo permitido de 1 MB."
+						help="Tamaño máximo permitido: 1 MB."
+					/>
 				</div>
 			</div>
 		</div>
