@@ -7,6 +7,34 @@ namespace App\Admin\Twig\Components;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 
+/**
+ * Campo de contraseña reutilizable para formularios del admin.
+ *
+ * Uso desde Twig (standalone):
+ *
+ * <twig:component_password_input
+ *     label="Password Input"
+ *     name="demo_password"
+ *     id="demo-password"
+ *     placeholder="Enter your password"
+ *     value=""
+ *     autocomplete="current-password"
+ *     :required="true"
+ *     :disabled="false"
+ *     error="La contraseña debe tener al menos 8 caracteres."
+ *     help="Texto de ayuda opcional."
+ * />
+ *
+ * Props:
+ * - label: etiqueta visible del campo
+ * - name: nombre del input en el POST (se autogenera desde id si se omite)
+ * - id: identificador único del input (se autogenera si se omite)
+ * - placeholder: texto del placeholder
+ * - value: valor inicial (por ejemplo, tras un error de validación)
+ * - autocomplete: hint del navegador; usar current-password o new-password
+ * - required, disabled: estados del campo
+ * - error, help: mensajes de validación y ayuda
+ */
 #[AsTwigComponent(
     name: 'component_password_input',
     template: '@admin/components/password_input_component.html.twig'

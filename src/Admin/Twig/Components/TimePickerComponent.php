@@ -8,21 +8,21 @@ use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 
 /**
- * Selector de fecha reutilizable para formularios del admin.
+ * Selector de hora reutilizable para formularios del admin.
  *
  * Uso desde Twig (standalone):
  *
- * <twig:component_date_picker
- *     label="Date Picker Input"
- *     name="demo_date"
- *     id="demo-date"
- *     placeholder="Select date"
- *     value="2026-08-09"
- *     min="2026-01-01"
- *     max="2026-12-31"
+ * <twig:component_time_picker
+ *     label="Time Select Input"
+ *     name="demo_time"
+ *     id="demo-time"
+ *     placeholder="12:00 AM"
+ *     value="09:30"
+ *     min="08:00"
+ *     max="18:00"
  *     :required="true"
  *     :disabled="false"
- *     error="Debes seleccionar una fecha válida."
+ *     error="Debes seleccionar una hora válida."
  *     help="Texto de ayuda opcional."
  * />
  *
@@ -31,20 +31,20 @@ use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
  * - name: nombre del input en el POST (se autogenera desde id si se omite)
  * - id: identificador único del input (se autogenera si se omite)
  * - placeholder: texto del placeholder
- * - value: valor inicial en formato Y-m-d
- * - min, max: rango permitido en formato Y-m-d
+ * - value: valor inicial en formato H:i
+ * - min, max: rango permitido en formato H:i
  * - required, disabled: estados del campo
  * - error, help: mensajes de validación y ayuda
  */
 #[AsTwigComponent(
-    name: 'component_date_picker',
-    template: '@admin/components/date_picker_component.html.twig'
+    name: 'component_time_picker',
+    template: '@admin/components/time_picker_component.html.twig'
 )]
-final class DatePickerComponent
+final class TimePickerComponent
 {
     public string $label = '';
 
-    public string $placeholder = 'Select date';
+    public string $placeholder = '12:00 AM';
 
     public string $name = '';
 
@@ -67,7 +67,7 @@ final class DatePickerComponent
     public function mount(): void
     {
         if ('' === $this->id) {
-            $this->id = 'date-picker-' . bin2hex(random_bytes(4));
+            $this->id = 'time-picker-' . bin2hex(random_bytes(4));
         }
 
         if ('' === $this->name) {

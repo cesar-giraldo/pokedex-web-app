@@ -10,6 +10,36 @@ use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 use function in_array;
 use function sprintf;
 
+/**
+ * Selector múltiple reutilizable para formularios del admin.
+ *
+ * Uso desde Twig (standalone):
+ *
+ * <twig:component_multi_select
+ *     label="Multiple Select Input"
+ *     name="demo_preferences[]"
+ *     id="demo-preferences"
+ *     placeholder="Elige tus preferencias"
+ *     :options="{'tech': 'Tecnología', 'sports': 'Deportes'}"
+ *     :selected="['tech', 'music']"
+ *     :maxSelections="2"
+ *     :required="true"
+ *     :disabled="false"
+ *     error="Debes seleccionar al menos una opción."
+ *     help="Texto de ayuda opcional."
+ * />
+ *
+ * Props:
+ * - label: etiqueta visible del campo
+ * - name: nombre del input en el POST; incluir [] para enviar múltiples valores (se autogenera como id[] si se omite)
+ * - id: identificador único del componente (se autogenera si se omite)
+ * - placeholder: texto cuando no hay selección
+ * - options: array asociativo value => label
+ * - selected: lista de valores preseleccionados
+ * - maxSelections: límite opcional de opciones seleccionables
+ * - required, disabled: estados del campo
+ * - error, help: mensajes de validación y ayuda
+ */
 #[AsTwigComponent(
     name: 'component_multi_select',
     template: '@admin/components/multi_select_component.html.twig'

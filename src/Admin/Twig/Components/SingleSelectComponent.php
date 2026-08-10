@@ -7,6 +7,34 @@ namespace App\Admin\Twig\Components;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 
+/**
+ * Selector simple reutilizable para formularios del admin.
+ *
+ * Uso desde Twig (standalone):
+ *
+ * <twig:component_single_select
+ *     label="Select Input"
+ *     name="demo_department"
+ *     id="demo-department"
+ *     placeholder="Select Option"
+ *     :options="{'marketing': 'Marketing', 'template': 'Template'}"
+ *     selected="marketing"
+ *     :required="true"
+ *     :disabled="false"
+ *     error="Debes seleccionar una opción."
+ *     help="Texto de ayuda opcional."
+ * />
+ *
+ * Props:
+ * - label: etiqueta visible del campo
+ * - name: nombre del input en el POST (se autogenera desde id si se omite)
+ * - id: identificador único del select (se autogenera si se omite)
+ * - placeholder: texto de la opción vacía inicial
+ * - options: array asociativo value => label
+ * - selected: valor preseleccionado
+ * - required, disabled: estados del campo
+ * - error, help: mensajes de validación y ayuda
+ */
 #[AsTwigComponent(
     name: 'component_single_select',
     template: '@admin/components/single_select_component.html.twig'
