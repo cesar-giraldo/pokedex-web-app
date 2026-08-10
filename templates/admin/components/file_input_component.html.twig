@@ -1,0 +1,33 @@
+<div class="relative" {{ attributes }}>
+	<label for="{{ id }}" class="{{ labelClasses }}">
+		{{ label }}
+		{% if required %}
+			<span class="text-error-500" aria-hidden="true">*</span>
+		{% endif %}
+	</label>
+
+	<input
+		id="{{ id }}"
+		name="{{ name }}{% if multiple %}[]{% endif %}"
+		type="file"
+		class="{{ inputClasses }}"
+		{% if accept is not empty %}accept="{{ accept }}"{% endif %}
+		{% if multiple %}multiple{% endif %}
+		{% if required %}required{% endif %}
+		{% if disabled %}disabled{% endif %}
+		{% if error %}
+			aria-invalid="true"
+			aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %}"
+		{% elseif help %}
+			aria-describedby="{{ id }}-help"
+		{% endif %}
+	>
+
+	{% if error %}
+		<p id="{{ id }}-error" class="text-theme-xs text-error-500 mt-1.5" role="alert">{{ error }}</p>
+	{% endif %}
+
+	{% if help %}
+		<p id="{{ id }}-help" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ help }}</p>
+	{% endif %}
+</div>
