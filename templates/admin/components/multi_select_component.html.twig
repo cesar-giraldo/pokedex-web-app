@@ -1,73 +1,123 @@
-<div data-controller="component-multi-select" data-action="click@window->component-multi-select#close" class="relative" {{attributes}}>
+{# Fuente única de opciones: el select oculto alimenta al controlador Stimulus #}
+{% macro render_options(options, selected) %}
+	{% for value, optionLabel in options %}
+		<option value="{{ value }}"{% if value in selected %} selected{% endif %}>{{ optionLabel }}</option>
+	{% endfor %}
+{% endmacro %}
 
-	<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-		{{title}}
+{% import _self as multi_select %}
+
+<div
+	data-controller="component-multi-select"
+	data-component-multi-select-input-name-value="{{ name }}"
+	data-component-multi-select-disabled-value="{{ disabled ? 'true' : 'false' }}"
+	{% if maxSelections is not null %}data-component-multi-select-max-selections-value="{{ maxSelections }}"{% endif %}
+	data-action="click@window->component-multi-select#close keydown@window->component-multi-select#onWindowKeydown"
+	class="relative"
+	{{ attributes }}
+>
+	<label for="{{ id }}-trigger" class="{{ labelClasses }}">
+		{{ label }}
+		{% if required %}
+			<span class="text-error-500" aria-hidden="true">*</span>
+		{% endif %}
 	</label>
 
-	<div>
-		{# El select oculto original sirve como fuente de datos nativa para las opciones #}
-		<select class="hidden" id="select" data-component-multi-select-target="select">
-			{% for key, value in options|default({ '1': 'Option 2', '2': 'Option 3', '3': 'Option 4', '4': 'Option 5' }) %}
-				<option value="{{ key }}">{{ value }}</option>
-			{% endfor %}
-		</select>
+	<select
+		class="hidden"
+		id="{{ id }}-source"
+		data-component-multi-select-target="select"
+		aria-hidden="true"
+		tabindex="-1"
+		{% if disabled %}disabled{% endif %}
+	>
+		{{ multi_select.render_options(options, selected) }}
+	</select>
 
+	<div data-component-multi-select-target="hiddenInputsContainer" class="hidden">
+		{% for value in selected %}
+			<input type="hidden" name="{{ name }}" value="{{ value }}" data-component-multi-select-target="hiddenInput">
+		{% endfor %}
+	</div>
+
+	<div class="relative w-full">
 		<div
-			class="flex flex-col items-center">
-			{# Input oculto real que enviará los valores al servidor Symfony #}
-			<input name="values" type="hidden" data-component-multi-select-target="hiddenInput" value=""/>
-
-			<div class="relative z-20 inline-block w-full">
-				<div
-					class="relative flex flex-col items-center">
-
-					{# El botón de la cabecera que abre el menú desplegable #}
-					<div data-action="click->component-multi-select#toggle" class="w-full cursor-pointer">
-						<div
-							class="shadow-theme-xs focus:border-brand-300 focus:shadow-focus-ring dark:focus:border-brand-300 mb-2 flex h-11 rounded-lg border border-gray-300 py-1.5 pr-3 pl-3 outline-hidden transition dark:border-gray-700 dark:bg-gray-900">
-
-							{# Contenedor de las etiquetas seleccionadas de forma dinámica #}
-							<div
-								class="flex flex-auto flex-wrap gap-2 items-center" data-component-multi-select-target="tagsContainer">
-
-								{# El placeholder se oculta/muestra mediante JS manipulando la clase hidden #}
-								<div data-component-multi-select-target="placeholder" class="flex-1">
-									<input placeholder="{{placeholder}}" readonly class="h-full w-full appearance-none border-0 bg-transparent p-1 pr-2 text-sm outline-hidden placeholder:text-gray-800 focus:border-0 focus:ring-0 focus:outline-hidden dark:placeholder:text-white/90"/>
-								</div>
-							</div>
-
-							{# Flecha de indicador de apertura #}
-							<div class="flex w-7 items-center py-1 pr-1 pl-1">
-								<button type="button" data-component-multi-select-target="arrow" class="h-5 w-5 cursor-pointer text-gray-700 outline-hidden focus:outline-hidden dark:text-gray-400 transition-transform duration-200">
-									{{ ux_icon('heroicons:chevron-down', { class: 'w-5 h-5' }) }}
-								</button>
-							</div>
-						</div>
-					</div>
-
-					{# Listado de opciones renderizado en el servidor #}
-					<div class="w-full px-4">
-						<div data-component-multi-select-target="menu" class="hidden max-h-select absolute top-full left-0 z-40 w-full overflow-y-auto rounded-lg bg-white shadow-sm dark:bg-gray-900 transition-all duration-200">
-							<div class="flex w-full flex-col">
-								{% for key, value in options|default({ '1': 'Option 2', '2': 'Option 3', '3': 'Option 4', '4': 'Option 5' }) %}
-								<div>
-									<div class="hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800" data-action="click->component-multi-select#select" data-index="{{ loop.index0 }}" data-value="{{ key }}" data-text="{{ value }}">
-
-										<div data-component-multi-select-target="optionRow" class="relative flex w-full items-center border-l-2 border-transparent p-2 pl-2">
-											<div class="flex w-full items-center">
-												<div class="mx-2 leading-6 text-gray-800 dark:text-white/90">
-													{{ value }}
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							{% endfor %}
-						</div>
-					</div>
+			id="{{ id }}-trigger"
+			role="combobox"
+			aria-haspopup="listbox"
+			aria-expanded="false"
+			aria-controls="{{ id }}-listbox"
+			{% if required %}aria-required="true"{% endif %}
+			{% if disabled %}aria-disabled="true"{% endif %}
+			data-component-multi-select-target="trigger"
+			data-action="click->component-multi-select#toggle keydown->component-multi-select#onTriggerKeydown"
+			class="{{ triggerClasses }} {% if disabled %}pointer-events-none{% else %}cursor-pointer{% endif %}"
+			tabindex="{{ disabled ? '-1' : '0' }}"
+		>
+			<div class="flex flex-auto flex-wrap items-center gap-2" data-component-multi-select-target="tagsContainer">
+				<div data-component-multi-select-target="placeholder" class="flex-1 min-w-[8rem]">
+					<span class="block p-1 pr-2 text-sm text-gray-400 dark:text-white/30">{{ placeholder }}</span>
 				</div>
+			</div>
 
+			<div class="ml-auto flex w-7 shrink-0 items-center py-1 pr-1 pl-1">
+				<span data-component-multi-select-target="arrow" class="inline-flex text-gray-700 transition-transform duration-200 dark:text-gray-400">
+					{{ ux_icon('heroicons:chevron-down', { class: 'w-5 h-5' }) }}
+				</span>
 			</div>
 		</div>
+
+		<div
+			id="{{ id }}-listbox"
+			role="listbox"
+			aria-multiselectable="true"
+			aria-labelledby="{{ id }}-trigger"
+			data-component-multi-select-target="menu"
+			class="absolute top-full left-0 z-10 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
+		>
+			{% for value, optionLabel in options %}
+				<div
+					role="option"
+					aria-selected="{{ value in selected ? 'true' : 'false' }}"
+					data-action="click->component-multi-select#select"
+					data-value="{{ value }}"
+					class="cursor-pointer border-b border-gray-200 last:border-b-0 hover:bg-primary/5 dark:border-gray-800"
+				>
+					<div
+						data-component-multi-select-target="optionRow"
+						data-value="{{ value }}"
+						class="relative flex w-full items-center border-l-2 border-transparent p-2 pl-2"
+					>
+						<span class="mx-2 leading-6 text-gray-800 dark:text-white/90">{{ optionLabel }}</span>
+					</div>
+				</div>
+			{% else %}
+				<div class="p-3 text-sm text-gray-500 dark:text-gray-400">
+					No hay opciones disponibles.
+				</div>
+			{% endfor %}
+		</div>
 	</div>
-</div></div>
+
+	<template data-component-multi-select-target="tagTemplate">
+		<div class="group flex items-center rounded-full border-[0.7px] border-transparent bg-gray-100 py-1 pr-2 pl-2.5 text-sm text-gray-800 hover:border-gray-200 dark:bg-gray-800 dark:text-white/90 dark:hover:border-gray-800">
+			<span class="max-w-full flex-initial" data-component-multi-select-target="tagLabel"></span>
+			<button
+				type="button"
+				class="ml-1 cursor-pointer text-gray-500 group-hover:text-gray-400 dark:text-gray-400"
+				data-action="click->component-multi-select#remove"
+				aria-label="Eliminar opción"
+			>
+				{{ ux_icon('heroicons:x-mark', { class: 'w-3.5 h-3.5' }) }}
+			</button>
+		</div>
+	</template>
+
+	{% if error %}
+		<p id="{{ id }}-error" class="text-theme-xs text-error-500 mt-1.5" role="alert">{{ error }}</p>
+	{% endif %}
+
+	{% if help %}
+		<p id="{{ id }}-help" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ help }}</p>
+	{% endif %}
+</div>

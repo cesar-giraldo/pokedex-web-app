@@ -162,11 +162,66 @@
 						</div>
 					</div>
 
-					<!-- Multiple Select Component -->
-					<twig:component_multi_select 
-						title="Multiple Select Input" 
-						placeholder="Elige tus preferencias" 
-						:options="{'tech': 'Tecnología', 'sports': 'Deportes', 'music': 'Música'}"/>
+					{# Mock de variables que en un formulario Symfony vendrían de FormView / DTO #}
+					{% set demo_options = {
+						'tech': 'Tecnología',
+						'sports': 'Deportes',
+						'music': 'Música',
+						'art': 'Arte',
+					} %}
+
+					<!-- Multiple Select: estado por defecto -->
+					<twig:component_multi_select
+						label="Multiple Select Input"
+						name="demo_preferences[]"
+						id="demo-preferences"
+						placeholder="Elige tus preferencias"
+						help="Selecciona una o más categorías de interés."
+						:options="demo_options"
+					/>
+
+					<!-- Multiple Select: con valores preseleccionados (mock submitted data) -->
+					<twig:component_multi_select
+						label="Multiple Select con valores iniciales"
+						name="demo_interests[]"
+						id="demo-interests"
+						placeholder="Elige tus intereses"
+						:options="demo_options"
+						:selected="['tech', 'music']"
+					/>
+
+					<!-- Multiple Select: required + error (mock validation) -->
+					<twig:component_multi_select
+						label="Multiple Select requerido"
+						name="demo_required[]"
+						id="demo-required"
+						placeholder="Selecciona al menos una opción"
+						:options="demo_options"
+						:required="true"
+						error="Debes seleccionar al menos una opción."
+					/>
+
+					<!-- Multiple Select: disabled (mock read-only form) -->
+					<twig:component_multi_select
+						label="Multiple Select deshabilitado"
+						name="demo_disabled[]"
+						id="demo-disabled"
+						placeholder="No editable"
+						:options="demo_options"
+						:selected="['sports']"
+						:disabled="true"
+					/>
+
+					<!-- Multiple Select: límite de selección -->
+					<twig:component_multi_select
+						label="Multiple Select (máx. 2)"
+						name="demo_limited[]"
+						id="demo-limited"
+						placeholder="Elige hasta 2 opciones"
+						help="Solo puedes seleccionar un máximo de 2 opciones."
+						:options="demo_options"
+						:maxSelections="2"
+					/>
 				</div>
 			</div>
 
