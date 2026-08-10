@@ -1,0 +1,55 @@
+<div
+	data-controller="component-date-picker"
+	data-component-date-picker-disabled-value="{{ disabled ? 'true' : 'false' }}"
+	class="relative"
+	{{ attributes }}
+>
+	<label for="{{ id }}" class="{{ labelClasses }}">
+		{{ label }}
+		{% if required %}
+			<span class="text-error-500" aria-hidden="true">*</span>
+		{% endif %}
+	</label>
+
+	<div class="relative w-full">
+		<input
+			id="{{ id }}"
+			name="{{ name }}"
+			type="date"
+			value="{{ value }}"
+			placeholder="{{ placeholder }}"
+			data-component-date-picker-target="input"
+			data-action="click->component-date-picker#openPicker"
+			class="{{ inputClasses }}"
+			{% if min is not null %}min="{{ min }}"{% endif %}
+			{% if max is not null %}max="{{ max }}"{% endif %}
+			{% if required %}required{% endif %}
+			{% if disabled %}disabled{% endif %}
+			{% if error %}
+				aria-invalid="true"
+				aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %}"
+			{% elseif help %}
+				aria-describedby="{{ id }}-help"
+			{% endif %}
+		>
+
+		<button
+			type="button"
+			data-component-date-picker-target="trigger"
+			data-action="click->component-date-picker#openPicker"
+			class="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+			aria-label="Abrir selector de fecha"
+			{% if disabled %}disabled tabindex="-1"{% endif %}
+		>
+			{{ ux_icon('heroicons:calendar', { class: 'w-5 h-5' }) }}
+		</button>
+	</div>
+
+	{% if error %}
+		<p id="{{ id }}-error" class="text-theme-xs text-error-500 mt-1.5" role="alert">{{ error }}</p>
+	{% endif %}
+
+	{% if help %}
+		<p id="{{ id }}-help" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ help }}</p>
+	{% endif %}
+</div>
