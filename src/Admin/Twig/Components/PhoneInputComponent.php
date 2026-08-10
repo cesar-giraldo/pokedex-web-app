@@ -7,6 +7,10 @@ namespace App\Admin\Twig\Components;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 
+use function array_key_exists;
+use function in_array;
+use function sprintf;
+
 /**
  * Campo de teléfono con selector de país reutilizable para formularios del admin.
  *
@@ -101,11 +105,11 @@ final class PhoneInputComponent
             $this->countryName = sprintf('%s_country', $this->name);
         }
 
-        if (!\in_array($this->countrySelectorPosition, ['left', 'right'], true)) {
+        if (!in_array($this->countrySelectorPosition, ['left', 'right'], true)) {
             $this->countrySelectorPosition = 'left';
         }
 
-        if (!\array_key_exists($this->selectedCountry, $this->countryCodes)) {
+        if (!array_key_exists($this->selectedCountry, $this->countryCodes)) {
             $this->selectedCountry = array_key_first($this->countryCodes) ?? 'US';
         }
 

@@ -530,44 +530,43 @@
 				</div>
 				<div
 					class="space-y-6 border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
-					<!-- Elements -->
 					<div class="flex flex-wrap items-center gap-8">
-						<div x-data="{ checkboxToggle: false }">
-							<label for="radioLabelOne" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-								<div class="relative">
-									<input type="checkbox" id="radioLabelOne" class="sr-only" @change="checkboxToggle = !checkboxToggle"/>
-									<div :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'" class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-										<span class="h-2 w-2 rounded-full" :class="checkboxToggle ? 'bg-white' : 'bg-white dark:bg-[#171f2e]'"></span>
-									</div>
-								</div>
-								Default
-							</label>
-						</div>
+						<!-- Radio: estado por defecto -->
+						<twig:component_radio
+							label="Default"
+							name="demo_radio"
+							id="demo-radio-default"
+							value="default"
+						/>
 
-						<div x-data="{ checkboxToggle: true }">
-							<label for="radioLabelTwo" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
-								<div class="relative">
-									<input type="checkbox" id="radioLabelTwo" class="sr-only" @change="checkboxToggle = !checkboxToggle"/>
-									<div :class="checkboxToggle ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'" class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-										<span class="h-2 w-2 rounded-full" :class="checkboxToggle ? 'bg-white' : 'bg-white dark:bg-[#171f2e]'"></span>
-									</div>
-								</div>
-								Secondary
-							</label>
-						</div>
+						<!-- Radio: seleccionado -->
+						<twig:component_radio
+							label="Secondary"
+							name="demo_radio"
+							id="demo-radio-secondary"
+							value="secondary"
+							:checked="true"
+						/>
 
-						<div x-data="{ checkboxToggle: false }">
-							<label for="radioLabelThree" class="flex cursor-pointer items-center text-sm font-medium text-gray-300 select-none dark:text-gray-700">
-								<div class="relative">
-									<input type="checkbox" id="radioLabelThree" class="peer sr-only" @change="checkboxToggle = !checkboxToggle" disabled/>
-									<div :class="checkboxToggle ? 'bg-transparent border-gray-300 dark:border-gray-700' : 'border-brand-500 bg-brand-500'" class="mr-3 flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-										<span class="h-2 w-2 rounded-full" :class="checkboxToggle ? 'bg-white' : 'bg-white dark:bg-[#171f2e]'"></span>
-									</div>
-								</div>
-								Disabled Secondary
-							</label>
-						</div>
+						<!-- Radio: disabled -->
+						<twig:component_radio
+							label="Disabled Secondary"
+							name="demo_radio_disabled"
+							id="demo-radio-disabled"
+							value="disabled"
+							:disabled="true"
+						/>
 					</div>
+
+					<!-- Radio: required + error -->
+					<twig:component_radio
+						label="Required option"
+						name="demo_radio_required"
+						id="demo-radio-required"
+						value="required"
+						:required="true"
+						error="Debes seleccionar una opción."
+					/>
 				</div>
 			</div>
 

@@ -8,6 +8,8 @@ use App\Admin\Twig\Components\PhoneInputComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+use function sprintf;
+
 #[CoversClass(PhoneInputComponent::class)]
 final class PhoneInputComponentTest extends TestCase
 {

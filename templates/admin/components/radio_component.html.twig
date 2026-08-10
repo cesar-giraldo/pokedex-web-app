@@ -1,0 +1,52 @@
+<div
+	data-controller="component-radio"
+	data-component-radio-disabled-value="{{ disabled ? 'true' : 'false' }}"
+	{{ attributes }}
+>
+	<label for="{{ id }}" class="{{ labelClasses }}">
+		<div class="relative">
+			<input
+				id="{{ id }}"
+				name="{{ name }}"
+				type="radio"
+				value="{{ value }}"
+				class="peer sr-only"
+				data-component-radio-target="input"
+				data-action="change->component-radio#syncGroup"
+				{% if checked %}checked{% endif %}
+				{% if required %}required{% endif %}
+				{% if disabled %}disabled{% endif %}
+				{% if error %}
+					aria-invalid="true"
+					aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %}"
+				{% elseif help %}
+					aria-describedby="{{ id }}-help"
+				{% endif %}
+			>
+			<div
+				data-component-radio-target="box"
+				class="mr-3 flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]"
+				aria-hidden="true"
+			>
+				<span
+					data-component-radio-target="dot"
+					class="h-2 w-2 rounded-full"
+				></span>
+			</div>
+		</div>
+		<span>
+			{{ label }}
+			{% if required %}
+				<span class="text-error-500" aria-hidden="true">*</span>
+			{% endif %}
+		</span>
+	</label>
+
+	{% if error %}
+		<p id="{{ id }}-error" class="text-theme-xs text-error-500 mt-1.5" role="alert">{{ error }}</p>
+	{% endif %}
+
+	{% if help %}
+		<p id="{{ id }}-help" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ help }}</p>
+	{% endif %}
+</div>
