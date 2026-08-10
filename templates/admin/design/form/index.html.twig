@@ -16,6 +16,12 @@
 		'template': 'Template',
 		'development': 'Development',
 	} %}
+	{% set demo_country_codes = {
+		'US': '+1',
+		'GB': '+44',
+		'CA': '+1',
+		'AU': '+61',
+	} %}
 
 	<!-- ====== Form Elements Section Start -->
 	<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -385,83 +391,25 @@
 						</div>
 					</div>
 
-					<!-- Elements -->
-					<div x-data="{
-														                          selectedCountry: 'US',
-														                          countryCodes: {
-														                              'US': '+1',
-														                              'GB': '+44',
-														                              'CA': '+1',
-														                              'AU': '+61'
-														                          },
-														                          phoneNumber: ''
-														                      }">
-						<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-							Phone
-						</label>
-						<div class="relative">
-							<div class="absolute">
-								<select x-model="selectedCountry" @change="phoneNumber = countryCodes[selectedCountry]" class="focus:border-brand-300 focus:ring-brand-500/10 appearance-none rounded-l-lg border-0 border-r border-gray-200 bg-transparent bg-none py-3 pr-8 pl-3.5 leading-tight text-gray-700 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:text-gray-400">
-									<option value="US" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">
-										US
-									</option>
-									<option value="GB" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">
-										GB
-									</option>
-									<option value="CA" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">
-										CA
-									</option>
-									<option value="AU" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">
-										AU
-									</option>
-									<!-- Add more country codes as needed -->
-								</select>
-								<div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-700 dark:text-gray-400">
-									{{ ux_icon('heroicons:chevron-down', { class: 'w-4 h-4' }) }}
-								</div>
-							</div>
-							<input placeholder="+1 (555) 000-0000" x-model="phoneNumber" type="tel" class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-3 pr-4 pl-[84px] text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"/>
-						</div>
-					</div>
+					<!-- Phone Input: selector de país a la izquierda -->
+					<twig:component_phone_input
+						label="Phone"
+						name="demo_phone_left"
+						id="demo-phone-left"
+						placeholder="+1 (555) 000-0000"
+						:countryCodes="demo_country_codes"
+						countrySelectorPosition="left"
+					/>
 
-					<!-- Elements -->
-					<div x-data="{
-														                          selectedCountry: 'US',
-														                          countryCodes: {
-														                              'US': '+1',
-														                              'GB': '+44',
-														                              'CA': '+1',
-														                              'AU': '+61'
-														                          },
-														                          phoneNumber: ''
-														                      }">
-						<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-							Phone
-						</label>
-						<div class="relative">
-							<div class="absolute right-0">
-								<select x-model="selectedCountry" @change="phoneNumber = countryCodes[selectedCountry]" class="focus:border-brand-300 focus:ring-brand-500/10 appearance-none rounded-r-lg border-0 border-l border-gray-200 bg-transparent bg-none py-3 pr-8 pl-3.5 leading-tight text-gray-700 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:text-gray-400">
-									<option value="US" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">
-										US
-									</option>
-									<option value="GB" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">
-										GB
-									</option>
-									<option value="CA" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">
-										CA
-									</option>
-									<option value="AU" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">
-										AU
-									</option>
-									<!-- Add more country codes as needed -->
-								</select>
-								<div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-700 dark:text-gray-400">
-									{{ ux_icon('heroicons:chevron-down', { class: 'w-4 h-4' }) }}
-								</div>
-							</div>
-							<input placeholder="+1 (555) 000-0000" x-model="phoneNumber" type="tel" class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-3 pr-[84px] pl-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"/>
-						</div>
-					</div>
+					<!-- Phone Input: selector de país a la derecha -->
+					<twig:component_phone_input
+						label="Phone"
+						name="demo_phone_right"
+						id="demo-phone-right"
+						placeholder="+1 (555) 000-0000"
+						:countryCodes="demo_country_codes"
+						countrySelectorPosition="right"
+					/>
 
 					<!-- Elements -->
 					<div>

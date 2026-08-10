@@ -1,0 +1,64 @@
+<div
+	data-controller="component-phone-input"
+	data-component-phone-input-country-codes-value="{{ countryCodes|json_encode }}"
+	data-component-phone-input-format-regex-value="{{ formatRegex }}"
+	data-component-phone-input-disabled-value="{{ disabled ? 'true' : 'false' }}"
+	class="relative"
+	{{ attributes }}
+>
+	<label for="{{ id }}" class="{{ labelClasses }}">
+		{{ label }}
+		{% if required %}
+			<span class="text-error-500" aria-hidden="true">*</span>
+		{% endif %}
+	</label>
+
+	<div class="relative w-full">
+		<div class="absolute {{ isCountrySelectorLeft ? 'left-0' : 'right-0' }} top-0 h-11">
+			<select
+				id="{{ id }}-country"
+				name="{{ countryName }}"
+				data-component-phone-input-target="countrySelect"
+				data-action="change->component-phone-input#onCountryChange"
+				class="{{ countrySelectClasses }}"
+				{% if disabled %}disabled{% endif %}
+			>
+				{% for country, prefix in countryCodes %}
+					<option value="{{ country }}"{% if country == selectedCountry %} selected{% endif %}>{{ country }}</option>
+				{% endfor %}
+			</select>
+			<div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-700 dark:text-gray-400">
+				{{ ux_icon('heroicons:chevron-down', { class: 'w-4 h-4' }) }}
+			</div>
+		</div>
+
+		<input
+			id="{{ id }}"
+			name="{{ name }}"
+			type="tel"
+			value="{{ value }}"
+			placeholder="{{ placeholder }}"
+			inputmode="tel"
+			autocomplete="tel"
+			data-component-phone-input-target="input"
+			data-action="input->component-phone-input#onInput blur->component-phone-input#onBlur"
+			class="{{ inputClasses }}"
+			{% if required %}required{% endif %}
+			{% if disabled %}disabled{% endif %}
+			{% if error %}
+				aria-invalid="true"
+				aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %}"
+			{% elseif help %}
+				aria-describedby="{{ id }}-help"
+			{% endif %}
+		>
+	</div>
+
+	{% if error %}
+		<p id="{{ id }}-error" class="text-theme-xs text-error-500 mt-1.5" role="alert">{{ error }}</p>
+	{% endif %}
+
+	{% if help %}
+		<p id="{{ id }}-help" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ help }}</p>
+	{% endif %}
+</div>
