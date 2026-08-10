@@ -1,0 +1,75 @@
+<div
+	data-controller="component-text-input"
+	data-component-text-input-pattern-value="{{ pattern }}"
+	data-component-text-input-pattern-flags-value="{{ patternFlags }}"
+	data-component-text-input-pattern-error-message-value="{{ patternErrorMessage }}"
+	data-component-text-input-disabled-value="{{ disabled ? 'true' : 'false' }}"
+	data-component-text-input-required-value="{{ required ? 'true' : 'false' }}"
+	data-component-text-input-has-server-error-value="{{ error is not null ? 'true' : 'false' }}"
+	data-component-text-input-uppercase-value="{{ uppercase ? 'true' : 'false' }}"
+	data-component-text-input-lowercase-value="{{ lowercase ? 'true' : 'false' }}"
+	data-component-text-input-min-length-value="{{ minLength }}"
+	data-component-text-input-max-length-value="{{ maxLength }}"
+	class="relative"
+	{{ attributes }}
+>
+	{% if label is not empty %}
+		<label for="{{ id }}" class="{{ labelClasses }}">
+			{{ label }}
+			{% if required %}
+				<span class="text-error-500" aria-hidden="true">*</span>
+			{% endif %}
+		</label>
+	{% endif %}
+
+	<div class="relative">
+		{% if showIcon %}
+			<span class="{{ iconWrapperClasses }}">
+				{{ ux_icon(icon, { class: iconClass }) }}
+			</span>
+		{% endif %}
+
+		<input
+			id="{{ id }}"
+			name="{{ name }}"
+			type="text"
+			value="{{ value }}"
+			{% if placeholder is not empty %}placeholder="{{ placeholder }}"{% endif %}
+			data-component-text-input-target="input"
+			data-action="input->component-text-input#onInput blur->component-text-input#onBlur invalid->component-text-input#onInvalid"
+			class="{{ inputClasses }}"
+			{% if maxLength > 0 %}maxlength="{{ maxLength }}"{% endif %}
+			{% if minLength > 0 %}minlength="{{ minLength }}"{% endif %}
+			{% if pattern is not empty %}pattern="{{ patternForHtml }}"{% endif %}
+			{% if autocomplete is not empty %}autocomplete="{{ autocomplete }}"{% endif %}
+			{% if inputMode is not empty %}inputmode="{{ inputMode }}"{% endif %}
+			{% if spellcheck is not null %}spellcheck="{{ spellcheck ? 'true' : 'false' }}"{% endif %}
+			{% if required %}required{% endif %}
+			{% if disabled %}disabled{% endif %}
+			{% if readonly %}readonly{% endif %}
+			{% if error %}
+				aria-invalid="true"
+				aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %} {{ id }}-client-error"
+			{% elseif help %}
+				aria-describedby="{{ id }}-help {{ id }}-client-error"
+			{% else %}
+				aria-describedby="{{ id }}-client-error"
+			{% endif %}
+		>
+	</div>
+
+	<p
+		id="{{ id }}-client-error"
+		data-component-text-input-target="clientError"
+		class="text-theme-xs text-error-500 mt-1.5 hidden"
+		role="alert"
+	></p>
+
+	{% if error %}
+		<p id="{{ id }}-error" class="text-theme-xs text-error-500 mt-1.5" role="alert">{{ error }}</p>
+	{% endif %}
+
+	{% if help %}
+		<p id="{{ id }}-help" class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ help }}</p>
+	{% endif %}
+</div>

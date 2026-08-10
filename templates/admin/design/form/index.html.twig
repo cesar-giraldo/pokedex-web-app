@@ -34,21 +34,69 @@
 				</div>
 				<div
 					class="space-y-6 border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
-					<!-- Elements -->
-					<div>
-						<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-							Input
-						</label>
-						<input type="text" class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"/>
-					</div>
+					<!-- Text Input: estado por defecto -->
+					<twig:component_text_input
+						label="Input"
+						name="demo_text"
+						id="demo-text"
+					/>
 
-					<!-- Elements -->
-					<div>
-						<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-							Input with Placeholder
-						</label>
-						<input type="text" placeholder="info@gmail.com" class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"/>
-					</div>
+					<!-- Text Input: con placeholder -->
+					<twig:component_text_input
+						label="Input with Placeholder"
+						name="demo_text_placeholder"
+						id="demo-text-placeholder"
+						placeholder="info@gmail.com"
+					/>
+
+					<!-- Text Input: icono a la izquierda -->
+					<twig:component_text_input
+						label="Search"
+						name="demo_text_search"
+						id="demo-text-search"
+						placeholder="Buscar..."
+						:showIcon="true"
+						icon="heroicons:magnifying-glass"
+						iconPosition="left"
+					/>
+
+					<!-- Text Input: icono a la derecha -->
+					<twig:component_text_input
+						label="Username"
+						name="demo_text_user"
+						id="demo-text-user"
+						placeholder="usuario"
+						:showIcon="true"
+						icon="heroicons:user-circle"
+						iconPosition="right"
+					/>
+
+					<!-- Text Input: uppercase + maxlength -->
+					<twig:component_text_input
+						label="Promo code"
+						name="demo_text_promo"
+						id="demo-text-promo"
+						placeholder="SUMMER2026"
+						:uppercase="true"
+						:maxLength="12"
+						pattern="^[A-Z0-9]+$"
+						patternErrorMessage="Solo letras mayúsculas y números."
+						help="Máximo 12 caracteres."
+					/>
+
+					<!-- Text Input: regex + required + error -->
+					<twig:component_text_input
+						label="Slug"
+						name="demo_text_slug"
+						id="demo-text-slug"
+						placeholder="mi-recurso"
+						:lowercase="true"
+						pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+						patternErrorMessage="Usa minúsculas, números y guiones."
+						:minLength="3"
+						:required="true"
+						error="Introduce un slug válido."
+					/>
 
 					<!-- Single Select Component -->
 					<twig:component_single_select
