@@ -3,16 +3,15 @@
 	data-controller="component-alert"
 	data-component-alert-auto-hide-delay-value="{{ autoHideDelay }}"
 	data-component-alert-dismissible-value="{{ dismissible ? 'true' : 'false' }}"
-	class="relative rounded-xl border border-success-500 bg-success-50 p-4 opacity-100 dark:border-success-500/30 dark:bg-success-500/15"
+	class="relative rounded-xl border border-error-500 bg-error-50 p-4 opacity-100 dark:border-error-500/30 dark:bg-error-500/15"
 	role="alert"
-	aria-live="polite"
-	data-admin-success-notification
+	aria-live="assertive"
 	{{ attributes }}
 >
 	{% if dismissible %}
 		<button
 			type="button"
-			class="absolute top-3 right-3 inline-flex items-center justify-center rounded-md p-1 text-gray-500 transition hover:bg-success-500/10 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+			class="absolute top-3 right-3 inline-flex items-center justify-center rounded-md p-1 text-gray-500 transition hover:bg-error-500/10 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
 			data-action="component-alert#dismiss"
 			aria-label="Cerrar notificación"
 		>
@@ -21,8 +20,8 @@
 	{% endif %}
 
 	<div class="flex items-start gap-3{% if dismissible %} pr-8{% endif %}">
-		<div class="-mt-0.5 shrink-0 text-success-500">
-			{{ ux_icon('heroicons:check-circle', { class: 'w-6 h-6 fill-current' }) }}
+		<div class="-mt-0.5 shrink-0 text-error-500 dark:text-error-400">
+			{{ ux_icon('heroicons:exclamation-circle', { class: 'w-6 h-6 fill-current' }) }}
 		</div>
 		<p class="text-sm text-gray-700 dark:text-gray-300">{{ message }}</p>
 	</div>

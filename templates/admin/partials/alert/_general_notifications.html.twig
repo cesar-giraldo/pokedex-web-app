@@ -1,0 +1,30 @@
+{% set successMessages = app.flashes('success') %}
+{% set errorMessages = app.flashes('error') %}
+{% set warningMessages = app.flashes('warning') %}
+{% set infoMessages = app.flashes('info') %}
+{% set hasMessages = successMessages is not empty
+	or errorMessages is not empty
+	or warningMessages is not empty
+	or infoMessages is not empty
+%}
+
+<div
+	data-controller="admin-success-notifications"
+	class="mb-6 space-y-3{% if not hasMessages %} hidden{% endif %}"
+>
+	{% for message in successMessages %}
+		<twig:component_alert_success message="{{ message }}" />
+	{% endfor %}
+
+	{% for message in errorMessages %}
+		<twig:component_alert_error message="{{ message }}" />
+	{% endfor %}
+
+	{% for message in warningMessages %}
+		<twig:component_alert_warning message="{{ message }}" />
+	{% endfor %}
+
+	{% for message in infoMessages %}
+		<twig:component_alert_info message="{{ message }}" />
+	{% endfor %}
+</div>
