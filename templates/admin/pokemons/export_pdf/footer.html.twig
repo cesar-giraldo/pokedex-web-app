@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 9px;
+            color: #9ca3af;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 0 24px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="footer">
+        <span>Pokédex Admin · {{ generated_at|date('d/m/Y H:i') }}</span>
+        <span>Página <span class="pageNumber"></span> de <span class="totalPages"></span></span>
+    </div>
+</body>
+</html>

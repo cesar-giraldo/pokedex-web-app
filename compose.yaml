@@ -32,7 +32,24 @@ services:
       database-mysql:
         condition: service_healthy
         required: false
+      gotenberg:
+        condition: service_healthy
     tty: true
+
+  # ========================================================
+  # Gotenberg — conversión HTML → PDF (Chromium)
+  # ========================================================
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: app_gotenberg
+    restart: unless-stopped
+    ports:
+      - "${GOTENBERG_PORT}:${GOTENBERG_PORT}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${GOTENBERG_PORT}/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # ========================================================
   # PostgreSQL 18 (perfil: postgresql)

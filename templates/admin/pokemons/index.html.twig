@@ -27,15 +27,46 @@
 				
 
 				<div class="w-full max-w-md lg:max-w-md lg:mb-0 shrink">
+					{% set exportParams = {
+						sort: current_sort,
+						direction: current_direction,
+						page: app.request.query.get('page', 1),
+						limit: current_limit
+					} %}
+					{% if search_term %}
+						{% set exportParams = exportParams|merge({ q: search_term }) %}
+					{% endif %}
 					{{ form_start(search_form, {'attr': {'class': 'w-full'}}) }}
 					<div class="flex gap-2 w-full items-center">
 						<div class="grow min-w-0">
 							{{ form_row(search_form.q, {'attr': {'class': 'dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 px-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30'}}) }}
 						</div>
-						<button type="submit" class="inline-flex items-center justify-center gap-2 px-3 py-3 md:px-4 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 shrink-0">
-							{{ ux_icon('heroicons:magnifying-glass', { class: 'w-6 h-6 block md:hidden' }) }}
-							<span class="hidden md:block">Buscar</span>
-						</button>
+						<div class="relative group/tooltip">
+							<button type="submit" class="inline-flex items-center justify-center gap-2 px-3 py-3 md:px-4 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 shrink-0"
+									title="Buscar">
+								{{ ux_icon('heroicons:magnifying-glass', { class: 'w-6 h-6 block md:hidden' }) }}
+								<span class="hidden md:block">Buscar</span>
+							</button>
+							<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:block z-50 pointer-events-none">
+								<div class="bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-xs rounded-md py-1.5 px-2.5 shadow-md whitespace-nowrap font-medium">
+									Buscar
+									<div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-white"></div>
+								</div>
+							</div>
+						</div>
+						<div class="relative group/tooltip">
+							<a href="{{ path('app_backend_pokemons_export_pdf', exportParams) }}"
+							   class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/3 shrink-0"
+							   title="Exportar PDF">
+								{{ ux_icon('heroicons:document-arrow-down', { class: 'w-6 h-6' }) }}
+							</a>
+							<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:block z-50 pointer-events-none">
+								<div class="bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-xs rounded-md py-1.5 px-2.5 shadow-md whitespace-nowrap font-medium">
+									Exportar PDF
+									<div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-white"></div>
+								</div>
+							</div>
+						</div>
 						<div class="relative group/tooltip">
 							<button type="button" data-admin-paginator-target="resetButton"
 									class="hidden items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/3"

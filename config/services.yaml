@@ -19,6 +19,11 @@ services:
     App\Admin\:
         resource: '../src/Admin/'
 
+    App\Admin\Service\Pdf\GotenbergClient:
+        arguments:
+            $gotenbergUrl: '%env(GOTENBERG_URL)%'
+            $timeout: '%env(int:GOTENBERG_TIMEOUT)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
     App\Web\:

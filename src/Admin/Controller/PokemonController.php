@@ -6,6 +6,8 @@ namespace App\Admin\Controller;
 
 use App\Admin\Form\PokemonEditType;
 use App\Admin\Form\SearchPokemonType;
+use App\Admin\Service\Pdf\PdfGenerationException;
+use App\Admin\Service\Pdf\PokemonListPdfExporter;
 use App\Entity\Pokemon;
 use App\Repository\PokemonRepository;
 use App\Repository\PokemonTypeRepository;
@@ -19,6 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 use function in_array;
+use function is_string;
 use function sprintf;
 
 #[Route('/admin')]
@@ -91,7 +94,68 @@ final class PokemonController extends AbstractController
             'search_form' => $form->createView(),
             'current_sort' => $sort,
             'current_direction' => $direction,
+            'search_term' => $term,
             ...$pagination,
+        ]);
+    }
+
+    #[Route('/pokemons/export/pdf', name: 'app_backend_pokemons_export_pdf', methods: ['GET'])]
+    public function exportPdf(
+        PokemonRepository $pokemonRepository,
+        PokemonListPdfExporter $pdfExporter,
+        Request $request,
+    ): Response {
+        $term = $request->query->get('q');
+        $term = is_string($term) && '' !== $term ? $term : null;
+
+        $sort = $request->query->get('sort', 'p.listOrder');
+        $direction = $request->query->get('direction', 'asc');
+
+        $queryBuilder = $pokemonRepository->findPokemonsQueryBuilder(
+            $term,
+            $sort,
+            $direction,
+            ['includeHidden' => true],
+        );
+
+        $pagination = $this->getPagination($queryBuilder, $request);
+        $pagerfanta = $pagination['entities'];
+
+        /** @var list<Pokemon> $pokemons */
+        $pokemons = iterator_to_array($pagerfanta->getCurrentPageResults());
+
+        $repeatHeaderFooter = true;
+
+        try {
+            $pdfContent = $pdfExporter->export(
+                $pokemons,
+                $term,
+                $sort,
+                $direction,
+                [
+                    'current_page' => $pagerfanta->getCurrentPage(),
+                    'total_pages' => $pagerfanta->getNbPages(),
+                    'total_results' => $pagerfanta->getNbResults(),
+                    'max_per_page' => $pagerfanta->getMaxPerPage(),
+                ],
+                $repeatHeaderFooter,
+            );
+        } catch (PdfGenerationException) {
+            $this->addFlash('error', 'No se pudo generar el PDF. Verifique que Gotenberg esté disponible e inténtelo de nuevo.');
+
+            return $this->redirectToRoute('app_backend_pokemons', $request->query->all());
+        }
+
+        $filename = sprintf(
+            'pokemons-%s-page-%d-of-%d.pdf',
+            date('Y-m-d'),
+            $pagerfanta->getCurrentPage(),
+            $pagerfanta->getNbPages(),
+        );
+
+        return new Response($pdfContent, Response::HTTP_OK, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
         ]);
     }
 
