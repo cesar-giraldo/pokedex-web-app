@@ -68,6 +68,19 @@
 							</div>
 						</div>
 						<div class="relative group/tooltip">
+							<a href="{{ path('app_backend_pokemons_export_excel', exportParams) }}"
+							   class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/3 shrink-0"
+							   title="Exportar Excel">
+								{{ ux_icon('heroicons:table-cells', { class: 'w-6 h-6' }) }}
+							</a>
+							<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:block z-50 pointer-events-none">
+								<div class="bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-xs rounded-md py-1.5 px-2.5 shadow-md whitespace-nowrap font-medium">
+									Exportar Excel
+									<div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-white"></div>
+								</div>
+							</div>
+						</div>
+						<div class="relative group/tooltip">
 							<button type="button" data-admin-paginator-target="resetButton"
 									class="hidden items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/3"
 									data-action="click->admin-paginator#resetPreferences"

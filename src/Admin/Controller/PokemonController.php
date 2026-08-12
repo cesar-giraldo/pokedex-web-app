@@ -6,6 +6,8 @@ namespace App\Admin\Controller;
 
 use App\Admin\Form\PokemonEditType;
 use App\Admin\Form\SearchPokemonType;
+use App\Admin\Service\Excel\ExcelGenerationException;
+use App\Admin\Service\Excel\PokemonListExcelExporter;
 use App\Admin\Service\Pdf\PdfGenerationException;
 use App\Admin\Service\Pdf\PokemonListPdfExporter;
 use App\Entity\Pokemon;
@@ -155,6 +157,63 @@ final class PokemonController extends AbstractController
 
         return new Response($pdfContent, Response::HTTP_OK, [
             'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+        ]);
+    }
+
+    #[Route('/pokemons/export/excel', name: 'app_backend_pokemons_export_excel', methods: ['GET'])]
+    public function exportExcel(
+        PokemonRepository $pokemonRepository,
+        PokemonListExcelExporter $excelExporter,
+        Request $request,
+    ): Response {
+        $term = $request->query->get('q');
+        $term = is_string($term) && '' !== $term ? $term : null;
+
+        $sort = $request->query->get('sort', 'p.listOrder');
+        $direction = $request->query->get('direction', 'asc');
+
+        $queryBuilder = $pokemonRepository->findPokemonsQueryBuilder(
+            $term,
+            $sort,
+            $direction,
+            ['includeHidden' => true],
+        );
+
+        $pagination = $this->getPagination($queryBuilder, $request);
+        $pagerfanta = $pagination['entities'];
+
+        /** @var list<Pokemon> $pokemons */
+        $pokemons = iterator_to_array($pagerfanta->getCurrentPageResults());
+
+        try {
+            $excelContent = $excelExporter->export(
+                $pokemons,
+                $term,
+                $sort,
+                $direction,
+                [
+                    'current_page' => $pagerfanta->getCurrentPage(),
+                    'total_pages' => $pagerfanta->getNbPages(),
+                    'total_results' => $pagerfanta->getNbResults(),
+                    'max_per_page' => $pagerfanta->getMaxPerPage(),
+                ],
+            );
+        } catch (ExcelGenerationException) {
+            $this->addFlash('error', 'No se pudo generar el archivo Excel. Inténtelo de nuevo.');
+
+            return $this->redirectToRoute('app_backend_pokemons', $request->query->all());
+        }
+
+        $filename = sprintf(
+            'pokemons-%s-page-%d-of-%d.xlsx',
+            date('Y-m-d'),
+            $pagerfanta->getCurrentPage(),
+            $pagerfanta->getNbPages(),
+        );
+
+        return new Response($excelContent, Response::HTTP_OK, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
         ]);
     }
