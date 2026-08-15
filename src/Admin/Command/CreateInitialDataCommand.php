@@ -15,7 +15,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -113,23 +112,23 @@ final class CreateInitialDataCommand extends Command
             return mb_strtolower(trim($this->initialUserEmail));
         }
 
-        $helper = $io->getHelper('question');
-        $question = new Question('Email del usuario inicial (se usará también como nickname): ');
-        $question->setValidator(static function (?string $value): string {
-            $value = trim((string) $value);
+        $email = $io->ask(
+            'Email del usuario inicial (se usará también como nickname): ',
+            null,
+            static function (?string $value): string {
+                $value = trim((string) $value);
 
-            if ('' === $value) {
-                throw new RuntimeException('Debes indicar un email.');
-            }
+                if ('' === $value) {
+                    throw new RuntimeException('Debes indicar un email.');
+                }
 
-            if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                throw new RuntimeException('Debes indicar un email válido.');
-            }
+                if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    throw new RuntimeException('Debes indicar un email válido.');
+                }
 
-            return mb_strtolower($value);
-        });
-
-        $email = $helper->ask($input, $io, $question);
+                return mb_strtolower($value);
+            },
+        );
 
         if (!is_string($email) || '' === $email) {
             $io->error('Debes indicar un email mediante --email o INITIAL_USER_EMAIL.');
@@ -152,12 +151,7 @@ final class CreateInitialDataCommand extends Command
             return $this->initialUserPassword;
         }
 
-        $helper = $io->getHelper('question');
-        $question = new Question('Contraseña del usuario inicial: ');
-        $question->setHidden(true);
-        $question->setHiddenFallback(false);
-
-        $password = $helper->ask($input, $io, $question);
+        $password = $io->askHidden('Contraseña del usuario inicial: ');
 
         if (!is_string($password) || '' === $password) {
             $io->error('Debes indicar una contraseña mediante --password o INITIAL_USER_PASSWORD.');

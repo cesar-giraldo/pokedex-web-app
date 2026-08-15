@@ -36,8 +36,8 @@ final class CreateInitialDataCommandTest extends KernelTestCase
 
         if ($userRepository->findOneByNickname(self::INITIAL_EMAIL) instanceof User) {
             $user = $userRepository->findOneByNickname(self::INITIAL_EMAIL);
-            self::assertSame(self::INITIAL_EMAIL, $user?->getEmail());
-            self::assertSame(self::INITIAL_EMAIL, $user?->getNickname());
+            self::assertSame(self::INITIAL_EMAIL, $user->getEmail());
+            self::assertSame(self::INITIAL_EMAIL, $user->getNickname());
 
             return;
         }

@@ -12,6 +12,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use LogicException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -302,12 +303,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRemainingLoginLockHours(): int
     {
-        if (!$this->isLoginTemporarilyBlocked()) {
+        $noLoginUntil = $this->noLoginUntil;
+
+        if (!$this->isLoginTemporarilyBlocked() || null === $noLoginUntil) {
             return 0;
         }
 
         $now = new DateTimeImmutable();
-        $lockUntil = DateTimeImmutable::createFromInterface($this->noLoginUntil);
+        $lockUntil = DateTimeImmutable::createFromInterface($noLoginUntil);
         $seconds = max(0, $lockUntil->getTimestamp() - $now->getTimestamp());
 
         return (int) ceil($seconds / 3600);
@@ -334,8 +337,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return false;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getUserIdentifier(): string
     {
+        if ('' === $this->nickname) {
+            throw new LogicException('El nickname del usuario no puede estar vacío.');
+        }
+
         return $this->nickname;
     }
 
@@ -361,10 +371,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\PreUpdate]
     public function touchTimestamps(): void
     {
-        if (!isset($this->createdAt)) {
-            $this->createdAt = new DateTime();
-        }
-
         $this->lastUpdatedAt = new DateTime();
     }
 }

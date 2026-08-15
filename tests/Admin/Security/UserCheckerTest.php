@@ -49,7 +49,7 @@ final class UserCheckerTest extends TestCase
         $this->userChecker->checkPreAuth($user);
         $this->userChecker->checkPostAuth($user);
 
-        self::assertTrue(true);
+        self::assertSame(UserStatus::UncompleteProfileInfo, $user->getStatus());
     }
 
     private function createUser(UserStatus $status): User

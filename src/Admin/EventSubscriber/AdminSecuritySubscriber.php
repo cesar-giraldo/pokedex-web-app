@@ -10,6 +10,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -82,10 +83,15 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
 
         if (!$user->hasBackendAccess()) {
             $request = $event->getRequest();
-            $request->getSession()->getFlashBag()->add(
-                'error',
-                'No tienes acceso al panel de administración.',
-            );
+            $session = $request->getSession();
+
+            if ($session instanceof FlashBagAwareSessionInterface) {
+                $session->getFlashBag()->add(
+                    'error',
+                    'No tienes acceso al panel de administración.',
+                );
+            }
+
             $this->tokenStorage->setToken(null);
 
             $event->setResponse(new RedirectResponse(

@@ -30,6 +30,8 @@ enum UserRole: string
     }
 
     /**
+     * @param array<mixed> $values
+     *
      * @return list<self>
      */
     public static function fromStoredValues(array $values): array
