@@ -11,11 +11,15 @@ Este directorio contiene la documentación interna del **Pokedex Web App**.
 | Aprender a construir el stack desde cero | [symfony_guide/README.md](./symfony_guide/README.md) (pasos 00–06) |
 | Comandos Docker, Composer, Doctrine, troubleshooting | [symfony_guide/06-comandos-y-troubleshooting.md](./symfony_guide/06-comandos-y-troubleshooting.md) |
 | Entender motores de BD (PostgreSQL / MySQL) y variables `DATABASE_*` | [symfony_guide/08-database-engines.md](./symfony_guide/08-database-engines.md) |
+| Autenticación del panel admin (login, roles, bloqueos, throttling) | [security/autenticacion-admin.md](./security/autenticacion-admin.md) |
 
 ## Estructura de `docs/`
 
 ```
 docs/
+├── security/
+│   ├── README.md                    # Índice de seguridad
+│   └── autenticacion-admin.md       # Login admin, roles, estados, diagramas
 └── symfony_guide/
     ├── README.md                      # Índice de la guía paso a paso
     ├── 00-introduccion.md             # Stack y requisitos
