@@ -7,6 +7,7 @@ namespace App\Tests\Admin\Controller;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -92,8 +93,18 @@ final class SecurityControllerTest extends WebTestCase
         $hasher = $container->get(UserPasswordHasherInterface::class);
         $user->setPassword($hasher->hashPassword($user, $plainPassword));
 
+        /** @var UserRepository $userRepository */
+        $userRepository = $container->get(UserRepository::class);
+
         /** @var EntityManagerInterface $entityManager */
         $entityManager = $container->get(EntityManagerInterface::class);
+
+        $existingUser = $userRepository->findOneByNickname($nickname);
+        if ($existingUser instanceof User) {
+            $entityManager->remove($existingUser);
+            $entityManager->flush();
+        }
+
         $entityManager->persist($user);
         $entityManager->flush();
         $entityManager->clear();

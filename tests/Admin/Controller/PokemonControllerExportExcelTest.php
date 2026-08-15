@@ -8,11 +8,14 @@ use App\Admin\Service\Excel\ExcelGenerationException;
 use App\Admin\Service\Excel\PokemonListExcelExporter;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
+use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class PokemonControllerExportExcelTest extends WebTestCase
 {
+    use AdminAuthenticatedClientTrait;
+
     private ?EntityManagerInterface $entityManager = null;
 
     private ?int $pokemonId = null;
@@ -39,6 +42,7 @@ final class PokemonControllerExportExcelTest extends WebTestCase
     public function testExportExcelReturnsSpreadsheetResponse(): void
     {
         $client = static::createClient();
+        $this->loginAsAdmin($client);
         $this->createTestPokemon();
 
         $excelExporter = $this->createMock(PokemonListExcelExporter::class);
@@ -63,6 +67,7 @@ final class PokemonControllerExportExcelTest extends WebTestCase
     public function testExportExcelRedirectsWithFlashWhenGenerationFails(): void
     {
         $client = static::createClient();
+        $this->loginAsAdmin($client);
         $this->createTestPokemon();
 
         $excelExporter = $this->createMock(PokemonListExcelExporter::class);

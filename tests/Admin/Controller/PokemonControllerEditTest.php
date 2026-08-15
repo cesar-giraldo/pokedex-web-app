@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Admin\Controller;
 
+use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,6 +14,8 @@ use function sprintf;
 
 final class PokemonControllerEditTest extends WebTestCase
 {
+    use AdminAuthenticatedClientTrait;
+
     private ?EntityManagerInterface $entityManager = null;
 
     private ?int $pokemonId = null;
@@ -39,6 +42,7 @@ final class PokemonControllerEditTest extends WebTestCase
     public function testEditPageDisplaysPokemonData(): void
     {
         $client = static::createClient();
+        $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
 
         $client->request('GET', sprintf('/admin/pokemons/%d/edit', $pokemon->getId()));
@@ -52,6 +56,7 @@ final class PokemonControllerEditTest extends WebTestCase
     public function testEditUpdatesPokemonAndRedirectsWithFlash(): void
     {
         $client = static::createClient();
+        $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $type = $pokemon->getType();
         self::assertNotNull($type);
@@ -89,6 +94,7 @@ final class PokemonControllerEditTest extends WebTestCase
     public function testEditWithInvalidDataShowsValidationErrors(): void
     {
         $client = static::createClient();
+        $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $type = $pokemon->getType();
         self::assertNotNull($type);
@@ -114,6 +120,7 @@ final class PokemonControllerEditTest extends WebTestCase
     public function testEditReturnsNotFoundForMissingPokemon(): void
     {
         $client = static::createClient();
+        $this->loginAsAdmin($client);
         $client->request('GET', '/admin/pokemons/999999999/edit');
 
         self::assertResponseStatusCodeSame(404);

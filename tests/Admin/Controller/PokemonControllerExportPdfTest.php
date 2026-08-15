@@ -8,11 +8,14 @@ use App\Admin\Service\Pdf\PdfGenerationException;
 use App\Admin\Service\Pdf\PokemonListPdfExporter;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
+use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class PokemonControllerExportPdfTest extends WebTestCase
 {
+    use AdminAuthenticatedClientTrait;
+
     private ?EntityManagerInterface $entityManager = null;
 
     private ?int $pokemonId = null;
@@ -39,6 +42,7 @@ final class PokemonControllerExportPdfTest extends WebTestCase
     public function testExportPdfReturnsPdfResponse(): void
     {
         $client = static::createClient();
+        $this->loginAsAdmin($client);
         $this->createTestPokemon();
 
         $pdfExporter = $this->createMock(PokemonListPdfExporter::class);
@@ -60,6 +64,7 @@ final class PokemonControllerExportPdfTest extends WebTestCase
     public function testExportPdfRedirectsWithFlashWhenGenerationFails(): void
     {
         $client = static::createClient();
+        $this->loginAsAdmin($client);
         $this->createTestPokemon();
 
         $pdfExporter = $this->createMock(PokemonListPdfExporter::class);
