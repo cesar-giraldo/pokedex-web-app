@@ -1,0 +1,12 @@
+{% set is_admin = app.request.pathInfo starts with '/admin' %}
+{% extends is_admin ? '@admin/base_error.html.twig' : '@web/base.html.twig' %}
+
+{% block title %}404 - Página no encontrada{% endblock %}
+
+{% block body %}
+	{% if is_admin %}
+		{% include '@admin/error/_404_body.html.twig' %}
+	{% else %}
+		{% include '@web/error/_404_body.html.twig' %}
+	{% endif %}
+{% endblock %}

@@ -42,3 +42,6 @@ services:
     App\Api\:
         resource: '../src/Api/'
         tags: ['controller.service_arguments']
+
+    App\EventSubscriber\:
+        resource: '../src/EventSubscriber/'

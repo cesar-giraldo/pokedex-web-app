@@ -11,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
+use function dirname;
+
 final class PokemonSpriteImageLoaderTest extends TestCase
 {
     public function testLoadUsesFallbackWhenPokemonHasNoSprite(): void
@@ -61,9 +63,6 @@ final class PokemonSpriteImageLoaderTest extends TestCase
         self::assertStringEndsWith('/public/admin/images/pokemon/pokeball.png', $result['path']);
     }
 
-    /**
-     * @return Pokemon
-     */
     private function createPokemon(?string $spriteFront, ?string $spriteBack): Pokemon
     {
         $pokemonType = new PokemonType();

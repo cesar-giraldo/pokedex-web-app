@@ -12,6 +12,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 
+use function dirname;
+
 final class PokemonListExcelExporterTest extends TestCase
 {
     public function testExportGeneratesValidSpreadsheetWithPokemonData(): void
@@ -80,9 +82,6 @@ final class PokemonListExcelExporterTest extends TestCase
         );
     }
 
-    /**
-     * @return \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
-     */
     private function loadSheetFromContent(string $content): \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'pokemon_excel_test_');

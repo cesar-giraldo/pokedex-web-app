@@ -1,0 +1,12 @@
+<div class="flex min-h-screen flex-col items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 p-8">
+	<div class="w-full max-w-lg rounded-2xl bg-white p-10 text-center shadow-lg">
+		<p class="text-sm font-semibold uppercase tracking-wide text-indigo-600">Error 500</p>
+		<h1 class="mt-3 text-3xl font-bold text-gray-900">Error interno del servidor</h1>
+		<p class="mt-4 text-base text-gray-600">
+			{{ message|default('Algo salió mal. Por favor, inténtalo de nuevo en unos momentos.') }}
+		</p>
+		<a href="{{ home_url|default(path('app_home')) }}" class="mt-8 inline-flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700">
+			{{ home_label|default('Volver al inicio') }}
+		</a>
+	</div>
+</div>

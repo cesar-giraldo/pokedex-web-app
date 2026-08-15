@@ -7,6 +7,7 @@ namespace App\Admin\Service\Excel;
 use App\Entity\Pokemon;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Throwable;
 
 use function is_file;
 use function ltrim;
@@ -68,7 +69,7 @@ class PokemonSpriteImageLoader
             file_put_contents($tempFile, $response->getContent());
 
             return ['path' => $tempFile, 'temporary' => true];
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
     }
