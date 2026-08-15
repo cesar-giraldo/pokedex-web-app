@@ -17,6 +17,9 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
+use function in_array;
+use function sprintf;
+
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
 #[ORM\UniqueConstraint(name: 'uniq_users_nickname', fields: ['nickname'])]
@@ -290,7 +293,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isLoginTemporarilyBlocked(): bool
     {
-        if ($this->noLoginUntil === null) {
+        if (null === $this->noLoginUntil) {
             return false;
         }
 

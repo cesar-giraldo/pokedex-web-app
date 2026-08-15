@@ -54,7 +54,7 @@ final class UserCheckerTest extends TestCase
 
     private function createUser(UserStatus $status): User
     {
-        return (new User())
+        return new User()
             ->setName('Test')
             ->setLastname('User')
             ->setEmail('test@example.com')

@@ -37,7 +37,7 @@ final class HtmlExceptionSubscriber implements EventSubscriberInterface
 
     public function onKernelException(ExceptionEvent $event): void
     {
-        if ($this->environment !== 'prod') {
+        if ('prod' !== $this->environment) {
             return;
         }
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Admin\Security;
 
-use App\Entity\User;
 use App\Entity\Enum\UserStatus;
+use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
@@ -34,11 +34,11 @@ final class UserChecker implements UserCheckerInterface
             return;
         }
 
-        if ($user->getStatus() === UserStatus::UncompleteProfileInfo) {
+        if (UserStatus::UncompleteProfileInfo === $user->getStatus()) {
             return;
         }
 
-        if ($user->getStatus() !== UserStatus::Active) {
+        if (UserStatus::Active !== $user->getStatus()) {
             throw new CustomUserMessageAccountStatusException($user->getStatus()->loginDeniedMessage());
         }
     }

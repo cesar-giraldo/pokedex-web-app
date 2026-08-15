@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Controller;
 
 use App\Admin\Form\LoginFormType;
+use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -15,7 +16,7 @@ final class SecurityController extends AbstractController
     #[Route('/admin/login', name: 'app_admin_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        if ($this->getUser() !== null && $this->isGranted('ROLE_ADMIN')) {
+        if (null !== $this->getUser() && $this->isGranted('ROLE_ADMIN')) {
             return $this->redirectToRoute('app_backend_pokemons');
         }
 
@@ -32,6 +33,6 @@ final class SecurityController extends AbstractController
     #[Route('/admin/logout', name: 'app_admin_logout')]
     public function logout(): never
     {
-        throw new \LogicException('Symfony intercepts this route.');
+        throw new LogicException('Symfony intercepts this route.');
     }
 }

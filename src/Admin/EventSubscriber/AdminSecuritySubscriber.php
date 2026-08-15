@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Admin\EventSubscriber;
 
-use App\Entity\User;
 use App\Entity\Enum\UserStatus;
+use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -54,7 +54,7 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
     {
         $request = $event->getRequest();
 
-        if ($request->attributes->get('_route') !== 'app_admin_login') {
+        if ('app_admin_login' !== $request->attributes->get('_route')) {
             return;
         }
 
@@ -95,7 +95,7 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($user->getStatus() === UserStatus::UncompleteProfileInfo) {
+        if (UserStatus::UncompleteProfileInfo === $user->getStatus()) {
             $event->setResponse(new RedirectResponse(
                 $this->urlGenerator->generate('app_design_user_profile'),
             ));
@@ -120,7 +120,7 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
             return;
         }
 
-        if (!$user->hasBackendAccess() || $user->getStatus() !== UserStatus::UncompleteProfileInfo) {
+        if (!$user->hasBackendAccess() || UserStatus::UncompleteProfileInfo !== $user->getStatus()) {
             return;
         }
 
@@ -143,6 +143,6 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
             }
         }
 
-        return $path === '/admin/login';
+        return '/admin/login' === $path;
     }
 }

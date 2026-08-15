@@ -9,6 +9,7 @@ use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,6 +19,10 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
+use function is_string;
+
+use const FILTER_VALIDATE_EMAIL;
 
 #[AsCommand(
     name: 'app:create-initial-data',
@@ -60,7 +65,7 @@ final class CreateInitialDataCommand extends Command
 
         $initialUserEmail = $this->resolveInitialUserEmail($input, $io);
 
-        if ($initialUserEmail === null) {
+        if (null === $initialUserEmail) {
             return Command::FAILURE;
         }
 
@@ -72,11 +77,11 @@ final class CreateInitialDataCommand extends Command
 
         $plainPassword = $this->resolvePassword($input, $io);
 
-        if ($plainPassword === null) {
+        if (null === $plainPassword) {
             return Command::FAILURE;
         }
 
-        $user = (new User())
+        $user = new User()
             ->setName('Cesar')
             ->setLastname('Giraldo')
             ->setEmail($initialUserEmail)
@@ -100,11 +105,11 @@ final class CreateInitialDataCommand extends Command
     {
         $optionEmail = $input->getOption('email');
 
-        if (is_string($optionEmail) && $optionEmail !== '') {
+        if (is_string($optionEmail) && '' !== $optionEmail) {
             return mb_strtolower(trim($optionEmail));
         }
 
-        if (is_string($this->initialUserEmail) && $this->initialUserEmail !== '') {
+        if (is_string($this->initialUserEmail) && '' !== $this->initialUserEmail) {
             return mb_strtolower(trim($this->initialUserEmail));
         }
 
@@ -113,12 +118,12 @@ final class CreateInitialDataCommand extends Command
         $question->setValidator(static function (?string $value): string {
             $value = trim((string) $value);
 
-            if ($value === '') {
-                throw new \RuntimeException('Debes indicar un email.');
+            if ('' === $value) {
+                throw new RuntimeException('Debes indicar un email.');
             }
 
             if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                throw new \RuntimeException('Debes indicar un email válido.');
+                throw new RuntimeException('Debes indicar un email válido.');
             }
 
             return mb_strtolower($value);
@@ -126,7 +131,7 @@ final class CreateInitialDataCommand extends Command
 
         $email = $helper->ask($input, $io, $question);
 
-        if (!is_string($email) || $email === '') {
+        if (!is_string($email) || '' === $email) {
             $io->error('Debes indicar un email mediante --email o INITIAL_USER_EMAIL.');
 
             return null;
@@ -139,11 +144,11 @@ final class CreateInitialDataCommand extends Command
     {
         $optionPassword = $input->getOption('password');
 
-        if (is_string($optionPassword) && $optionPassword !== '') {
+        if (is_string($optionPassword) && '' !== $optionPassword) {
             return $optionPassword;
         }
 
-        if (is_string($this->initialUserPassword) && $this->initialUserPassword !== '') {
+        if (is_string($this->initialUserPassword) && '' !== $this->initialUserPassword) {
             return $this->initialUserPassword;
         }
 
@@ -154,7 +159,7 @@ final class CreateInitialDataCommand extends Command
 
         $password = $helper->ask($input, $io, $question);
 
-        if (!is_string($password) || $password === '') {
+        if (!is_string($password) || '' === $password) {
             $io->error('Debes indicar una contraseña mediante --password o INITIAL_USER_PASSWORD.');
 
             return null;

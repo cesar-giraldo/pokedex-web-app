@@ -30,7 +30,7 @@ final class CreateInitialDataCommandTest extends KernelTestCase
             ->getQuery()
             ->getOneOrNullResult();
 
-        if ($existingByPhone instanceof User && $existingByPhone->getEmail() !== self::INITIAL_EMAIL) {
+        if ($existingByPhone instanceof User && self::INITIAL_EMAIL !== $existingByPhone->getEmail()) {
             self::markTestSkipped('El teléfono del usuario inicial ya está asignado a otra cuenta.');
         }
 
@@ -50,7 +50,7 @@ final class CreateInitialDataCommandTest extends KernelTestCase
             '--password' => 'InitialSecret123',
         ]);
 
-        if ($exitCode !== 0) {
+        if (0 !== $exitCode) {
             self::markTestSkipped('No se pudo crear el usuario inicial en la base de datos de pruebas.');
         }
 
@@ -80,7 +80,7 @@ final class CreateInitialDataCommandTest extends KernelTestCase
             ->getQuery()
             ->getOneOrNullResult();
 
-        if ($existingByPhone instanceof User && $existingByPhone->getEmail() !== self::INITIAL_EMAIL) {
+        if ($existingByPhone instanceof User && self::INITIAL_EMAIL !== $existingByPhone->getEmail()) {
             self::markTestSkipped('El teléfono del usuario inicial ya está asignado a otra cuenta.');
         }
 

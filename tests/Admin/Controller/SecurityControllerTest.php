@@ -11,6 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+use function sprintf;
+
 final class SecurityControllerTest extends WebTestCase
 {
     public function testLoginPageIsAccessibleForGuests(): void
@@ -78,7 +80,7 @@ final class SecurityControllerTest extends WebTestCase
     ): void {
         $container = static::getContainer();
 
-        $user = (new User())
+        $user = new User()
             ->setName('Test')
             ->setLastname('User')
             ->setEmail(sprintf('%s@example.com', $nickname))

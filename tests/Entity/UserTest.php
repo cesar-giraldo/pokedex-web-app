@@ -13,7 +13,7 @@ final class UserTest extends TestCase
 {
     public function testMapsApplicationRolesToSymfonyRoles(): void
     {
-        $user = (new User())
+        $user = new User()
             ->setApplicationRoles([UserRole::Developer]);
 
         self::assertSame(['ROLE_DEVELOPER'], $user->getRoles());
@@ -37,7 +37,7 @@ final class UserTest extends TestCase
 
     public function testResetsFailedAttemptsOnSuccessfulLogin(): void
     {
-        $user = (new User())->recordFailedLoginAttempt()->recordFailedLoginAttempt();
+        $user = new User()->recordFailedLoginAttempt()->recordFailedLoginAttempt();
         $user->resetFailedLoginAttempts();
 
         self::assertSame(0, $user->getFailedLoginAttempts());
@@ -53,7 +53,7 @@ final class UserTest extends TestCase
 
     public function testNormalizesEmailToLowerCase(): void
     {
-        $user = (new User())->setEmail('Test@Mail.COM');
+        $user = new User()->setEmail('Test@Mail.COM');
 
         self::assertSame('test@mail.com', $user->getEmail());
     }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity\Enum;
 
+use function is_string;
+
 enum UserRole: string
 {
     case Developer = 'developer';
@@ -41,7 +43,7 @@ enum UserRole: string
 
             $role = self::tryFrom($value);
 
-            if ($role !== null) {
+            if (null !== $role) {
                 $roles[] = $role;
             }
         }
