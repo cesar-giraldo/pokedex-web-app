@@ -2,3 +2,6 @@ Invalid credentials.: Credenciales inválidas.
 Invalid CSRF token.: Ha ocurrido un error, intente nuevamente.
 Account is disabled.: La cuenta está deshabilitada.
 Account is locked.: La cuenta está bloqueada.
+'Too many failed login attempts, please try again in %minutes% minute.': Demasiados intentos de inicio de sesión. Inténtalo de nuevo en %minutes% minuto.
+'Too many failed login attempts, please try again in %minutes% minutes.': Demasiados intentos de inicio de sesión. Inténtalo de nuevo en %minutes% minutos.
+'Too many failed login attempts, please try again later.': Demasiados intentos de inicio de sesión. Inténtalo de nuevo más tarde.

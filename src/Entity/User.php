@@ -201,9 +201,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->nickname;
     }
 
+    public static function normalizeNickname(string $nickname): string
+    {
+        return mb_strtolower(trim($nickname));
+    }
+
     public function setNickname(string $nickname): static
     {
-        $this->nickname = $nickname;
+        $this->nickname = self::normalizeNickname($nickname);
 
         return $this;
     }
@@ -276,6 +281,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function resetFailedLoginAttempts(): static
     {
         $this->failedLoginAttempts = 0;
+        $this->noLoginUntil = null;
 
         return $this;
     }

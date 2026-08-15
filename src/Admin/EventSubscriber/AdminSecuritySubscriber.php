@@ -15,6 +15,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 
@@ -59,10 +60,18 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
             return;
         }
 
-        $nickname = (string) $request->request->get(self::USERNAME_FIELD, '');
+        $nickname = User::normalizeNickname((string) $request->request->get(self::USERNAME_FIELD, ''));
         $user = $this->userRepository->findOneByNickname($nickname);
 
         if (!$user instanceof User) {
+            return;
+        }
+
+        if ($user->isLoginTemporarilyBlocked()) {
+            return;
+        }
+
+        if (!$event->getException() instanceof BadCredentialsException) {
             return;
         }
 

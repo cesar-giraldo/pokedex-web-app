@@ -20,7 +20,14 @@ class UserRepository extends ServiceEntityRepository
 
     public function findOneByNickname(string $nickname): ?User
     {
-        return $this->findOneBy(['nickname' => $nickname]);
+        $normalizedNickname = User::normalizeNickname($nickname);
+
+        return $this->createQueryBuilder('u')
+            ->andWhere('LOWER(u.nickname) = :nickname')
+            ->setParameter('nickname', $normalizedNickname)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     public function findOneByEmail(string $email): ?User

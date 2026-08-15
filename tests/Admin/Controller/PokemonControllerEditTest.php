@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Admin\Controller;
 
-use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
+use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 

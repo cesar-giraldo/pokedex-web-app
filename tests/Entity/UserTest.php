@@ -37,10 +37,18 @@ final class UserTest extends TestCase
 
     public function testResetsFailedAttemptsOnSuccessfulLogin(): void
     {
-        $user = new User()->recordFailedLoginAttempt()->recordFailedLoginAttempt();
+        $user = new User()
+            ->recordFailedLoginAttempt()
+            ->recordFailedLoginAttempt()
+            ->recordFailedLoginAttempt()
+            ->recordFailedLoginAttempt();
+        self::assertTrue($user->isLoginTemporarilyBlocked());
+
         $user->resetFailedLoginAttempts();
 
         self::assertSame(0, $user->getFailedLoginAttempts());
+        self::assertNull($user->getNoLoginUntil());
+        self::assertFalse($user->isLoginTemporarilyBlocked());
     }
 
     public function testStatusMessagesAreDefinedInSpanish(): void
@@ -56,5 +64,12 @@ final class UserTest extends TestCase
         $user = new User()->setEmail('Test@Mail.COM');
 
         self::assertSame('test@mail.com', $user->getEmail());
+    }
+
+    public function testNormalizesNicknameToLowerCase(): void
+    {
+        $user = new User()->setNickname('  Admin-Login  ');
+
+        self::assertSame('admin-login', $user->getNickname());
     }
 }
