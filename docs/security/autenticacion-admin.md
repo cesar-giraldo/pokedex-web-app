@@ -99,53 +99,53 @@ Flujo completo desde el `POST /admin/login` hasta la respuesta final.
 
 ```mermaid
 flowchart TD
-    START([POST /admin/login]) --> CSRF{¿Token CSRF válido?}
-    CSRF -->|No| ERR_CSRF[Error: token CSRF inválido]
-    CSRF -->|Sí| THROTTLE{¿Login throttling<br/>IP + nickname?}
-    THROTTLE -->|Superado| ERR_THROTTLE[Error: demasiados intentos<br/>por IP en 15 min]
-    THROTTLE -->|OK| LOAD[Cargar usuario por nickname normalizado]
+    START(["POST /admin/login"]) --> CSRF{"¿Token CSRF válido?"}
+    CSRF -->|No| ERR_CSRF["Error: token CSRF inválido"]
+    CSRF -->|Sí| THROTTLE{"¿Login throttling<br/>IP + nickname?"}
+    THROTTLE -->|Superado| ERR_THROTTLE["Error: demasiados intentos<br/>por IP en 15 min"]
+    THROTTLE -->|OK| LOAD["Cargar usuario por nickname normalizado"]
 
-    LOAD --> EXISTS{¿Usuario existe?}
-    EXISTS -->|No| ERR_GENERIC[BadCredentialsException<br/>Credenciales inválidas]
-    EXISTS -->|Sí| PRE[UserChecker::checkPreAuth]
+    LOAD --> EXISTS{"¿Usuario existe?"}
+    EXISTS -->|No| ERR_GENERIC["BadCredentialsException<br/>Credenciales inválidas"]
+    EXISTS -->|Sí| PRE["UserChecker checkPreAuth"]
 
-    PRE --> LOCKED{¿noLoginUntil<br/>en el futuro?}
-    LOCKED -->|Sí| ERR_LOCK[Mensaje: esperar X hora(s)]
-    LOCKED -->|No| STATUS{¿Estado permite<br/>login backend?}
-    STATUS -->|No| ERR_STATUS[Mensaje según estado<br/>ej. cuenta no confirmada]
-    STATUS -->|Sí| PWD{¿Contraseña correcta?}
+    PRE --> LOCKED{"¿noLoginUntil<br/>en el futuro?"}
+    LOCKED -->|Sí| ERR_LOCK["Mensaje: esperar X horas"]
+    LOCKED -->|No| STATUS{"¿Estado permite<br/>login backend?"}
+    STATUS -->|No| ERR_STATUS["Mensaje según estado<br/>ej. cuenta no confirmada"]
+    STATUS -->|Sí| PWD{"¿Contraseña correcta?"}
 
-    PWD -->|No| FAIL[LoginFailureEvent]
-    PWD -->|Sí| POST[UserChecker::checkPostAuth]
+    PWD -->|No| FAIL["LoginFailureEvent"]
+    PWD -->|Sí| POST["UserChecker checkPostAuth"]
 
-    POST --> POST_OK{¿Estado Active<br/>o UncompleteProfile?}
+    POST --> POST_OK{"¿Estado Active<br/>o UncompleteProfile?"}
     POST_OK -->|No| ERR_STATUS
-    POST_OK -->|Sí| SUCCESS[LoginSuccessEvent]
+    POST_OK -->|Sí| SUCCESS["LoginSuccessEvent"]
 
-    FAIL --> FAIL_RULES{¿Incrementar<br/>failedLoginAttempts?}
-    FAIL_RULES -->|Nickname inexistente| NO_INC0[Sin escritura BD]
-    FAIL_RULES -->|Bloqueo activo| NO_INC1[Sin escritura BD]
-    FAIL_RULES -->|Fallo no es BadCredentials| NO_INC2[Sin escritura BD]
-    FAIL_RULES -->|BadCredentials + usuario activo| INC[+1 intento<br/>4.º intento → noLoginUntil +3h]
+    FAIL --> FAIL_RULES{"¿Incrementar<br/>failedLoginAttempts?"}
+    FAIL_RULES -->|Nickname inexistente| NO_INC0["Sin escritura BD"]
+    FAIL_RULES -->|Bloqueo activo| NO_INC1["Sin escritura BD"]
+    FAIL_RULES -->|Fallo no es BadCredentials| NO_INC2["Sin escritura BD"]
+    FAIL_RULES -->|BadCredentials + usuario activo| INC["+1 intento<br/>4to intento bloqueo 3h"]
     INC --> ERR_GENERIC
     NO_INC0 --> ERR_GENERIC
     NO_INC1 --> ERR_LOCK
     NO_INC2 --> ERR_STATUS
 
-    SUCCESS --> RESET[Reset failedLoginAttempts<br/>y noLoginUntil]
-    RESET --> ROLE{¿Tiene rol<br/>admin/developer?}
-    ROLE -->|No| DENY[Rol user: invalidar token<br/>flash error → login]
-    ROLE -->|Sí| PROFILE{¿Estado<br/>UncompleteProfileInfo?}
-    PROFILE -->|Sí| REDIR_PROFILE[Redirect → completar perfil]
-    PROFILE -->|No| REDIR_ADMIN[Redirect → /admin/pokemons]
+    SUCCESS --> RESET["Reset failedLoginAttempts<br/>y noLoginUntil"]
+    RESET --> ROLE{"¿Tiene rol<br/>admin o developer?"}
+    ROLE -->|No| DENY["Rol user: invalidar token<br/>flash error a login"]
+    ROLE -->|Sí| PROFILE{"¿Estado<br/>UncompleteProfileInfo?"}
+    PROFILE -->|Sí| REDIR_PROFILE["Redirect a completar perfil"]
+    PROFILE -->|No| REDIR_ADMIN["Redirect a /admin/pokemons"]
 
-    ERR_GENERIC --> END([Vuelta a /admin/login])
+    ERR_GENERIC --> END(["Vuelta a /admin/login"])
     ERR_CSRF --> END
     ERR_THROTTLE --> END
     ERR_LOCK --> END
     ERR_STATUS --> END
     DENY --> END
-    REDIR_PROFILE --> END_OK([Sesión iniciada])
+    REDIR_PROFILE --> END_OK(["Sesión iniciada"])
     REDIR_ADMIN --> END_OK
 ```
 
