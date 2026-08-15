@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,13 +16,15 @@ use Throwable;
 use Twig\Environment;
 
 /**
- * Renders custom HTML error pages for non-API requests in every environment,
- * including dev (where Symfony would otherwise show the debug exception page).
+ * Renders custom HTML error pages for non-API requests in production only.
+ * In dev and test, Symfony keeps the debug exception page for easier troubleshooting.
  */
 final class HtmlExceptionSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private readonly Environment $twig,
+        #[Autowire('%kernel.environment%')]
+        private readonly string $environment,
     ) {
     }
 
@@ -34,6 +37,10 @@ final class HtmlExceptionSubscriber implements EventSubscriberInterface
 
     public function onKernelException(ExceptionEvent $event): void
     {
+        if ($this->environment !== 'prod') {
+            return;
+        }
+
         if (!$event->isMainRequest() || $event->hasResponse()) {
             return;
         }

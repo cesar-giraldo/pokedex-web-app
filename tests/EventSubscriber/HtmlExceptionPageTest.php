@@ -10,9 +10,9 @@ use const JSON_THROW_ON_ERROR;
 
 final class HtmlExceptionPageTest extends WebTestCase
 {
-    public function testWebNotFoundReturnsCustomPage(): void
+    public function testWebNotFoundReturnsCustomPageInProduction(): void
     {
-        $client = static::createClient();
+        $client = static::createClient(['environment' => 'prod', 'debug' => false]);
         $client->request('GET', '/this-route-does-not-exist');
 
         self::assertResponseStatusCodeSame(404);
@@ -20,9 +20,9 @@ final class HtmlExceptionPageTest extends WebTestCase
         self::assertSelectorExists('a[href="/"]');
     }
 
-    public function testAdminNotFoundReturnsCustomPage(): void
+    public function testAdminNotFoundReturnsCustomPageInProduction(): void
     {
-        $client = static::createClient();
+        $client = static::createClient(['environment' => 'prod', 'debug' => false]);
         $client->request('GET', '/admin/this-route-does-not-exist');
 
         self::assertResponseStatusCodeSame(404);

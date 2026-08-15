@@ -1,0 +1,87 @@
+{% extends '@admin/base_auth.html.twig' %}
+
+{% from '@admin/macros/form.html.twig' import field_error %}
+
+{% block title %}Iniciar sesión - Pokedex{% endblock %}
+
+{% block body %}
+	<div class="w-full max-w-md pt-10 mx-auto">
+		<a href="{{ path('app_home') }}" class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+			{{ ux_icon('heroicons:chevron-left', { class: 'w-5 h-5' }) }}
+			Volver al sitio
+		</a>
+	</div>
+	<div class="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+		<div>
+			<div class="mb-5 sm:mb-8">
+				<h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
+					Iniciar sesión
+				</h1>
+				<p class="text-sm text-gray-500 dark:text-gray-400">
+					Ingresa tu nickname y contraseña para acceder al panel de administración.
+				</p>
+			</div>
+
+			{% for message in app.flashes('error') %}
+				<div class="mb-4 rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-400">
+					{{ message }}
+				</div>
+			{% endfor %}
+
+			{% if error %}
+				<div class="mb-4 rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-400">
+					{{ error.messageKey|trans(error.messageData, 'security') }}
+				</div>
+			{% endif %}
+
+			{{ form_start(loginForm, {
+				action: path('app_admin_login'),
+				method: 'POST',
+				attr: { class: 'space-y-5' },
+				render_rest: false,
+			}) }}
+
+				<twig:component_text_input
+					label="Nickname"
+					name="{{ loginForm['_username'].vars.full_name }}"
+					id="login-username"
+					value="{{ loginForm['_username'].vars.value }}"
+					autocomplete="username"
+					placeholder="tu-nickname"
+					:minLength="5"
+					:required="true"
+					error="{{ field_error(loginForm['_username']) }}"
+				/>
+
+				<twig:component_password_input
+					label="Contraseña"
+					name="{{ loginForm['_password'].vars.full_name }}"
+					id="login-password"
+					autocomplete="current-password"
+					placeholder="Ingresa tu contraseña"
+					:required="true"
+					error="{{ field_error(loginForm['_password']) }}"
+				/>
+
+				<div class="flex items-center justify-between">
+					<twig:component_checkbox
+						label="Recordarme"
+						name="{{ loginForm['_remember_me'].vars.full_name }}"
+						id="login-remember-me"
+						value="on"
+						:checked="loginForm['_remember_me'].vars.checked"
+					/>
+				</div>
+
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+				<div>
+					<button type="submit" class="flex w-full items-center justify-center rounded-lg bg-brand-500 px-4 py-3 text-sm font-medium text-white transition shadow-theme-xs hover:bg-brand-600">
+						Iniciar sesión
+					</button>
+				</div>
+
+			{{ form_end(loginForm, { render_rest: false }) }}
+		</div>
+	</div>
+{% endblock %}

@@ -29,7 +29,7 @@ final class HtmlExceptionSubscriberTest extends TestCase
             )
             ->willReturn('<html>404</html>');
 
-        $subscriber = new HtmlExceptionSubscriber($twig);
+        $subscriber = new HtmlExceptionSubscriber($twig, 'prod');
         $event = $this->createExceptionEvent(new NotFoundHttpException(), '/missing-page');
 
         $subscriber->onKernelException($event);
@@ -50,7 +50,7 @@ final class HtmlExceptionSubscriberTest extends TestCase
             )
             ->willReturn('<html>500</html>');
 
-        $subscriber = new HtmlExceptionSubscriber($twig);
+        $subscriber = new HtmlExceptionSubscriber($twig, 'prod');
         $event = $this->createExceptionEvent(new RuntimeException('Server failure'), '/admin/pokemons');
 
         $subscriber->onKernelException($event);
@@ -65,7 +65,7 @@ final class HtmlExceptionSubscriberTest extends TestCase
         $twig = $this->createMock(Environment::class);
         $twig->expects(self::never())->method('render');
 
-        $subscriber = new HtmlExceptionSubscriber($twig);
+        $subscriber = new HtmlExceptionSubscriber($twig, 'prod');
         $event = $this->createExceptionEvent(new AccessDeniedHttpException(), '/admin/pokemons');
 
         $subscriber->onKernelException($event);
@@ -78,8 +78,21 @@ final class HtmlExceptionSubscriberTest extends TestCase
         $twig = $this->createMock(Environment::class);
         $twig->expects(self::never())->method('render');
 
-        $subscriber = new HtmlExceptionSubscriber($twig);
+        $subscriber = new HtmlExceptionSubscriber($twig, 'prod');
         $event = $this->createExceptionEvent(new NotFoundHttpException(), '/api/v1/pokemon/999');
+
+        $subscriber->onKernelException($event);
+
+        self::assertFalse($event->hasResponse());
+    }
+
+    public function testSkipsCustomPagesOutsideProduction(): void
+    {
+        $twig = $this->createMock(Environment::class);
+        $twig->expects(self::never())->method('render');
+
+        $subscriber = new HtmlExceptionSubscriber($twig, 'dev');
+        $event = $this->createExceptionEvent(new NotFoundHttpException(), '/missing-page');
 
         $subscriber->onKernelException($event);
 
