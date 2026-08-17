@@ -110,7 +110,7 @@ flowchart TD
     EXISTS -->|Sí| PRE["UserChecker checkPreAuth"]
 
     PRE --> LOCKED{"¿noLoginUntil<br/>en el futuro?"}
-    LOCKED -->|Sí| ERR_LOCK["Mensaje: esperar X horas"]
+    LOCKED -->|Sí| ERR_LOCK["Mensaje: esperar X minutos"]
     LOCKED -->|No| STATUS{"¿Estado permite<br/>login backend?"}
     STATUS -->|No| ERR_STATUS["Mensaje según estado<br/>ej. cuenta no confirmada"]
     STATUS -->|Sí| PWD{"¿Contraseña correcta?"}
@@ -126,7 +126,7 @@ flowchart TD
     FAIL_RULES -->|Nickname inexistente| NO_INC0["Sin escritura BD"]
     FAIL_RULES -->|Bloqueo activo| NO_INC1["Sin escritura BD"]
     FAIL_RULES -->|Fallo no es BadCredentials| NO_INC2["Sin escritura BD"]
-    FAIL_RULES -->|BadCredentials + usuario activo| INC["+1 intento<br/>4to intento bloqueo 3h"]
+    FAIL_RULES -->|BadCredentials + usuario activo| INC["+1 intento<br/>4to intento bloqueo 1h"]
     INC --> ERR_GENERIC
     NO_INC0 --> ERR_GENERIC
     NO_INC1 --> ERR_LOCK
@@ -158,7 +158,7 @@ Constantes en `User`:
 | Constante | Valor | Significado |
 | --------- | ----- | ----------- |
 | `MAX_FAILED_LOGIN_ATTEMPTS` | `4` | Al cuarto intento fallido se activa bloqueo |
-| `LOGIN_LOCK_HOURS` | `3` | Duración del bloqueo (`noLoginUntil`) |
+| `LOGIN_LOCK_MINUTES` | `60` | Duración del bloqueo (`noLoginUntil`) |
 
 ### Reglas de negocio
 
@@ -167,11 +167,13 @@ Constantes en `User`:
 | 0 | Nickname inexistente → denegar sin tocar BD | `onLoginFailure` retorna si no hay usuario |
 | 1 | Nickname existe + contraseña incorrecta → +1 intento | Solo si la excepción es `BadCredentialsException` |
 | 2 | Login exitoso → reiniciar contador y bloqueo | `resetFailedLoginAttempts()` limpia contador y `noLoginUntil` |
-| 3 | Tras 4 intentos fallidos → bloqueo 3 horas | `User::recordFailedLoginAttempt()` |
-| 4 | Credenciales correctas + bloqueo activo → denegar con mensaje de espera | `UserChecker::checkPreAuth()` antes de verificar contraseña |
+| 3 | Tras 4 intentos fallidos → bloqueo 1 hora | `User::recordFailedLoginAttempt()` |
+| 4 | Credenciales correctas + bloqueo activo → denegar con mensaje de espera | `UserChecker::checkPreAuth()` antes de verificar contraseña; el mensaje muestra los **minutos restantes** |
 | 5 | Contraseña incorrecta + bloqueo activo → no incrementar | `isLoginTemporarilyBlocked()` retorna antes de incrementar |
 
 > **Orden Symfony:** `checkPreAuth` se ejecuta **antes** de validar la contraseña. Si hay bloqueo temporal, la contraseña no se comprueba y el fallo no cuenta como intento de contraseña incorrecta.
+
+El mensaje de bloqueo se calcula dinámicamente con `User::getRemainingLoginLockMinutes()` y usa pluralización en español (`1 minuto` / `N minutos`).
 
 ---
 
@@ -187,7 +189,7 @@ login_throttling:
     interval: '15 minutes'
 ```
 
-Limita intentos agregados por dirección IP y nickname, independientemente del bloqueo por cuenta. Complementa las 4 fallas / 3 h por usuario.
+Limita intentos agregados por dirección IP y nickname, independientemente del bloqueo por cuenta. Complementa las 4 fallas / 1 h por usuario.
 
 En entorno `test` el límite se relaja (`1000` intentos) para no romper la suite PHPUnit.
 
@@ -253,7 +255,7 @@ Mensajes de negocio (no en ese archivo, definidos en código):
 
 | Situación | Mensaje |
 | --------- | ------- |
-| Bloqueo temporal | Has superado el número de intentos permitidos. Debes esperar X hora(s)... |
+| Bloqueo temporal | Has superado el número de intentos permitidos. Debes esperar X minuto(s)... |
 | Cuenta no confirmada | Debes confirmar tu cuenta antes de iniciar sesión. |
 | Cuenta baneada/inactiva | Mensajes en `UserStatus::loginDeniedMessage()` |
 | Rol `user` en backend | No tienes acceso al panel de administración. |
@@ -320,7 +322,7 @@ Modificar constantes en `User`:
 
 ```php
 public const int MAX_FAILED_LOGIN_ATTEMPTS = 4;
-public const int LOGIN_LOCK_HOURS = 3;
+public const int LOGIN_LOCK_MINUTES = 60;
 ```
 
 Actualizar `tests/Entity/UserTest.php` si cambian los valores.

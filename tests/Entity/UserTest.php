@@ -7,6 +7,7 @@ namespace App\Tests\Entity;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use DateTime;
 use PHPUnit\Framework\TestCase;
 
 final class UserTest extends TestCase
@@ -33,6 +34,31 @@ final class UserTest extends TestCase
         self::assertNotNull($user->getNoLoginUntil());
         self::assertTrue($user->isLoginTemporarilyBlocked());
         self::assertSame(0, $user->getFailedLoginAttempts());
+
+        $noLoginUntil = $user->getNoLoginUntil();
+        $remainingSeconds = $noLoginUntil->getTimestamp() - time();
+        self::assertGreaterThan(User::LOGIN_LOCK_MINUTES * 60 - 5, $remainingSeconds);
+        self::assertLessThanOrEqual(User::LOGIN_LOCK_MINUTES * 60, $remainingSeconds);
+    }
+
+    public function testLoginTemporaryLockMessageShowsRemainingMinutes(): void
+    {
+        $user = new User();
+        $user->setNoLoginUntil(new DateTime('+45 minutes'));
+
+        self::assertSame(45, $user->getRemainingLoginLockMinutes());
+        self::assertSame(
+            'Has superado el número de intentos permitidos. Debes esperar 45 minutos para volver a intentarlo.',
+            $user->loginTemporaryLockMessage(),
+        );
+
+        $user->setNoLoginUntil(new DateTime('+1 minute'));
+
+        self::assertSame(1, $user->getRemainingLoginLockMinutes());
+        self::assertSame(
+            'Has superado el número de intentos permitidos. Debes esperar 1 minuto para volver a intentarlo.',
+            $user->loginTemporaryLockMessage(),
+        );
     }
 
     public function testResetsFailedAttemptsOnSuccessfulLogin(): void

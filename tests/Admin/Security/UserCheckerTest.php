@@ -34,10 +34,10 @@ final class UserCheckerTest extends TestCase
     public function testBlocksTemporaryLoginLock(): void
     {
         $user = $this->createUser(UserStatus::Active);
-        $user->setNoLoginUntil(new DateTime('+2 hours'));
+        $user->setNoLoginUntil(new DateTime('+30 minutes'));
 
         $this->expectException(CustomUserMessageAccountStatusException::class);
-        $this->expectExceptionMessage('Has superado el número de intentos permitidos.');
+        $this->expectExceptionMessage('Has superado el número de intentos permitidos. Debes esperar 30 minutos');
 
         $this->userChecker->checkPreAuth($user);
     }

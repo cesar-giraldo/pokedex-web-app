@@ -36,7 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const int MAX_FAILED_LOGIN_ATTEMPTS = 4;
 
-    public const int LOGIN_LOCK_HOURS = 3;
+    public const int LOGIN_LOCK_MINUTES = 60;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -291,7 +291,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         ++$this->failedLoginAttempts;
 
         if ($this->failedLoginAttempts >= self::MAX_FAILED_LOGIN_ATTEMPTS) {
-            $this->noLoginUntil = new DateTime(sprintf('+%d hours', self::LOGIN_LOCK_HOURS));
+            $this->noLoginUntil = new DateTime(sprintf('+%d minutes', self::LOGIN_LOCK_MINUTES));
             $this->failedLoginAttempts = 0;
         }
 
@@ -307,7 +307,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->noLoginUntil > new DateTime();
     }
 
-    public function getRemainingLoginLockHours(): int
+    public function getRemainingLoginLockMinutes(): int
     {
         $noLoginUntil = $this->noLoginUntil;
 
@@ -319,16 +319,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $lockUntil = DateTimeImmutable::createFromInterface($noLoginUntil);
         $seconds = max(0, $lockUntil->getTimestamp() - $now->getTimestamp());
 
-        return (int) ceil($seconds / 3600);
+        return (int) ceil($seconds / 60);
     }
 
     public function loginTemporaryLockMessage(): string
     {
-        $hours = $this->getRemainingLoginLockHours();
+        $minutes = max($this->getRemainingLoginLockMinutes(), 1);
+        $unit = 1 === $minutes ? 'minuto' : 'minutos';
 
         return sprintf(
-            'Has superado el número de intentos permitidos. Debes esperar %d hora(s) para volver a intentarlo.',
-            max($hours, 1),
+            'Has superado el número de intentos permitidos. Debes esperar %d %s para volver a intentarlo.',
+            $minutes,
+            $unit,
         );
     }
 
