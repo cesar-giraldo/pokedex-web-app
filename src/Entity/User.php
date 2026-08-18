@@ -94,6 +94,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ['default' => 0])]
     private int $failedLoginAttempts = 0;
 
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['default' => false])]
+    private ?bool $isHidden = false;
+
     public function __construct()
     {
         $now = new DateTime();
@@ -276,6 +279,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getFailedLoginAttempts(): int
     {
         return $this->failedLoginAttempts;
+    }
+
+    public function isHidden(): ?bool
+    {
+        return $this->isHidden;
+    }
+
+    public function setIsHidden(?bool $isHidden): static
+    {
+        $this->isHidden = $isHidden;
+
+        return $this;
     }
 
     public function resetFailedLoginAttempts(): static

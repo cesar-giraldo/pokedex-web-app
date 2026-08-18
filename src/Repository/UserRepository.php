@@ -60,7 +60,7 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param array{excludeDevelopers?: bool} $options
+     * @param array{excludeDevelopers?: bool, excludeHidden?: bool} $options
      */
     public function findBackendUsersQueryBuilder(
         ?string $term,
@@ -77,6 +77,10 @@ class UserRepository extends ServiceEntityRepository
         if ($options['excludeDevelopers'] ?? false) {
             $qb->andWhere('u.roles NOT LIKE :excludeDeveloperRole')
                 ->setParameter('excludeDeveloperRole', '%"' . UserRole::Developer->value . '"%');
+        }
+
+        if ($options['excludeHidden'] ?? false) {
+            $qb->andWhere('u.isHidden IS NULL OR u.isHidden = false');
         }
 
         if (null !== $term && '' !== $term) {

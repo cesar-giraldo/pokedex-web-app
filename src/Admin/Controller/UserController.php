@@ -31,12 +31,16 @@ final class UserController extends AbstractController
 
         $sort = $request->query->get('sort', 'u.createdAt');
         $direction = $request->query->get('direction', 'desc');
+        $isDeveloper = $this->isGranted('ROLE_DEVELOPER');
 
         $queryBuilder = $userRepository->findBackendUsersQueryBuilder(
             $term,
             $sort,
             $direction,
-            ['excludeDevelopers' => !$this->isGranted('ROLE_DEVELOPER')],
+            [
+                'excludeDevelopers' => !$isDeveloper,
+                'excludeHidden' => !$isDeveloper,
+            ],
         );
 
         $pagination = $this->getPagination($queryBuilder, $request);

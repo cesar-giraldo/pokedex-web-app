@@ -98,6 +98,38 @@ final class UserRepositoryTest extends KernelTestCase
         self::assertStringContainsString('ORDER BY u.createdAt DESC', $dql);
     }
 
+    public function testFindBackendUsersQueryBuilderExcludesHiddenUsersForNonDeveloperScope(): void
+    {
+        $repository = $this->getRepository();
+        $visibleAdmin = $this->createUser('repo-visible-admin', UserRole::Admin);
+        $hiddenAdmin = $this->createUser('repo-hidden-admin', UserRole::Admin, isHidden: true);
+
+        $results = $repository
+            ->findBackendUsersQueryBuilder(null, 'u.createdAt', 'desc', ['excludeHidden' => true])
+            ->getQuery()
+            ->getResult();
+
+        $nicknames = array_map(static fn (User $user): string => $user->getNickname(), $results);
+
+        self::assertContains($visibleAdmin->getNickname(), $nicknames);
+        self::assertNotContains($hiddenAdmin->getNickname(), $nicknames);
+    }
+
+    public function testFindBackendUsersQueryBuilderIncludesHiddenUsersForDeveloperScope(): void
+    {
+        $repository = $this->getRepository();
+        $hiddenAdmin = $this->createUser('repo-dev-hidden-admin', UserRole::Admin, isHidden: true);
+
+        $results = $repository
+            ->findBackendUsersQueryBuilder(null, 'u.createdAt', 'desc', ['excludeHidden' => false])
+            ->getQuery()
+            ->getResult();
+
+        $nicknames = array_map(static fn (User $user): string => $user->getNickname(), $results);
+
+        self::assertContains($hiddenAdmin->getNickname(), $nicknames);
+    }
+
     private function getRepository(): UserRepository
     {
         self::bootKernel();
@@ -116,6 +148,7 @@ final class UserRepositoryTest extends KernelTestCase
         string $name = 'Test',
         string $lastname = 'User',
         string $email = '',
+        bool $isHidden = false,
     ): User {
         self::assertNotNull($this->entityManager);
 
@@ -128,7 +161,8 @@ final class UserRepositoryTest extends KernelTestCase
             ->setEmail('' !== $email ? $email : sprintf('%s@example.com', $nickname))
             ->setNickname($nickname)
             ->setApplicationRoles([$role])
-            ->setStatus(UserStatus::Active);
+            ->setStatus(UserStatus::Active)
+            ->setIsHidden($isHidden);
         $user->setPassword($hasher->hashPassword($user, 'Secret123'));
 
         $this->entityManager->persist($user);
