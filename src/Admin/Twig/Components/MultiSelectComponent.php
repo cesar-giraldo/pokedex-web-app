@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Twig\Components;
 
+use App\Admin\Twig\Components\Concerns\NormalizesComponentError;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 
@@ -46,6 +47,8 @@ use function sprintf;
 )]
 final class MultiSelectComponent
 {
+    use NormalizesComponentError;
+
     public string $label = '';
 
     public string $placeholder = 'Seleccione...';
@@ -101,7 +104,7 @@ final class MultiSelectComponent
             return $base . ' cursor-not-allowed border-gray-100 bg-gray-50 opacity-60 dark:border-gray-800 dark:bg-white/[0.03]';
         }
 
-        if (null !== $this->error) {
+        if ($this->hasError()) {
             return $base . ' border-error-300 focus:border-error-300 focus:ring-error-500/10 dark:border-error-700 dark:focus:border-error-800';
         }
 

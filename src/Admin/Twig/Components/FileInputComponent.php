@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Twig\Components;
 
+use App\Admin\Twig\Components\Concerns\NormalizesComponentError;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 
@@ -39,6 +40,8 @@ use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 )]
 final class FileInputComponent
 {
+    use NormalizesComponentError;
+
     public string $label = 'Upload file';
 
     public string $name = '';
@@ -77,7 +80,7 @@ final class FileInputComponent
             return $base . ' cursor-not-allowed border-gray-100 text-gray-300 opacity-60 file:border-gray-200 file:bg-gray-50 file:text-gray-400 hover:file:bg-gray-50 dark:border-gray-800 dark:bg-white/[0.03] dark:file:border-gray-800 dark:file:bg-white/[0.03] dark:file:text-gray-500';
         }
 
-        if (null !== $this->error) {
+        if ($this->hasError()) {
             return $base . ' border-error-300 text-gray-500 file:border-gray-200 file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100 focus:border-error-300 focus:file:ring-error-300 dark:border-error-700 dark:text-gray-400 dark:file:border-gray-800 dark:file:bg-white/[0.03] dark:file:text-gray-400';
         }
 

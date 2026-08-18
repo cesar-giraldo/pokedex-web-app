@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Twig\Components;
 
+use App\Admin\Twig\Components\Concerns\NormalizesComponentError;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 
@@ -47,6 +48,8 @@ use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 )]
 final class DropzoneComponent
 {
+    use NormalizesComponentError;
+
     public string $label = '';
 
     public string $name = '';
@@ -107,7 +110,7 @@ final class DropzoneComponent
             return $base . ' cursor-not-allowed border-gray-200! bg-gray-50 opacity-60 dark:border-gray-800! dark:bg-white/[0.03]';
         }
 
-        if (null !== $this->error) {
+        if ($this->hasError()) {
             return $base . ' border-error-300! bg-gray-50 dark:border-error-700! dark:bg-gray-900';
         }
 

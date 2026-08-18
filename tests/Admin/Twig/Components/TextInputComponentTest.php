@@ -83,6 +83,12 @@ final class TextInputComponentTest extends TestCase
         $error->mount();
         self::assertStringContainsString('border-error-300', $error->getInputClasses());
 
+        $emptyError = new TextInputComponent();
+        $emptyError->error = '';
+        self::assertFalse($emptyError->hasError());
+        self::assertStringContainsString('border-gray-300', $emptyError->getInputClasses());
+        self::assertStringNotContainsString('border-error-300', $emptyError->getInputClasses());
+
         $disabled = new TextInputComponent();
         $disabled->disabled = true;
         $disabled->mount();

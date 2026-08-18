@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Twig\Components;
 
+use App\Admin\Twig\Components\Concerns\NormalizesComponentError;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 
@@ -63,6 +64,7 @@ use function strtoupper;
 )]
 final class TextInputComponent
 {
+    use NormalizesComponentError;
     public string $label = '';
 
     public string $name = '';
@@ -190,7 +192,7 @@ final class TextInputComponent
             return $base . ' ' . $padding . ' ' . $caseClass . ' cursor-not-allowed border-gray-100 bg-gray-50 text-gray-300 opacity-60 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/15 dark:placeholder:text-white/15';
         }
 
-        if (null !== $this->error) {
+        if ($this->hasError()) {
             return $base . ' ' . $padding . ' ' . $caseClass . ' border-error-300 focus:border-error-300 focus:ring-error-500/10 dark:border-error-700 dark:focus:border-error-800';
         }
 
