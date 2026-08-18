@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Controller;
 
+use App\Admin\Controller\Concerns\AdminPaginatorTrait;
 use App\Admin\Form\PokemonEditType;
 use App\Admin\Form\SearchPokemonType;
 use App\Admin\Service\Excel\ExcelGenerationException;
@@ -14,57 +15,18 @@ use App\Entity\Pokemon;
 use App\Repository\PokemonRepository;
 use App\Repository\PokemonTypeRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\QueryBuilder;
-use Pagerfanta\Doctrine\ORM\QueryAdapter;
-use Pagerfanta\Pagerfanta;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-use function in_array;
 use function is_string;
 use function sprintf;
 
 #[Route('/admin')]
 final class PokemonController extends AbstractController
 {
-    /**
-     * @return array{entities: Pagerfanta<object>, current_limit: string, allowed_limits: list<int>}
-     */
-    private function getPagination(
-        QueryBuilder $queryBuilder,
-        Request $request
-    ): array {
-        // create a QueryAdapter for Pagerfanta
-        $adapter = new QueryAdapter($queryBuilder);
-        $pagerfanta = new Pagerfanta($adapter);
-
-        $strLimit = $request->query->get('limit', '10');
-        $allowedLimits = [10, 25, 50];
-
-        if ('all' === $strLimit) {
-            $totalRecords = $pagerfanta->getNbResults();
-            // If list is empty, we ensure there is at least one entry to avoid division errors
-            $pagerfanta->setMaxPerPage($totalRecords > 0 ? $totalRecords : 1);
-        } else {
-            // Standard validation for numbers (10, 25, 50)
-            $currentLimit = (int) $strLimit;
-            if (!in_array($currentLimit, $allowedLimits, true)) {
-                $currentLimit = 10;
-            }
-            $pagerfanta->setMaxPerPage($currentLimit);
-        }
-
-        $currentPage = $request->query->getInt('page', 1);
-        $pagerfanta->setCurrentPage($currentPage);
-
-        return [
-            'entities' => $pagerfanta,
-            'current_limit' => $strLimit,
-            'allowed_limits' => $allowedLimits,
-        ];
-    }
+    use AdminPaginatorTrait;
 
     #[Route('/pokemons', name: 'app_backend_pokemons')]
     public function pokemons(PokemonRepository $pokemonRepository, Request $request): Response

@@ -29,4 +29,15 @@ enum UserStatus: string
             default => 'No puedes iniciar sesión en este momento.',
         };
     }
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::UnconfirmedAccount => 'Cuenta sin confirmar',
+            self::UncompleteProfileInfo => 'Perfil incompleto',
+            self::Active => 'Activo',
+            self::Banned => 'Suspendido',
+            self::Inactive => 'Inactivo',
+        };
+    }
 }

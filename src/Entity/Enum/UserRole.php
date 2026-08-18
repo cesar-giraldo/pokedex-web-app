@@ -29,6 +29,15 @@ enum UserRole: string
         };
     }
 
+    public function label(): string
+    {
+        return match ($this) {
+            self::Developer => 'Developer',
+            self::Admin => 'Admin',
+            self::User => 'Usuario',
+        };
+    }
+
     /**
      * @param array<mixed> $values
      *

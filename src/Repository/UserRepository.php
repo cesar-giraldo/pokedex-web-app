@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Enum\UserRole;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+
+use function in_array;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -53,5 +57,42 @@ class UserRepository extends ServiceEntityRepository
     public function existsByNicknameOrEmail(string $nickname, string $email): bool
     {
         return $this->existsByNickname($nickname) || $this->existsByEmail($email);
+    }
+
+    /**
+     * @param array{excludeDevelopers?: bool} $options
+     */
+    public function findBackendUsersQueryBuilder(
+        ?string $term,
+        string $sort,
+        string $direction,
+        array $options = [],
+    ): QueryBuilder {
+        $qb = $this->createQueryBuilder('u');
+
+        $qb->andWhere('u.roles LIKE :adminRole OR u.roles LIKE :developerRole')
+            ->setParameter('adminRole', '%"' . UserRole::Admin->value . '"%')
+            ->setParameter('developerRole', '%"' . UserRole::Developer->value . '"%');
+
+        if ($options['excludeDevelopers'] ?? false) {
+            $qb->andWhere('u.roles NOT LIKE :excludeDeveloperRole')
+                ->setParameter('excludeDeveloperRole', '%"' . UserRole::Developer->value . '"%');
+        }
+
+        if (null !== $term && '' !== $term) {
+            $qb->andWhere(
+                'u.name LIKE :term OR u.lastname LIKE :term OR u.email LIKE :term OR u.nickname LIKE :term OR u.cellphone LIKE :term',
+            )->setParameter('term', '%' . $term . '%');
+        }
+
+        $allowedColumns = ['u.name', 'u.lastname', 'u.email', 'u.nickname', 'u.status', 'u.createdAt'];
+        if (!in_array($sort, $allowedColumns, true)) {
+            $sort = 'u.createdAt';
+        }
+
+        $direction = 'ASC' === strtoupper($direction) ? 'ASC' : 'DESC';
+        $qb->orderBy($sort, $direction);
+
+        return $qb;
     }
 }

@@ -78,33 +78,19 @@
 					</li>
 					<!-- Menu Item Dashboard -->
 
-					<!-- Menu Item Calendar -->
+					<!-- Menu Item Usuarios -->
 					<li>
-						{% set calendar = get_menu_classes(active_menu, active_page, 'calendar', 'calendar') %}
-						<a href="#"
-							class="menu-item group {{ calendar.item_class }}">
-							{{ ux_icon('heroicons:calendar', { class: 'w-6 h-6 ' ~ calendar.item_icon_class }) }}
+						{% set userList = get_menu_classes(active_menu, active_page, 'user_profile', 'user_list') %}
+						<a href="{{ path('app_backend_users') }}"
+							class="menu-item group {{ userList.item_class }}">
+							{{ ux_icon('heroicons:users', { class: 'w-6 h-6 '~ userList.item_icon_class }) }}
 
 							<span class="menu-item-text group-data-[sidebar=collapsed]:lg:hidden">
-								Calendar
+								Usuarios
 							</span>
 						</a>
 					</li>
-					<!-- Menu Item Calendar -->
-
-					<!-- Menu Item Profile -->
-					<li>
-						{% set userProfile = get_menu_classes(active_menu, active_page, 'user_profile', 'user_profile') %}
-						<a href="{{ path('app_design_user_profile') }}" 
-							class="menu-item group {{ userProfile.item_class }}">
-							{{ ux_icon('heroicons:user-circle', { class: 'w-6 h-6 '~ userProfile.item_icon_class }) }}
-
-							<span class="menu-item-text group-data-[sidebar=collapsed]:lg:hidden">
-								User Profile
-							</span>
-						</a>
-					</li>
-					<!-- Menu Item Profile -->
+					<!-- Menu Item Usuarios -->
 
 					<!-- Menu Item Forms -->
 					<li class="group-menu-forms">
