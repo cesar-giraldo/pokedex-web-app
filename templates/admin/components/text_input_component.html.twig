@@ -1,13 +1,14 @@
 <div
 	data-controller="component-text-input"
-	data-component-text-input-pattern-value="{{ pattern }}"
+	data-component-text-input-pattern-value="{{ effectivePattern }}"
 	data-component-text-input-pattern-flags-value="{{ patternFlags }}"
-	data-component-text-input-pattern-error-message-value="{{ patternErrorMessage }}"
+	data-component-text-input-pattern-error-message-value="{{ effectivePatternErrorMessage }}"
 	data-component-text-input-disabled-value="{{ disabled ? 'true' : 'false' }}"
 	data-component-text-input-required-value="{{ required ? 'true' : 'false' }}"
 	data-component-text-input-has-server-error-value="{{ hasError ? 'true' : 'false' }}"
 	data-component-text-input-uppercase-value="{{ uppercase ? 'true' : 'false' }}"
 	data-component-text-input-lowercase-value="{{ lowercase ? 'true' : 'false' }}"
+	data-component-text-input-only-numbers-value="{{ onlyNumbers ? 'true' : 'false' }}"
 	data-component-text-input-min-length-value="{{ minLength }}"
 	data-component-text-input-max-length-value="{{ maxLength }}"
 	class="relative"
@@ -40,7 +41,7 @@
 			class="{{ inputClasses }}"
 			{% if maxLength > 0 %}maxlength="{{ maxLength }}"{% endif %}
 			{% if minLength > 0 %}minlength="{{ minLength }}"{% endif %}
-			{% if pattern is not empty %}pattern="{{ patternForHtml }}"{% endif %}
+			{% if hasPattern %}pattern="{{ patternForHtml }}"{% endif %}
 			{% if autocomplete is not empty %}autocomplete="{{ autocomplete }}"{% endif %}
 			{% if inputMode is not empty %}inputmode="{{ inputMode }}"{% endif %}
 			{% if spellcheck is not null %}spellcheck="{{ spellcheck ? 'true' : 'false' }}"{% endif %}

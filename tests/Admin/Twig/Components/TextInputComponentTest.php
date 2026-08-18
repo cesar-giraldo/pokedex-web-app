@@ -46,6 +46,33 @@ final class TextInputComponentTest extends TestCase
         self::assertSame('^[A-Z0-9]+$', $component->getPatternForHtml());
     }
 
+    public function testOnlyNumbersAppliesDecimalPatternAndInputMode(): void
+    {
+        $component = new TextInputComponent();
+        $component->onlyNumbers = true;
+        $component->mount();
+
+        self::assertSame('^-?\d+(\.\d{1,2})?$', $component->getPatternForHtml());
+        self::assertSame('decimal', $component->inputMode);
+        self::assertTrue($component->hasPattern());
+        self::assertSame(
+            'Introduce un número válido con hasta 2 decimales.',
+            $component->getEffectivePatternErrorMessage()
+        );
+    }
+
+    public function testOnlyNumbersTakesPrecedenceOverCustomPattern(): void
+    {
+        $component = new TextInputComponent();
+        $component->onlyNumbers = true;
+        $component->pattern = '[0-9]+';
+        $component->patternErrorMessage = 'Mensaje personalizado.';
+        $component->mount();
+
+        self::assertSame('^-?\d+(\.\d{1,2})?$', $component->getPatternForHtml());
+        self::assertSame('Mensaje personalizado.', $component->getEffectivePatternErrorMessage());
+    }
+
     public function testInputPaddingReflectsIconPosition(): void
     {
         $plain = new TextInputComponent();

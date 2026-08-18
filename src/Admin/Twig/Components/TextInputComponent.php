@@ -40,6 +40,7 @@ use function strtoupper;
  *     inputMode="text"
  *     :spellcheck="false"
  *     :readonly="false"
+ *     :onlyNumbers="false"
  *     :required="true"
  *     :disabled="false"
  *     error="Este campo es obligatorio."
@@ -56,6 +57,7 @@ use function strtoupper;
  * - iconClass: clases Tailwind del icono
  * - uppercase, lowercase: transforma el valor al escribir (uppercase tiene prioridad)
  * - autocomplete, inputMode, spellcheck, readonly: atributos HTML del input
+ * - onlyNumbers: restringe a enteros o decimales (negativos permitidos) con punto y hasta 2 decimales
  * - required, disabled, error, help: estados y mensajes del campo
  */
 #[AsTwigComponent(
@@ -65,6 +67,11 @@ use function strtoupper;
 final class TextInputComponent
 {
     use NormalizesComponentError;
+
+    private const ONLY_NUMBERS_PATTERN = '-?\d+(\.\d{1,2})?';
+
+    private const ONLY_NUMBERS_PATTERN_ERROR = 'Introduce un número válido con hasta 2 decimales.';
+
     public string $label = '';
 
     public string $name = '';
@@ -104,6 +111,8 @@ final class TextInputComponent
     public ?bool $spellcheck = null;
 
     public bool $readonly = false;
+
+    public bool $onlyNumbers = false;
 
     public bool $required = false;
 
@@ -152,6 +161,10 @@ final class TextInputComponent
         } elseif ($this->lowercase) {
             $this->value = strtolower($this->value);
         }
+
+        if ($this->onlyNumbers && '' === $this->inputMode) {
+            $this->inputMode = 'decimal';
+        }
     }
 
     #[ExposeInTemplate('isIconLeft')]
@@ -169,15 +182,43 @@ final class TextInputComponent
     #[ExposeInTemplate('patternForHtml')]
     public function getPatternForHtml(): string
     {
-        if ('' === $this->pattern) {
+        $pattern = $this->getEffectivePattern();
+
+        if ('' === $pattern) {
             return '';
         }
 
-        if (str_starts_with($this->pattern, '^') || str_starts_with($this->pattern, '(')) {
-            return $this->pattern;
+        if (str_starts_with($pattern, '^') || str_starts_with($pattern, '(')) {
+            return $pattern;
         }
 
-        return '^' . $this->pattern . '$';
+        return '^' . $pattern . '$';
+    }
+
+    #[ExposeInTemplate('effectivePattern')]
+    public function getEffectivePattern(): string
+    {
+        if ($this->onlyNumbers) {
+            return self::ONLY_NUMBERS_PATTERN;
+        }
+
+        return $this->pattern;
+    }
+
+    #[ExposeInTemplate('effectivePatternErrorMessage')]
+    public function getEffectivePatternErrorMessage(): string
+    {
+        if ($this->onlyNumbers && '' === $this->pattern) {
+            return self::ONLY_NUMBERS_PATTERN_ERROR;
+        }
+
+        return $this->patternErrorMessage;
+    }
+
+    #[ExposeInTemplate('hasPattern')]
+    public function hasPattern(): bool
+    {
+        return '' !== $this->getEffectivePattern();
     }
 
     #[ExposeInTemplate('inputClasses')]

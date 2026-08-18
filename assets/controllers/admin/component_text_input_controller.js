@@ -13,9 +13,12 @@ export default class extends Controller {
         hasServerError: Boolean,
         uppercase: Boolean,
         lowercase: Boolean,
+        onlyNumbers: Boolean,
         minLength: Number,
         maxLength: Number,
     };
+
+    static onlyNumbersPattern = /^-?\d+(\.\d{1,2})?$/;
 
     static inputErrorClasses = [
         'border-error-300',
@@ -52,6 +55,7 @@ export default class extends Controller {
         }
 
         this.applyCaseTransform();
+        this.applyOnlyNumbersFilter();
     }
 
     disconnect() {
@@ -66,6 +70,7 @@ export default class extends Controller {
         }
 
         this.applyCaseTransform();
+        this.applyOnlyNumbersFilter();
         this.clearClientError();
     }
 
@@ -74,12 +79,19 @@ export default class extends Controller {
             return;
         }
 
+        this.applyOnlyNumbersFilter(true);
         this.validate();
     }
 
     onInvalid(event) {
         event.preventDefault();
         this.validate();
+
+        if (this.inputTarget.validity.valid) {
+            this.clearClientError();
+        } else {
+            this.showClientError(this.inputTarget.validationMessage);
+        }
     }
 
     validate() {
@@ -113,7 +125,20 @@ export default class extends Controller {
             return false;
         }
 
-        if ('' !== this.patternValue && !this.matchesPattern(trimmed)) {
+        if (this.onlyNumbersValue) {
+            const normalized = this.normalizeNumericValue(trimmed);
+
+            if (normalized !== trimmed) {
+                this.inputTarget.value = normalized;
+            }
+
+            if (!this.isValidOnlyNumbers(normalized)) {
+                this.showClientError(this.patternErrorMessageValue);
+                this.inputTarget.setCustomValidity(this.patternErrorMessageValue);
+
+                return false;
+            }
+        } else if ('' !== this.patternValue && !this.matchesPattern(trimmed)) {
             this.showClientError(this.patternErrorMessageValue);
             this.inputTarget.setCustomValidity(this.patternErrorMessageValue);
 
@@ -156,6 +181,78 @@ export default class extends Controller {
                 this.inputTarget.value = transformed;
             }
         }
+    }
+
+    applyOnlyNumbersFilter(trimTrailingDot = false) {
+        if (!this.onlyNumbersValue) {
+            return;
+        }
+
+        let { value } = this.inputTarget;
+        const sanitized = this.sanitizeNumericValue(value);
+
+        if (trimTrailingDot) {
+            value = this.normalizeNumericValue(sanitized);
+        } else {
+            value = sanitized;
+        }
+
+        if (value !== this.inputTarget.value) {
+            this.inputTarget.value = value;
+        }
+    }
+
+    sanitizeNumericValue(value) {
+        let result = '';
+        let hasDot = false;
+        let decimalCount = 0;
+        let hasMinus = false;
+
+        for (const char of value) {
+            if ('-' === char) {
+                if (!hasMinus && '' === result) {
+                    hasMinus = true;
+                    result += char;
+                }
+
+                continue;
+            }
+
+            if (char >= '0' && char <= '9') {
+                if (hasDot) {
+                    if (decimalCount >= 2) {
+                        continue;
+                    }
+
+                    decimalCount += 1;
+                }
+
+                result += char;
+
+                continue;
+            }
+
+            if ('.' === char && !hasDot) {
+                const integerPart = hasMinus ? result.slice(1) : result;
+
+                if ('' === integerPart) {
+                    continue;
+                }
+
+                hasDot = true;
+                result += char;
+            }
+        }
+
+        return result;
+    }
+
+    normalizeNumericValue(value) {
+        return value.replace(/\.$/, '');
+    }
+
+    isValidOnlyNumbers(value) {
+        return this.constructor.onlyNumbersPattern.test(value);
     }
 
     showClientError(message) {
