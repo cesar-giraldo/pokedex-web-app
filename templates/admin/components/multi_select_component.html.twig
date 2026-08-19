@@ -29,6 +29,7 @@
 		data-component-multi-select-target="select"
 		aria-hidden="true"
 		tabindex="-1"
+		multiple
 		{% if disabled %}disabled{% endif %}
 	>
 		{{ multi_select.render_options(options, selected) }}

@@ -28,6 +28,12 @@ use function sprintf;
 #[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['nickname'], message: 'Este nickname ya está registrado.')]
 #[UniqueEntity(
+    fields: ['email'],
+    message: 'Este email ya está registrado.',
+    repositoryMethod: 'findOneByEmail',
+    ignoreNull: true,
+)]
+#[UniqueEntity(
     fields: ['countryCode', 'cellphone'],
     message: 'Este número de celular ya está registrado.',
     ignoreNull: true,
@@ -51,10 +57,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank]
     private string $lastname = '';
 
-    #[ORM\Column(length: 180)]
-    #[Assert\NotBlank]
+    #[ORM\Column(length: 180, nullable: true)]
     #[Assert\Email]
-    private string $email = '';
+    private ?string $email = null;
 
     #[ORM\Column(nullable: true)]
     #[Assert\Positive]
@@ -133,13 +138,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    public function setEmail(string $email): static
+    public function setEmail(?string $email): static
     {
+        if (null === $email || '' === trim($email)) {
+            $this->email = null;
+
+            return $this;
+        }
+
         $this->email = mb_strtolower(trim($email));
 
         return $this;

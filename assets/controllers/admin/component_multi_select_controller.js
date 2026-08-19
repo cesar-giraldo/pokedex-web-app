@@ -43,9 +43,7 @@ export default class extends Controller {
             text: option.text,
         }));
 
-        this.selectedValues = Array.from(this.selectTarget.options)
-            .filter((option) => option.selected)
-            .map((option) => option.value);
+        this.selectedValues = [];
     }
 
     syncFromHiddenInputs() {

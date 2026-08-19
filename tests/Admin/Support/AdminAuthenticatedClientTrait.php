@@ -16,9 +16,19 @@ trait AdminAuthenticatedClientTrait
 {
     private const string FUNCTIONAL_ADMIN_NICKNAME = 'functional-admin';
 
+    private const string FUNCTIONAL_DEVELOPER_NICKNAME = 'functional-developer';
+
     private function loginAsAdmin(KernelBrowser $client): User
     {
         $user = $this->ensureFunctionalAdminUser();
+        $client->loginUser($user, 'main');
+
+        return $user;
+    }
+
+    private function loginAsDeveloper(KernelBrowser $client): User
+    {
+        $user = $this->ensureFunctionalDeveloperUser();
         $client->loginUser($user, 'main');
 
         return $user;
@@ -45,6 +55,38 @@ trait AdminAuthenticatedClientTrait
             ->setEmail('functional-admin@example.com')
             ->setNickname(self::FUNCTIONAL_ADMIN_NICKNAME)
             ->setApplicationRoles([UserRole::Admin])
+            ->setStatus(UserStatus::Active);
+        $user->setPassword($hasher->hashPassword($user, 'Secret123'));
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(EntityManagerInterface::class);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $user;
+    }
+
+    private function ensureFunctionalDeveloperUser(): User
+    {
+        $container = static::getContainer();
+
+        /** @var UserRepository $userRepository */
+        $userRepository = $container->get(UserRepository::class);
+
+        $existingUser = $userRepository->findOneByNickname(self::FUNCTIONAL_DEVELOPER_NICKNAME);
+        if ($existingUser instanceof User) {
+            return $existingUser;
+        }
+
+        /** @var UserPasswordHasherInterface $hasher */
+        $hasher = $container->get(UserPasswordHasherInterface::class);
+
+        $user = new User()
+            ->setName('Functional')
+            ->setLastname('Developer')
+            ->setEmail('functional-developer@example.com')
+            ->setNickname(self::FUNCTIONAL_DEVELOPER_NICKNAME)
+            ->setApplicationRoles([UserRole::Developer])
             ->setStatus(UserStatus::Active);
         $user->setPassword($hasher->hashPassword($user, 'Secret123'));
 

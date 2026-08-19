@@ -10,6 +10,7 @@ enum UserRole: string
 {
     case Developer = 'developer';
     case Admin = 'admin';
+    case Operator = 'operator';
     case User = 'user';
 
     public function toSymfonyRole(): string
@@ -17,6 +18,7 @@ enum UserRole: string
         return match ($this) {
             self::Developer => 'ROLE_DEVELOPER',
             self::Admin => 'ROLE_ADMIN',
+            self::Operator => 'ROLE_OPERATOR',
             self::User => 'ROLE_USER',
         };
     }
@@ -24,7 +26,7 @@ enum UserRole: string
     public function grantsBackendAccess(): bool
     {
         return match ($this) {
-            self::Developer, self::Admin => true,
+            self::Developer, self::Admin, self::Operator => true,
             self::User => false,
         };
     }
@@ -34,6 +36,7 @@ enum UserRole: string
         return match ($this) {
             self::Developer => 'Developer',
             self::Admin => 'Admin',
+            self::Operator => 'Operador',
             self::User => 'Usuario',
         };
     }

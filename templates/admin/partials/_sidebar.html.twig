@@ -79,6 +79,7 @@
 					<!-- Menu Item Dashboard -->
 
 					<!-- Menu Item Usuarios -->
+					{% if is_granted('ROLE_ADMIN') %}
 					<li>
 						{% set userList = get_menu_classes(active_menu, active_page, 'user_profile', 'user_list') %}
 						<a href="{{ path('app_backend_users') }}"
@@ -90,6 +91,7 @@
 							</span>
 						</a>
 					</li>
+					{% endif %}
 					<!-- Menu Item Usuarios -->
 
 					<!-- Menu Item Forms -->

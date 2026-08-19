@@ -1,0 +1,122 @@
+{% from '@admin/macros/form.html.twig' import field_error %}
+
+{% set selectedRoleValues = form.applicationRoles.vars.data|default([]) %}
+
+<div class="space-y-6 border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+	<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+		<twig:component_text_input
+			label="Nombre"
+			name="{{ form.name.vars.full_name }}"
+			id="user-name"
+			value="{{ form.name.vars.data ?? '' }}"
+			:required="true"
+			error="{{ field_error(form.name) }}"
+		/>
+
+		<twig:component_text_input
+			label="Apellido"
+			name="{{ form.lastname.vars.full_name }}"
+			id="user-lastname"
+			value="{{ form.lastname.vars.data ?? '' }}"
+			:required="true"
+			error="{{ field_error(form.lastname) }}"
+		/>
+
+		<twig:component_email_input
+			label="Email"
+			name="{{ form.email.vars.full_name }}"
+			id="user-email"
+			value="{{ form.email.vars.data ?? '' }}"
+			placeholder="correo@ejemplo.com"
+			error="{{ field_error(form.email) }}"
+			help="Opcional. Debe ser único si se proporciona."
+		/>
+
+		<twig:component_text_input
+			label="Nickname"
+			name="{{ form.nickname.vars.full_name }}"
+			id="user-nickname"
+			value="{{ form.nickname.vars.data ?? '' }}"
+			:lowercase="true"
+			:minLength="5"
+			:required="true"
+			error="{{ field_error(form.nickname) }}"
+		/>
+
+		<twig:component_single_select
+			label="Código de país"
+			name="{{ form.countryCode.vars.full_name }}"
+			id="user-country-code"
+			placeholder="Seleccione un país"
+			:options="country_options"
+			selected="{{ form.countryCode.vars.data is not null ? form.countryCode.vars.data : '' }}"
+			:required="true"
+			error="{{ field_error(form.countryCode) }}"
+		/>
+
+		<twig:component_text_input
+			label="Celular"
+			name="{{ form.cellphone.vars.full_name }}"
+			id="user-cellphone"
+			value="{{ form.cellphone.vars.data ?? '' }}"
+			:onlyNumbers="true"
+			:minLength="8"
+			:required="true"
+			error="{{ field_error(form.cellphone) }}"
+			help="Solo dígitos, sin código de país."
+		/>
+
+		<twig:component_single_select
+			label="Estado"
+			name="{{ form.status.vars.full_name }}"
+			id="user-status"
+			placeholder="Seleccione un estado"
+			:options="status_options"
+			selected="{{ form.status.vars.data ? form.status.vars.data.value : '' }}"
+			:required="true"
+			error="{{ field_error(form.status) }}"
+		/>
+
+		<twig:component_multi_select
+			label="Roles"
+			name="{{ form.applicationRoles.vars.full_name }}"
+			id="user-roles"
+			placeholder="Seleccione uno o más roles"
+			:options="role_options"
+			:selected="selectedRoleValues"
+			:required="true"
+			error="{{ field_error(form.applicationRoles) }}"
+		/>
+
+		<twig:component_password_input
+			label="Contraseña"
+			name="{{ form.plainPassword.vars.full_name }}"
+			id="user-plain-password"
+			placeholder="Ingresa la contraseña"
+			autocomplete="new-password"
+			:required="form.plainPassword.vars.required"
+			error="{{ field_error(form.plainPassword) }}"
+			help="{{ password_help|default('Mínimo 5 caracteres, con letras y números.') }}"
+		/>
+
+		<twig:component_password_input
+			label="Confirmar contraseña"
+			name="{{ form.confirmPassword.vars.full_name }}"
+			id="user-confirm-password"
+			placeholder="Confirma la contraseña"
+			autocomplete="new-password"
+			:required="form.confirmPassword.vars.required"
+			error="{{ field_error(form.confirmPassword) }}"
+		/>
+
+		{% if show_is_hidden %}
+			<twig:component_toggle_switch
+				label="Oculto"
+				name="{{ form.isHidden.vars.full_name }}"
+				id="user-is-hidden"
+				:checked="form.isHidden.vars.data"
+				help="Cuando está activo, el usuario no será visible para administradores."
+			/>
+		{% endif %}
+	</div>
+</div>

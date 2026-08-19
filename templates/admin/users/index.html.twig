@@ -8,6 +8,13 @@
 	Usuarios
 {% endblock %}
 
+{% block page_actions %}
+	<a href="{{ path('app_backend_user_new') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600">
+		{{ ux_icon('heroicons:plus', { class: 'w-5 h-5' }) }}
+		Nuevo Usuario
+	</a>
+{% endblock %}
+
 {% block breadcrumb %}
 	<li class="text-sm text-gray-800 dark:text-white/90">Usuarios</li>
 {% endblock %}
@@ -96,6 +103,13 @@
 									<th class="px-5 py-3 sm:px-6">
 										{{ sortLink('u.createdAt', 'Registro', current_sort, current_direction) }}
 									</th>
+									<th class="px-5 py-3 sm:px-6">
+										<div class="flex items-center">
+											<p class="font-medium text-gray-500 text-theme-sm dark:text-gray-400">
+												Acciones
+											</p>
+										</div>
+									</th>
 								</tr>
 							</thead>
 							<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -118,7 +132,11 @@
 										<td class="px-5 py-4 sm:px-6">
 											<div class="flex items-center">
 												<p class="text-gray-500 text-theme-sm dark:text-gray-400">
-													{{ user.email }}
+													{% if user.email %}
+														{{ user.email }}
+													{% else %}
+														—
+													{% endif %}
 												</p>
 											</div>
 										</td>
@@ -154,10 +172,21 @@
 												</p>
 											</div>
 										</td>
+										<td class="px-5 py-4 sm:px-6">
+											<div class="flex items-center">
+												{% if user.id in editable_user_ids %}
+													<a href="{{ path('app_backend_user_edit', { id: user.id }) }}"
+														class="inline-flex items-center justify-center rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-brand-500 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-brand-400"
+														title="Editar {{ user.nickname }}">
+														{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+													</a>
+												{% endif %}
+											</div>
+										</td>
 									</tr>
 								{% else %}
 									<tr>
-										<td class="px-5 py-4 sm:px-6" colspan="7">
+										<td class="px-5 py-4 sm:px-6" colspan="8">
 											<div class="flex items-center justify-center">
 												<p class="text-gray-500 text-theme-sm dark:text-gray-400">
 													No se encontraron usuarios.

@@ -11,6 +11,8 @@ use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 use function in_array;
+use function is_array;
+use function is_string;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -34,8 +36,19 @@ class UserRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function findOneByEmail(string $email): ?User
+    /**
+     * @param string|array{email?: string|null} $email
+     */
+    public function findOneByEmail(string|array $email): ?User
     {
+        if (is_array($email)) {
+            $email = $email['email'] ?? null;
+        }
+
+        if (!is_string($email) || '' === trim($email)) {
+            return null;
+        }
+
         return $this->createQueryBuilder('u')
             ->andWhere('LOWER(u.email) = :email')
             ->setParameter('email', mb_strtolower(trim($email)))
@@ -70,9 +83,12 @@ class UserRepository extends ServiceEntityRepository
     ): QueryBuilder {
         $qb = $this->createQueryBuilder('u');
 
-        $qb->andWhere('u.roles LIKE :adminRole OR u.roles LIKE :developerRole')
+        $qb->andWhere(
+            'u.roles LIKE :adminRole OR u.roles LIKE :developerRole OR u.roles LIKE :operatorRole',
+        )
             ->setParameter('adminRole', '%"' . UserRole::Admin->value . '"%')
-            ->setParameter('developerRole', '%"' . UserRole::Developer->value . '"%');
+            ->setParameter('developerRole', '%"' . UserRole::Developer->value . '"%')
+            ->setParameter('operatorRole', '%"' . UserRole::Operator->value . '"%');
 
         if ($options['excludeDevelopers'] ?? false) {
             $qb->andWhere('u.roles NOT LIKE :excludeDeveloperRole')

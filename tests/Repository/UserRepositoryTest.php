@@ -37,6 +37,28 @@ final class UserRepositoryTest extends KernelTestCase
         parent::tearDown();
     }
 
+    public function testFindOneByEmailAcceptsStringCriteria(): void
+    {
+        $repository = $this->getRepository();
+        $user = $this->createUser('email-string-lookup', UserRole::Admin, email: 'lookup@Example.com');
+
+        $found = $repository->findOneByEmail('lookup@example.com');
+
+        self::assertNotNull($found);
+        self::assertSame($user->getId(), $found->getId());
+    }
+
+    public function testFindOneByEmailAcceptsUniqueEntityCriteriaArray(): void
+    {
+        $repository = $this->getRepository();
+        $user = $this->createUser('email-array-lookup', UserRole::Admin, email: 'array-lookup@Example.com');
+
+        $found = $repository->findOneByEmail(['email' => 'array-lookup@example.com']);
+
+        self::assertNotNull($found);
+        self::assertSame($user->getId(), $found->getId());
+    }
+
     public function testFindBackendUsersQueryBuilderReturnsOnlyBackendUsers(): void
     {
         $repository = $this->getRepository();

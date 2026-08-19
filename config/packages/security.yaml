@@ -9,7 +9,8 @@ security:
 
     role_hierarchy:
         ROLE_DEVELOPER: ROLE_ADMIN
-        ROLE_ADMIN: ROLE_USER
+        ROLE_ADMIN: ROLE_OPERATOR
+        ROLE_OPERATOR: ROLE_USER
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
@@ -56,7 +57,8 @@ security:
     access_control:
         - { path: ^/admin/login, roles: PUBLIC_ACCESS }
         - { path: ^/admin/logout, roles: PUBLIC_ACCESS }
-        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/admin/users, roles: ROLE_ADMIN }
+        - { path: ^/admin, roles: ROLE_OPERATOR }
 
 when@test:
     security:

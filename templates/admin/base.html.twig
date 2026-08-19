@@ -63,27 +63,33 @@
             <!-- Breadcrumb Start -->
             <div class="{% if active_page === "dashboard" %}hidden{% endif %}">
               {# <p>Page Name: <span data-template-base-target="outputPageName"></span></p> #}
-              <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-                <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
-                  {% block page_title %}
-                    {{ active_page|title }}
-                  {% endblock %}
-                </h2>
+              <div class="mb-6 space-y-3">
+                <div class="flex flex-wrap items-center justify-end gap-3">
+                  <nav>
+                    <ol class="flex items-center gap-1.5">
+                      <li>
+                        <a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_design_index')}}">
+                          Home
+                          {{ ux_icon('heroicons:chevron-right', {
+                              class: 'w-4 h-4'
+                          }) }}
+                        </a>
+                      </li>
+                      {% block breadcrumb %}
+                      {% endblock %}
+                    </ol>
+                  </nav>
+                </div>
 
-                <nav>
-                  <ol class="flex items-center gap-1.5">
-                    <li>
-                      <a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_design_index')}}">
-                        Home
-                        {{ ux_icon('heroicons:chevron-right', {
-                            class: 'w-4 h-4'
-                        }) }}
-                      </a>
-                    </li>
-                    {% block breadcrumb %}
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
+                    {% block page_title %}
+                      {{ active_page|title }}
                     {% endblock %}
-                  </ol>
-                </nav>
+                  </h2>
+
+                  {% block page_actions %}{% endblock %}
+                </div>
               </div>
             </div>
             <!-- Breadcrumb End -->
