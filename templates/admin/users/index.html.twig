@@ -2,21 +2,21 @@
 
 {% from '@admin/macros/grid.html.twig' import sortable_link as sortLink %}
 
-{% block title %}Listado de Usuarios{% endblock %}
-
 {% block page_title %}
 	Usuarios
 {% endblock %}
+
+{% block breadcrumb %}
+	<li class="text-sm text-gray-800 dark:text-white/90">Usuarios</li>
+{% endblock %}
+
+{% block title %}Listado de Usuarios{% endblock %}
 
 {% block page_actions %}
 	<a href="{{ path('app_backend_user_new') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600">
 		{{ ux_icon('heroicons:plus', { class: 'w-5 h-5' }) }}
 		Nuevo Usuario
 	</a>
-{% endblock %}
-
-{% block breadcrumb %}
-	<li class="text-sm text-gray-800 dark:text-white/90">Usuarios</li>
 {% endblock %}
 
 {% block body %}

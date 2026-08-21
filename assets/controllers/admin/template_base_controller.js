@@ -31,7 +31,6 @@ export default class extends Controller {
     initialize() {
         this.loadedValue = false;
         this.stickyMenuValue = false;
-        this.sidebarToggleValue = false;
         this.scrollTopValue = false;
 
         // header specific
@@ -43,6 +42,13 @@ export default class extends Controller {
             this.darkModeValue = prefersDark ? true : false;
         } else {
             this.darkModeValue = JSON.parse(storedDarkMode);
+        }
+
+        const storedSidebarCollapsed = localStorage.getItem('sidebarCollapsed');
+        if (storedSidebarCollapsed !== null && this.isDesktopViewport()) {
+            this.sidebarToggleValue = JSON.parse(storedSidebarCollapsed);
+        } else {
+            this.sidebarToggleValue = false;
         }
     }
 
@@ -109,7 +115,15 @@ export default class extends Controller {
         this.sidebarToggleValue = false;
     }
     sidebarToggleValueChanged(newValue) {
-        this.element.setAttribute("data-sidebar", newValue ? "collapsed" : "expanded");
+        if (this.isDesktopViewport()) {
+            localStorage.setItem('sidebarCollapsed', JSON.stringify(newValue));
+        }
+
+        this.element.setAttribute('data-sidebar', newValue ? 'collapsed' : 'expanded');
+    }
+
+    isDesktopViewport() {
+        return window.matchMedia('(min-width: 1024px)').matches;
     }
 
     setSelectedMenu(event) {
