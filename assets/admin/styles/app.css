@@ -295,40 +295,69 @@
     }
 }
 
-.sidebar:hover {
-    width: 290px;
+.sidebar {
+    transition: width 300ms ease-in-out, transform 300ms ease-in-out;
 }
 
-.sidebar:hover .logo {
-    display: block;
+@media (min-width: 1024px) {
+    .group[data-sidebar="collapsed"] .sidebar:hover {
+        width: 290px;
+    }
+
+    .group[data-sidebar="collapsed"] .sidebar:hover .logo,
+    .group[data-sidebar="collapsed"] .sidebar:hover .menu-group-title,
+    .group[data-sidebar="collapsed"] .sidebar:hover .menu-item-text,
+    .group[data-sidebar="collapsed"] .sidebar:hover .menu-item-arrow,
+    .group[data-sidebar="collapsed"] .sidebar:hover .menu-dropdown,
+    .group[data-sidebar="collapsed"] .sidebar:hover .sidebar-promo-box {
+        animation: sidebar-content-fade-in 300ms ease-in-out;
+    }
+
+    .group[data-sidebar="collapsed"] .sidebar:hover .logo {
+        display: block !important;
+    }
+
+    .group[data-sidebar="collapsed"] .sidebar:hover .logo-icon {
+        display: none !important;
+    }
+
+    .group[data-sidebar="collapsed"] .sidebar:hover .sidebar-header {
+        justify-content: space-between;
+    }
+
+    .group[data-sidebar="collapsed"] .sidebar:hover .menu-group-title {
+        display: block !important;
+    }
+
+    .group[data-sidebar="collapsed"] .sidebar:hover .menu-group-icon {
+        display: none !important;
+    }
+
+    .group[data-sidebar="collapsed"] .sidebar:hover .menu-item-text {
+        display: inline !important;
+    }
+
+    .group[data-sidebar="collapsed"] .sidebar:hover .menu-item-arrow {
+        display: block !important;
+    }
+
+    .group[data-sidebar="collapsed"] .sidebar:hover .menu-dropdown {
+        display: flex !important;
+    }
+
+    .group[data-sidebar="collapsed"] .sidebar:hover .sidebar-promo-box {
+        display: block !important;
+    }
 }
 
-.sidebar:hover .logo-icon {
-    display: none;
-}
+@keyframes sidebar-content-fade-in {
+    from {
+        opacity: 0;
+    }
 
-.sidebar:hover .sidebar-header {
-    justify-content: space-between;
-}
-
-.sidebar:hover .menu-group-title {
-    display: block;
-}
-
-.sidebar:hover .menu-group-icon {
-    display: none;
-}
-
-.sidebar:hover .menu-item-text {
-    display: inline;
-}
-
-.sidebar:hover .menu-item-arrow {
-    display: block;
-}
-
-.sidebar:hover .menu-dropdown {
-    display: flex;
+    to {
+        opacity: 1;
+    }
 }
 
 .tableCheckbox:checked~span span {
