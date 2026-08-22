@@ -10,11 +10,11 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260822164430 extends AbstractMigration
+final class Version20260822213231 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Initial MySQL schema for pokemon, pokemon_type, users and messenger_messages';
     }
 
     public function up(Schema $schema): void
