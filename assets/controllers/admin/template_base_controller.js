@@ -56,6 +56,10 @@ export default class extends Controller {
         console.log('Page Name: ' + this.pageValue);
         this.updatePageValue();
 
+        this.desktopMediaQuery = window.matchMedia('(min-width: 1024px)');
+        this.handleViewportChange = this.handleViewportChange.bind(this);
+        this.desktopMediaQuery.addEventListener('change', this.handleViewportChange);
+
         // loader simulation
         setTimeout(() => {
             this.loadedValue = true
@@ -63,6 +67,21 @@ export default class extends Controller {
     }
 
     disconnect() {
+        if (this.desktopMediaQuery) {
+            this.desktopMediaQuery.removeEventListener('change', this.handleViewportChange);
+        }
+    }
+
+    handleViewportChange(event) {
+        if (event.matches) {
+            const storedSidebarCollapsed = localStorage.getItem('sidebarCollapsed');
+            this.sidebarToggleValue = storedSidebarCollapsed !== null
+                ? JSON.parse(storedSidebarCollapsed)
+                : false;
+        } else {
+            // On mobile, "expanded" means the drawer is closed (sidebar hidden off-screen).
+            this.sidebarToggleValue = false;
+        }
     }
 
     updatePageValue() {
