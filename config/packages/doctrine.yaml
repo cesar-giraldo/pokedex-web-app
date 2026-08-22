@@ -15,6 +15,9 @@ doctrine:
             Doctrine\DBAL\Platforms\MySQLPlatform: identity
             Doctrine\DBAL\Platforms\MariaDBPlatform: identity
         auto_mapping: true
+        dql:
+            string_functions:
+                JSON_AS_TEXT: App\Doctrine\Dql\JsonAsTextFunction
         mappings:
             App:
                 type: attribute

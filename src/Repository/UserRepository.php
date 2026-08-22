@@ -82,16 +82,17 @@ class UserRepository extends ServiceEntityRepository
         array $options = [],
     ): QueryBuilder {
         $qb = $this->createQueryBuilder('u');
+        $rolesAsText = 'JSON_AS_TEXT(u.roles)';
 
         $qb->andWhere(
-            'u.roles LIKE :adminRole OR u.roles LIKE :developerRole OR u.roles LIKE :operatorRole',
+            $rolesAsText . ' LIKE :adminRole OR ' . $rolesAsText . ' LIKE :developerRole OR ' . $rolesAsText . ' LIKE :operatorRole',
         )
             ->setParameter('adminRole', '%"' . UserRole::Admin->value . '"%')
             ->setParameter('developerRole', '%"' . UserRole::Developer->value . '"%')
             ->setParameter('operatorRole', '%"' . UserRole::Operator->value . '"%');
 
         if ($options['excludeDevelopers'] ?? false) {
-            $qb->andWhere('u.roles NOT LIKE :excludeDeveloperRole')
+            $qb->andWhere($rolesAsText . ' NOT LIKE :excludeDeveloperRole')
                 ->setParameter('excludeDeveloperRole', '%"' . UserRole::Developer->value . '"%');
         }
 

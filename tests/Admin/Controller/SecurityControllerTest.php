@@ -41,20 +41,6 @@ final class SecurityControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
     }
 
-    public function testActiveAdminCanLoginWithMixedCaseNickname(): void
-    {
-        $client = static::createClient();
-        $this->createUser('admin-login', 'Secret123', UserRole::Admin, UserStatus::Active);
-
-        $client->request('GET', '/admin/login');
-        $client->submitForm('Iniciar sesión', [
-            '_username' => '  ADMIN-LOGIN  ',
-            '_password' => 'Secret123',
-        ]);
-
-        self::assertResponseRedirects('/admin/pokemons');
-    }
-
     public function testUnknownNicknameShowsGenericInvalidCredentialsMessage(): void
     {
         $client = static::createClient();

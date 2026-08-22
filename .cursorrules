@@ -9,6 +9,7 @@
 - Tests are grouped by context in tests/Admin, tests/Web, and future tests/Api.
 - Database migrations live under migrations/postgresql and migrations/mysql, and the active engine is selected via DATABASE_ENGINE.
 - The project is developed and run primarily with Docker Compose, including FrankenPHP and a database service.
+- When writing queries in DQL or SQL, it is important that the query syntax be compatible with both the MySQL and PostgreSQL engines.
 - Quality checks rely on PHPUnit, PHPStan, and PHP-CS-Fixer.
 
 ## Coding Standards
