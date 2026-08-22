@@ -148,7 +148,8 @@ final class SecurityControllerTest extends WebTestCase
             ->setEmail(sprintf('%s@example.com', $nickname))
             ->setNickname($nickname)
             ->setApplicationRoles([$role])
-            ->setStatus($status);
+            ->setStatus($status)
+            ->setIsHidden(true);
 
         /** @var UserPasswordHasherInterface $hasher */
         $hasher = $container->get(UserPasswordHasherInterface::class);

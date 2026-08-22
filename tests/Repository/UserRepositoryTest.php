@@ -123,7 +123,7 @@ final class UserRepositoryTest extends KernelTestCase
     public function testFindBackendUsersQueryBuilderExcludesHiddenUsersForNonDeveloperScope(): void
     {
         $repository = $this->getRepository();
-        $visibleAdmin = $this->createUser('repo-visible-admin', UserRole::Admin);
+        $visibleAdmin = $this->createUser('repo-visible-admin', UserRole::Admin, isHidden: false);
         $hiddenAdmin = $this->createUser('repo-hidden-admin', UserRole::Admin, isHidden: true);
 
         $results = $repository
@@ -170,7 +170,7 @@ final class UserRepositoryTest extends KernelTestCase
         string $name = 'Test',
         string $lastname = 'User',
         string $email = '',
-        bool $isHidden = false,
+        bool $isHidden = true,
     ): User {
         self::assertNotNull($this->entityManager);
 

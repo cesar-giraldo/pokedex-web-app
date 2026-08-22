@@ -8,7 +8,7 @@
 	<div class="flex items-center gap-2 pt-8 sidebar-header pb-7
 		group-data-[sidebar=collapsed]:justify-center
 		group-data-[sidebar=expanded]:justify-between">
-		<a href="{{ path('app_design_index')}}">
+		<a href="{{ path('app_backend_home')}}">
 			<span class="logo group-data-[sidebar=collapsed]:hidden">
 				<img class="dark:hidden" src="{{ asset('images/logo/logo.svg', 'admin') }}" alt="Logo"/>
 				<img class="hidden dark:block" src="{{ asset('images/logo/logo-dark.svg', 'admin') }}" alt="Logo"/>
@@ -62,8 +62,8 @@
 								group-data-[sidebar=collapsed]:lg:hidden
 								group-data-[sidebar=expanded]:flex">
 								<li>
-									<a href="{{ path('app_design_index')}}" class="menu-dropdown-item group {{ dashboard.dropdown_item_class }}">
-										eCommerce
+									<a href="{{ path('app_backend_home')}}" class="menu-dropdown-item group {{ dashboard.dropdown_item_class }}">
+										Dashboard
 									</a>
 								</li>
 								<li>

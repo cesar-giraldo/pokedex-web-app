@@ -1,0 +1,42 @@
+{% extends '@admin/base.html.twig' %}
+
+{% block title %}
+	Dashboard
+{% endblock %}
+
+{% block page_title %}
+	Dashboard
+{% endblock %}
+
+{% block body %}
+	<div class="rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
+		<div class="mx-auto w-full">
+			<div class="mb-8">
+				<h3 class="mb-3 text-theme-xl font-semibold text-gray-800 dark:text-white/90 sm:text-2xl">
+					Pokedex - Dashboard
+				</h3>
+
+				<p class="text-sm text-gray-500 dark:text-gray-400 sm:text-base">
+					Accesos rápidos a los módulos principales del panel administrativo.
+				</p>
+			</div>
+
+			<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+				{{ include('@admin/partials/_quick_access_card.html.twig', {
+					href: path('app_backend_pokemons'),
+					title: 'Pokemons',
+					image_src: asset('images/pokemon/pokeball.png', 'admin'),
+					image_alt: 'Pokemons'
+				}) }}
+
+				{% if is_granted('ROLE_DEVELOPER') or is_granted('ROLE_ADMIN') %}
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_backend_users'),
+						title: 'Usuarios',
+						icon: 'heroicons:users'
+					}) }}
+				{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{#
+    Quick access card for dashboard modules.
+
+    Expected variables:
+    - href: string
+    - title: string
+    - icon: string (Heroicon name, e.g. heroicons:users)
+    - image_src: string|null (optional image instead of icon)
+    - image_alt: string (required when image_src is set)
+#}
+<a
+	href="{{ href }}"
+	class="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition hover:border-brand-300 hover:shadow-theme-sm focus-visible:outline-hidden focus-visible:ring-3 focus-visible:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-brand-800"
+>
+	<div class="flex min-h-[180px] flex-1 items-center justify-center px-6 py-10">
+		{% if image_src is defined and image_src %}
+			<img
+				src="{{ image_src }}"
+				alt="{{ image_alt|default('') }}"
+				width="80"
+				height="80"
+				class="h-20 w-20 object-contain transition group-hover:scale-105 mt-2 mb-2"
+				loading="lazy"
+				decoding="async"
+			/>
+		{% else %}
+			{{ ux_icon(icon, {
+				class: 'h-20 w-20 text-brand-500 transition group-hover:scale-105'
+			}) }}
+		{% endif %}
+	</div>
+
+	<div class="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-white/[0.02]">
+		<span class="text-sm font-medium text-brand-500 dark:text-brand-400">
+			{{ title }}
+		</span>
+
+		{{ ux_icon('heroicons:arrow-right-circle', {
+			class: 'h-6 w-6 text-brand-500 transition group-hover:translate-x-0.5 dark:text-brand-400'
+		}) }}
+	</div>
+</a>

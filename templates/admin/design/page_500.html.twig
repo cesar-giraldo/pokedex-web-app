@@ -4,9 +4,9 @@
 
 {% block body %}
 	{% include '@admin/error/_500_body.html.twig' with {
-		home_url: path('app_design_index'),
+		home_url: path('app_backend_home'),
 		message: 'Oops! Our server is taking a short break. Please try again in a few moments.',
-		home_label: 'Back to Home Page :)',
+		home_label: 'Back to Home Page',
 	} %}
 {% endblock %}
 

@@ -55,7 +55,8 @@ trait AdminAuthenticatedClientTrait
             ->setEmail('functional-admin@example.com')
             ->setNickname(self::FUNCTIONAL_ADMIN_NICKNAME)
             ->setApplicationRoles([UserRole::Admin])
-            ->setStatus(UserStatus::Active);
+            ->setStatus(UserStatus::Active)
+            ->setIsHidden(true);
         $user->setPassword($hasher->hashPassword($user, 'Secret123'));
 
         /** @var EntityManagerInterface $entityManager */
@@ -87,7 +88,8 @@ trait AdminAuthenticatedClientTrait
             ->setEmail('functional-developer@example.com')
             ->setNickname(self::FUNCTIONAL_DEVELOPER_NICKNAME)
             ->setApplicationRoles([UserRole::Developer])
-            ->setStatus(UserStatus::Active);
+            ->setStatus(UserStatus::Active)
+            ->setIsHidden(true);
         $user->setPassword($hasher->hashPassword($user, 'Secret123'));
 
         /** @var EntityManagerInterface $entityManager */
