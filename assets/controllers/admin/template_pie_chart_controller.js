@@ -93,7 +93,7 @@ export default class extends Controller {
                                 show: true,
                                 label: 'Total Ventas',
                                 fontSize: '16px',
-                                color: '#64748B', // Color gris del texto de TailAdmin
+                                color: '#64748B', // Color gris del texto
                                 formatter: function (w) {
                                     // Suma automáticamente los valores
                                     return w.globals.seriesTotals.reduce((a, b) => a + b, 0)

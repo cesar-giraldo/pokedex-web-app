@@ -34,10 +34,10 @@ final class UrlInputComponentTest extends TestCase
     public function testDisplayValueStripsKnownPrefix(): void
     {
         $component = new UrlInputComponent();
-        $component->value = 'http://www.tailadmin.com';
+        $component->value = 'http://www.example.com';
         $component->mount();
 
-        self::assertSame('www.tailadmin.com', $component->getDisplayValue());
+        self::assertSame('www.example.com', $component->getDisplayValue());
     }
 
     public function testDisplayValueStripsProtocolWhenDifferentPrefix(): void

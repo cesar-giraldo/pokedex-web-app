@@ -45,3 +45,24 @@
 - Preserve naming conventions, folder structure, and the current project style.
 - Do not repeat existing code; provide only the relevant diff or modified snippet.
 - Favor practical, production-ready implementations over over-engineered abstractions.
+
+
+# Front-End Development Rules (HTML/Twig) Focused on SEO and Accessibility (WAI-ARIA)
+
+## 1. Strict HTML Semantics
+- Use actual structural tags (`<header>`, `<nav>`, `<main>`, `<article>`, `<section>`, `<footer>`) instead of "div-itis."
+- There must be only one `<h1>` per page template. Subheadings must follow a logical hierarchical order without skipping levels (`<h2>`, `<h3>`, etc.).
+
+## 2. Optimization for Search Engine Crawlers and AI
+- Ensure every image dynamically includes an `alt=""` attribute that is editable via Twig variables.
+- Include a specific Twig block for injecting dynamic metadata into the `<head>` (`{% block meta_tags %}`).
+- Generate Schema.org structured data markup using native JSON-LD formats within the templates.
+
+## 3. Performance Best Practices (Core Web Vitals)
+- Design using a native "Mobile-First" approach with modern CSS.
+- Add `loading="lazy"` and `decoding="async"` attributes to secondary images located below the fold.
+- Explicitly add `width` and `height` attributes to `<img>` tags to prevent drastic layout shifts (Cumulative Layout Shift - CLS).
+
+## 4. Clean Twig Syntax
+- Separate control logic (`{% ... %}`) from text output (`{{ ... }}`).
+- Use escaping filters (`|e` or `|raw` only when strictly necessary and safe).
