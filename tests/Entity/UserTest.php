@@ -98,4 +98,41 @@ final class UserTest extends TestCase
 
         self::assertSame('admin-login', $user->getNickname());
     }
+
+    public function testPasswordUpdatedAtMatchesCreatedAtOnConstruction(): void
+    {
+        $user = new User();
+
+        self::assertSame(
+            $user->getCreatedAt()->format('Y-m-d H:i:s'),
+            $user->getPasswordUpdatedAt()->format('Y-m-d H:i:s'),
+        );
+    }
+
+    public function testDetectsCompleteProfileContactInfo(): void
+    {
+        $user = new User()
+            ->setEmail('complete@example.com')
+            ->setCountryCode(57)
+            ->setCellphone('3001234567');
+
+        self::assertTrue($user->hasCompleteProfileContactInfo());
+    }
+
+    public function testFormatsPhoneWithCountryCode(): void
+    {
+        $user = new User()
+            ->setCountryCode(57)
+            ->setCellphone('3001234567');
+
+        self::assertSame('+57 3001234567', $user->getFormattedPhone());
+    }
+
+    public function testReturnsPrimaryApplicationRoleByHierarchy(): void
+    {
+        $user = new User()
+            ->setApplicationRoles([UserRole::Operator, UserRole::Admin]);
+
+        self::assertSame(UserRole::Admin, $user->getPrimaryApplicationRole());
+    }
 }

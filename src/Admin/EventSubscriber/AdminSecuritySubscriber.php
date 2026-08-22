@@ -27,7 +27,7 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
      * @var list<string>
      */
     private const array INCOMPLETE_PROFILE_ALLOWED_PATH_PREFIXES = [
-        '/admin/ui-kit/profile',
+        '/admin/profile',
         '/admin/logout',
         '/_profiler',
         '/_wdt',
@@ -112,7 +112,7 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
 
         if (UserStatus::UncompleteProfileInfo === $user->getStatus()) {
             $event->setResponse(new RedirectResponse(
-                $this->urlGenerator->generate('app_design_user_profile'),
+                $this->urlGenerator->generate('app_backend_user_profile'),
             ));
 
             return;
@@ -146,7 +146,7 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
         }
 
         $event->setResponse(new RedirectResponse(
-            $this->urlGenerator->generate('app_design_user_profile'),
+            $this->urlGenerator->generate('app_backend_user_profile'),
         ));
     }
 

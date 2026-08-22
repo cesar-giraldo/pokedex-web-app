@@ -1,0 +1,171 @@
+{% extends '@admin/base.html.twig' %}
+
+{% from '@admin/macros/form.html.twig' import field_error %}
+
+{% block title %}Editar perfil{% endblock %}
+
+{% block page_title %}
+	Editar perfil
+{% endblock %}
+
+{% block breadcrumb %}
+	<li class="text-sm text-gray-800 dark:text-white/90">Perfil</li>
+{% endblock %}
+
+{% block body %}
+	<div
+		data-controller="user-profile"
+		data-user-profile-open-info-value="{{ open_info_modal ? 'true' : 'false' }}"
+		data-user-profile-open-password-value="{{ open_password_modal ? 'true' : 'false' }}"
+		class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6"
+	>
+		<h3 class="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
+			Perfil
+		</h3>
+
+		<div class="mb-6 rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
+			<div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+				<div class="flex w-full flex-col items-center gap-6 xl:flex-row">
+					<div class="h-20 w-20 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800">
+						<img
+							src="{{ asset('images/user/owner.jpg', 'admin') }}"
+							alt="Foto de perfil de {{ user.name }} {{ user.lastname }}"
+							width="80"
+							height="80"
+						/>
+					</div>
+					<div class="order-3 xl:order-2">
+						<h4 class="mb-2 text-center text-lg font-semibold text-gray-800 dark:text-white/90 xl:text-left">
+							{{ user.name }} {{ user.lastname }}
+						</h4>
+						<div class="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
+							{% set primaryRole = user.primaryApplicationRole %}
+							{% if primaryRole %}
+								<p class="text-sm text-gray-500 dark:text-gray-400">
+									{{ primaryRole.label }}
+								</p>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+
+				<button
+					type="button"
+					data-action="click->user-profile#toggleInfoModal"
+					class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+				>
+					{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+					Editar
+				</button>
+			</div>
+		</div>
+
+		<div class="mb-6 rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
+			<div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+				<div>
+					<h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+						Información personal
+					</h4>
+
+					<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+						<div>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+								Nombre
+							</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.name }}
+							</p>
+						</div>
+
+						<div>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+								Apellido
+							</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.lastname }}
+							</p>
+						</div>
+
+						<div>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+								Email
+							</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.email ?? '—' }}
+							</p>
+						</div>
+
+						<div>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+								Nickname
+							</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.nickname }}
+							</p>
+						</div>
+
+						<div>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+								Teléfono
+							</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.formattedPhone ?? '—' }}
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<button
+					type="button"
+					data-action="click->user-profile#toggleInfoModal"
+					class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+				>
+					{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+					Editar
+				</button>
+			</div>
+		</div>
+
+		<div class="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
+			<div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+				<div>
+					<h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+						Seguridad
+					</h4>
+
+					<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+						<div>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+								Contraseña
+							</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								***
+							</p>
+						</div>
+
+						<div>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+								Última actualización
+							</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.passwordUpdatedAt|date('d/m/Y H:i') }}
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<button
+					type="button"
+					data-action="click->user-profile#togglePasswordModal"
+					class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+				>
+					{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+					Cambiar Contraseña
+				</button>
+			</div>
+		</div>
+
+		{% include '@admin/users/profile/_info_modal.html.twig' %}
+		{% include '@admin/users/profile/_password_modal.html.twig' %}
+	</div>
+{% endblock %}

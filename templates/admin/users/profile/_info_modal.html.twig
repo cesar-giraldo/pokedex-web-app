@@ -1,0 +1,125 @@
+{% from '@admin/macros/form.html.twig' import field_error %}
+
+<div data-user-profile-target="profileInfoModal" class="fixed inset-0 z-99999 hidden items-center justify-center overflow-y-auto p-5">
+	<div data-action="click->user-profile#toggleInfoModal" class="modal-close-btn fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
+	<div class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+		<button
+			type="button"
+			data-action="click->user-profile#toggleInfoModal"
+			class="transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300"
+		>
+			{{ ux_icon('heroicons:x-mark', { class: 'w-6 h-6' }) }}
+		</button>
+
+		<div class="px-2 pr-14">
+			<h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+				Editar información personal
+			</h4>
+			<p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+				Actualiza tus datos para mantener tu perfil al día.
+			</p>
+		</div>
+
+		{{ form_start(info_form, {
+			action: path('app_backend_user_profile'),
+			attr: { class: 'flex flex-col' },
+			render_rest: false,
+		}) }}
+			<div class="custom-scrollbar h-[450px] overflow-y-auto px-2">
+				<div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+					<div class="col-span-2 lg:col-span-1">
+						<twig:component_text_input
+							label="Nombre"
+							name="{{ info_form.name.vars.full_name }}"
+							id="profile-name"
+							value="{{ info_form.name.vars.data ?? '' }}"
+							:required="true"
+							error="{{ field_error(info_form.name) }}"
+						/>
+					</div>
+
+					<div class="col-span-2 lg:col-span-1">
+						<twig:component_text_input
+							label="Apellido"
+							name="{{ info_form.lastname.vars.full_name }}"
+							id="profile-lastname"
+							value="{{ info_form.lastname.vars.data ?? '' }}"
+							:required="true"
+							error="{{ field_error(info_form.lastname) }}"
+						/>
+					</div>
+
+					<div class="col-span-2 lg:col-span-1">
+						<twig:component_email_input
+							label="Email"
+							name="{{ info_form.email.vars.full_name }}"
+							id="profile-email"
+							value="{{ info_form.email.vars.data ?? '' }}"
+							placeholder="correo@ejemplo.com"
+							:required="true"
+							error="{{ field_error(info_form.email) }}"
+						/>
+					</div>
+
+					<div class="col-span-2 lg:col-span-1">
+						<twig:component_text_input
+							label="Nickname"
+							name="{{ info_form.nickname.vars.full_name }}"
+							id="profile-nickname"
+							value="{{ info_form.nickname.vars.data ?? '' }}"
+							:lowercase="true"
+							:minLength="5"
+							:required="true"
+							error="{{ field_error(info_form.nickname) }}"
+						/>
+					</div>
+
+					<div class="col-span-2 lg:col-span-1">
+						<twig:component_single_select
+							label="Código de país"
+							name="{{ info_form.countryCode.vars.full_name }}"
+							id="profile-country-code"
+							placeholder="Seleccione un país"
+							:options="country_options"
+							selected="{{ info_form.countryCode.vars.data is not null ? info_form.countryCode.vars.data : '' }}"
+							:required="true"
+							error="{{ field_error(info_form.countryCode) }}"
+						/>
+					</div>
+
+					<div class="col-span-2 lg:col-span-1">
+						<twig:component_text_input
+							label="Celular"
+							name="{{ info_form.cellphone.vars.full_name }}"
+							id="profile-cellphone"
+							value="{{ info_form.cellphone.vars.data ?? '' }}"
+							:onlyNumbers="true"
+							:minLength="8"
+							:required="true"
+							error="{{ field_error(info_form.cellphone) }}"
+							help="Solo dígitos, sin código de país."
+						/>
+					</div>
+				</div>
+			</div>
+
+			<div class="mt-6 flex items-center gap-3 px-2 lg:justify-end">
+				<button
+					type="button"
+					data-action="click->user-profile#toggleInfoModal"
+					class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
+				>
+					Cerrar
+				</button>
+				<button
+					type="submit"
+					class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
+				>
+					Guardar cambios
+				</button>
+			</div>
+
+			{{ form_widget(info_form._token) }}
+		{{ form_end(info_form, { render_rest: false }) }}
+	</div>
+</div>

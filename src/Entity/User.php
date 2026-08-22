@@ -93,6 +93,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $lastUpdatedAt;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private DateTimeInterface $passwordUpdatedAt;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?DateTimeInterface $noLoginUntil = null;
 
@@ -107,6 +110,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $now = new DateTime();
         $this->createdAt = $now;
         $this->lastUpdatedAt = $now;
+        $this->passwordUpdatedAt = $now;
     }
 
     public function getId(): ?int
@@ -275,6 +279,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getPasswordUpdatedAt(): DateTimeInterface
+    {
+        return $this->passwordUpdatedAt;
+    }
+
+    public function setPasswordUpdatedAt(DateTimeInterface $passwordUpdatedAt): static
+    {
+        $this->passwordUpdatedAt = $passwordUpdatedAt;
+
+        return $this;
+    }
+
     public function getNoLoginUntil(): ?DateTimeInterface
     {
         return $this->noLoginUntil;
@@ -369,6 +385,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return false;
+    }
+
+    public function getPrimaryApplicationRole(): ?UserRole
+    {
+        return UserRole::primaryFromRoles($this->getApplicationRoles());
+    }
+
+    public function hasCompleteProfileContactInfo(): bool
+    {
+        if (null === $this->email || '' === trim($this->email)) {
+            return false;
+        }
+
+        if (null === $this->countryCode) {
+            return false;
+        }
+
+        if (null === $this->cellphone || '' === trim($this->cellphone)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getFormattedPhone(): ?string
+    {
+        if (null === $this->countryCode || null === $this->cellphone || '' === trim($this->cellphone)) {
+            return null;
+        }
+
+        return sprintf('+%d %s', $this->countryCode, $this->cellphone);
     }
 
     /**

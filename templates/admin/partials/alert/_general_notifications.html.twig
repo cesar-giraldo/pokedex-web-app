@@ -17,7 +17,7 @@
 	{% endfor %}
 
 	{% for message in errorMessages %}
-		<twig:component_alert_error message="{{ message }}" />
+		<twig:component_alert_error message="{{ message|raw }}" />
 	{% endfor %}
 
 	{% for message in warningMessages %}

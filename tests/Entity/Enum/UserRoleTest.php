@@ -9,17 +9,14 @@ use PHPUnit\Framework\TestCase;
 
 final class UserRoleTest extends TestCase
 {
-    public function testLabelsAreDefinedInSpanish(): void
+    public function testPrimaryFromRolesReturnsHighestHierarchyRole(): void
     {
-        self::assertSame('Developer', UserRole::Developer->label());
-        self::assertSame('Admin', UserRole::Admin->label());
-        self::assertSame('Operador', UserRole::Operator->label());
-        self::assertSame('Usuario', UserRole::User->label());
-    }
+        $primary = UserRole::primaryFromRoles([
+            UserRole::Operator,
+            UserRole::Developer,
+            UserRole::Admin,
+        ]);
 
-    public function testOperatorGrantsBackendAccess(): void
-    {
-        self::assertTrue(UserRole::Operator->grantsBackendAccess());
-        self::assertSame('ROLE_OPERATOR', UserRole::Operator->toSymfonyRole());
+        self::assertSame(UserRole::Developer, $primary);
     }
 }

@@ -41,6 +41,36 @@ enum UserRole: string
         };
     }
 
+    public function hierarchyRank(): int
+    {
+        return match ($this) {
+            self::Developer => 4,
+            self::Admin => 3,
+            self::Operator => 2,
+            self::User => 1,
+        };
+    }
+
+    /**
+     * @param list<self> $roles
+     */
+    public static function primaryFromRoles(array $roles): ?self
+    {
+        $primary = null;
+        $maxRank = 0;
+
+        foreach ($roles as $role) {
+            $rank = $role->hierarchyRank();
+
+            if ($rank > $maxRank) {
+                $maxRank = $rank;
+                $primary = $role;
+            }
+        }
+
+        return $primary;
+    }
+
     /**
      * @param array<mixed> $values
      *
