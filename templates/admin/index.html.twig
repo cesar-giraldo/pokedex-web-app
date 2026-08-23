@@ -35,7 +35,9 @@
 						title: 'Usuarios',
 						icon: 'heroicons:users'
 					}) }}
+				{% endif %}
 
+				{% if is_granted('ROLE_DEVELOPER') %}
 					{{ include('@admin/partials/_quick_access_card.html.twig', {
 						href: path('app_design_index'),
 						title: 'UI Kit',

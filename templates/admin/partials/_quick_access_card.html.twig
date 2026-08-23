@@ -12,14 +12,14 @@
 	href="{{ href }}"
 	class="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition hover:border-brand-300 hover:shadow-theme-sm focus-visible:outline-hidden focus-visible:ring-3 focus-visible:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-brand-800"
 >
-	<div class="flex min-h-[180px] flex-1 items-center justify-center px-6 py-10">
+	<div class="flex min-h-[160px] flex-1 items-center justify-center px-6 py-10">
 		{% if image_src is defined and image_src %}
 			<img
 				src="{{ image_src }}"
 				alt="{{ image_alt|default('') }}"
 				width="80"
 				height="80"
-				class="h-20 w-20 object-contain transition group-hover:scale-105 mt-2 mb-2"
+				class="h-20 w-20 object-contain transition group-hover:scale-105 mt-1 mb-1"
 				loading="lazy"
 				decoding="async"
 			/>
@@ -30,7 +30,7 @@
 		{% endif %}
 	</div>
 
-	<div class="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-white/[0.02]">
+	<div class="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-5 py-3 dark:border-gray-800 dark:bg-white/[0.02]">
 		<span class="text-sm font-medium text-brand-500 dark:text-brand-400">
 			{{ title }}
 		</span>

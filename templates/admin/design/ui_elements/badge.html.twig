@@ -8,6 +8,12 @@
 {% endblock %}
 
 {% block breadcrumb %}
+	<li>
+		<a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_design_index') }}">
+			UI Kit
+			{{ ux_icon('heroicons:chevron-right', { class: 'w-4 h-4' }) }}
+		</a>
+	</li>
 	<li class="text-sm text-gray-800 dark:text-white/90">Badge</li>
 {% endblock %}
 
