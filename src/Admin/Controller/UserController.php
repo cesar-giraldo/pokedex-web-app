@@ -410,8 +410,8 @@ final class UserController extends AbstractController
             'country_options' => $countryOptions,
             'open_info_modal' => $openInfoModal,
             'open_password_modal' => $openPasswordModal,
-            'active_menu' => 'user_profile',
-            'active_page' => 'user_profile',
+            'active_menu' => 'auth',
+            'active_page' => 'user_profile'
         ];
     }
 

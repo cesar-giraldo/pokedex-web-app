@@ -10,16 +10,112 @@
 
 {% block body %}
 	<div class="min-h-screen rounded-2xl border border-gray-200 bg-white px-5 py-7 dark:border-gray-800 dark:bg-white/[0.03] xl:px-10 xl:py-12">
-		<div class="mx-auto w-full max-w-[630px] text-center">
-			<h3 class="mb-4 text-theme-xl font-semibold text-gray-800 dark:text-white/90 sm:text-2xl">
-				UI Kit - Dashboard
-			</h3>
+		<div class="mx-auto w-full">
+			<div class="mb-8">
+				<h3 class="mb-3 text-theme-xl font-semibold text-gray-800 dark:text-white/90 sm:text-2xl">
+					UI Kit - Dashboard
+				</h3>
 
-			<p class="text-sm text-gray-500 dark:text-gray-400 sm:text-base">
-				Start putting content on grids or panels, you can also use
-				                  different combinations of grids. Please check out the
-				                  dashboard and other pages
-			</p>
+				<p class="text-sm text-gray-500 dark:text-gray-400 sm:text-base">
+					This is a UI Kit for the admin panel. You can use it to design your own pages.
+				</p>
+			</div>
+
+		
+			<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+				{% if is_granted('ROLE_DEVELOPER') %}
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_form'),
+						title: 'Formularios',
+						icon: 'heroicons:document-text'
+					}) }}
+				
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_basic_tables'),
+						title: 'Tablas',
+						icon: 'heroicons:table-cells'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_blank_page'),
+						title: 'Blank Page',
+						icon: 'heroicons:document'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_page_404'),
+						title: '404 Error',
+						icon: 'heroicons:x-circle'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_page_500'),
+						title: '500 Error',
+						icon: 'heroicons:exclamation-triangle'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_charts_line_chart'),
+						title: 'Line Chart',
+						icon: 'heroicons:chart-bar'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_charts_bar_chart'),
+						title: 'Bar Chart',
+						icon: 'heroicons:chart-bar'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_charts_pie_chart'),
+						title: 'Pie Chart',
+						icon: 'heroicons:chart-pie'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_ui_elements_alerts'),
+						title: 'Alerts',
+						icon: 'heroicons:exclamation-triangle'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_ui_elements_badge'),
+						title: 'Badges',
+						icon: 'heroicons:information-circle'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_ui_elements_buttons'),
+						title: 'Buttons',
+						icon: 'heroicons:square-2-stack'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_ui_elements_images'),
+						title: 'Images',
+						icon: 'heroicons:photo'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_ui_elements_videos'),
+						title: 'Videos',
+						icon: 'heroicons:video-camera'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_auth_sign_in'),
+						title: 'Sign In',
+						icon: 'heroicons:shield-check'
+					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_auth_sign_up'),
+						title: 'Sign Up',
+						icon: 'heroicons:user-plus'
+					}) }}
+					
+				{% endif %}
+			</div>
 		</div>
 	</div>
 {% endblock %}

@@ -38,45 +38,34 @@
 
 				<ul
 					class="flex flex-col gap-4 mb-6">
+
 					<!-- Menu Item Dashboard -->
-					<li class="group-menu-dashboard">
-						{# Call twig function (custom extension) to determine classes values #}
+					<li>
 						{% set dashboard = get_menu_classes(active_menu, active_page, 'dashboard', 'dashboard') %}
-						<a href="#" 
-							data-action="click->template-base#setSelectedMenu"
-							data-template-base-selected-menu-param="dashboard"
+						<a href="{{ path('app_backend_home') }}"
 							class="menu-item group {{ dashboard.item_class }}">
-							
-							{{ ux_icon('heroicons:squares-2x2', { class: 'w-6 h-6 ' ~ dashboard.item_icon_class }) }}
+							{{ ux_icon('heroicons:home', { class: 'w-6 h-6 '~ dashboard.item_icon_class }) }}
+
 							<span class="menu-item-text group-data-[sidebar=collapsed]:lg:hidden">
 								Dashboard
 							</span>
-
-							{{ ux_icon('heroicons:chevron-down', { class: 'w-5 h-5 menu-item-arrow 
-								group-data-[sidebar=collapsed]:lg:hidden '~ dashboard.arrow_icon_class }) }}
 						</a>
-
-						<!-- Dropdown Menu Start -->
-						<div class="overflow-hidden transform translate {{ dashboard.dropdown_class }}">
-							<ul class="flex flex-col gap-1 mt-2 menu-dropdown pl-9
-								group-data-[sidebar=collapsed]:lg:hidden
-								group-data-[sidebar=expanded]:flex">
-								<li>
-									<a href="{{ path('app_backend_home')}}" class="menu-dropdown-item group {{ dashboard.dropdown_item_class }}">
-										Dashboard
-									</a>
-								</li>
-								<li>
-									{% set dashboard = get_menu_classes(active_menu, active_page, 'dashboard', 'pokemon_list') %}
-									<a href="{{ path('app_backend_pokemons')}}" class="menu-dropdown-item group {{ dashboard.dropdown_item_class }}">
-										Pokemons
-									</a>
-								</li>
-							</ul>
-						</div>
-						<!-- Dropdown Menu End -->
 					</li>
 					<!-- Menu Item Dashboard -->
+
+					<!-- Menu Item Pokemons -->
+					<li>
+						{% set pokemonList = get_menu_classes(active_menu, active_page, 'pokemon_list', 'pokemon_list') %}
+						<a href="{{ path('app_backend_pokemons') }}"
+							class="menu-item group {{ pokemonList.item_class }}">
+							{{ ux_icon('heroicons:list-bullet', { class: 'w-6 h-6 '~ pokemonList.item_icon_class }) }}
+
+							<span class="menu-item-text group-data-[sidebar=collapsed]:lg:hidden">
+								Pokemons
+							</span>
+						</a>
+					</li>
+					<!-- Menu Item Pokemons -->
 
 					<!-- Menu Item Usuarios -->
 					{% if is_granted('ROLE_ADMIN') %}
@@ -94,7 +83,136 @@
 					{% endif %}
 					<!-- Menu Item Usuarios -->
 
-					<!-- Menu Item Forms -->
+					{% if is_granted('ROLE_DEVELOPER') %}
+						<!-- Menu Item UI Kit -->
+						<li class="group-menu-ui-kit">
+							{# Call twig function (custom extension) to determine classes values #}
+							{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'dashboard') %}
+							<a href="#" 
+								data-action="click->template-base#setSelectedMenu"
+								data-template-base-selected-menu-param="ui-kit"
+								class="menu-item group {{ uiKitMenu.item_class }}">
+								
+								{{ ux_icon('heroicons:squares-2x2', { class: 'w-6 h-6 ' ~ uiKitMenu.item_icon_class }) }}
+								<span class="menu-item-text group-data-[sidebar=collapsed]:lg:hidden">
+									UI Kit
+								</span>
+
+								{{ ux_icon('heroicons:chevron-down', { class: 'w-5 h-5 menu-item-arrow 
+									group-data-[sidebar=collapsed]:lg:hidden '~ uiKitMenu.arrow_icon_class }) }}
+							</a>
+
+							<!-- Dropdown Menu Start -->
+							<div class="overflow-hidden transform translate {{ uiKitMenu.dropdown_class }}">
+								<ul class="flex flex-col gap-1 mt-2 menu-dropdown pl-9
+									group-data-[sidebar=collapsed]:lg:hidden
+									group-data-[sidebar=expanded]:flex">
+									<li>
+										<a href="{{ path('app_design_index')}}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Dashboard
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'form_elements') %}
+										<a href="{{ path('app_design_form')}}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Formularios
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'basic_tables') %}
+										<a href="{{ path('app_design_basic_tables') }}" 
+											class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Basic Tables
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'user_profile') %}
+										<a href="{{ path('app_design_user_profile') }}" 
+											class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											User Profile
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'blank_page') %}
+										<a href="{{ path('app_design_blank_page') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Blank Page
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'page_404') %}
+										<a href="{{ path('app_design_page_404') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											404 Error
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'page_500') %}
+										<a href="{{ path('app_design_page_500') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											500 Error
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'ui_alerts') %}
+										<a href="{{ path('app_design_ui_elements_alerts') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Alerts
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'ui_badge') %}
+										<a href="{{ path('app_design_ui_elements_badge') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Badges
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'ui_buttons') %}
+										<a href="{{ path('app_design_ui_elements_buttons') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Buttons
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'ui_images') %}
+										<a href="{{ path('app_design_ui_elements_images') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Images
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'ui_videos') %}
+										<a href="{{ path('app_design_ui_elements_videos') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Videos
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'line_chart') %}
+										<a href="{{ path('app_design_charts_line_chart') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Line Chart
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'bar_chart') %}
+										<a href="{{ path('app_design_charts_bar_chart') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Bar Chart
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'sign_in') %}
+										<a href="{{ path('app_design_auth_sign_in') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Sign In
+										</a>
+									</li>
+									<li>
+										{% set uiKitMenu = get_menu_classes(active_menu, active_page, 'ui_kit', 'sign_up') %}
+										<a href="{{ path('app_design_auth_sign_up') }}" class="menu-dropdown-item group {{ uiKitMenu.dropdown_item_class }}">
+											Sign Up
+										</a>
+									</li>
+									
+								</ul>
+							</div>
+							<!-- Dropdown Menu End -->
+						</li>
+						<!-- Menu Item UI Kit -->
+					{% endif %}
+
+					{# <!-- Menu Item Forms -->
 					<li class="group-menu-forms">
 						{% set menuForms = get_menu_classes(active_menu, active_page, 'forms', 'form_elements') %}
 						<a href="#" 
@@ -124,9 +242,9 @@
 						</div>
 						<!-- Dropdown Menu End -->
 					</li>
-					<!-- Menu Item Forms -->
+					<!-- Menu Item Forms -->#}
 
-					<!-- Menu Item Tables -->
+					{#<!-- Menu Item Tables -->
 					<li class="group-menu-tables">
 						{% set menuTables = get_menu_classes(active_menu, active_page, 'tables', 'basic_tables') %}
 						<a href="#" 
@@ -159,9 +277,9 @@
 						</div>
 						<!-- Dropdown Menu End -->
 					</li>
-					<!-- Menu Item Tables -->
+					<!-- Menu Item Tables -->#}
 
-					<!-- Menu Item Pages -->
+					{#<!-- Menu Item Pages -->
 					<li class="group-menu-pages">
 						{% set menuPages = get_menu_classes(active_menu, active_page, 'pages', 'blank_page') %}
 						<a href="#" 
@@ -205,7 +323,7 @@
 						</div>
 						<!-- Dropdown Menu End -->
 					</li>	
-					<!-- Menu Item Pages -->
+					<!-- Menu Item Pages -->#}
 				</ul>
 			</div>
 
@@ -223,7 +341,7 @@
 
 				<ul
 					class="flex flex-col gap-4 mb-6">
-					<!-- Menu Item Charts -->
+					{#<!-- Menu Item Charts -->
 					<li class="group-menu-charts">
 						{% set menuCharts = get_menu_classes(active_menu, active_page, 'charts', 'line_chart') %}
 						<a href="#" 
@@ -267,11 +385,11 @@
 						</div>
 						<!-- Dropdown Menu End -->
 					</li>
-					<!-- Menu Item Charts -->
+					<!-- Menu Item Charts -->#}
 
 					<!-- Menu Item Ui Elements  -->
 
-					<li class="group-menu-ui-elements">
+					{#<li class="group-menu-ui-elements">
 						{% set menuElements = get_menu_classes(active_menu, active_page, 'ui_elements', 'ui_alerts') %}
 						<a href="#" 
 							data-action="click->template-base#setSelectedMenu"
@@ -328,7 +446,7 @@
 						</div>
 						<!-- Dropdown Menu End -->
 					</li>
-					<!-- Menu Item Ui Elements -->
+					<!-- Menu Item Ui Elements -->#}
 
 					<!-- Menu Item Authentication -->
 					<li class="group-menu-auth">
@@ -341,7 +459,7 @@
 							{{ ux_icon('heroicons:shield-check', { class: 'w-6 h-6 '~ menuAuth.item_icon_class }) }}
 
 							<span class="menu-item-text group-data-[sidebar=collapsed]:lg:hidden">
-								Authentication
+								Seguridad
 							</span>
 
 							{{ ux_icon('heroicons:chevron-down', { class: 'w-5 h-5 menu-item-arrow 
@@ -354,13 +472,14 @@
 								group-data-[sidebar=collapsed]:lg:hidden
 								group-data-[sidebar=expanded]:flex">
 								<li>
-									<a href="{{ path('app_design_auth_sign_in') }}" class="menu-dropdown-item group {{ menuAuth.dropdown_item_class }}">
-										Sign In
+									{% set menuAuth = get_menu_classes(active_menu, active_page, 'auth', 'user_profile') %}
+									<a href="{{ path('app_backend_user_profile') }}" class="menu-dropdown-item group {{ menuAuth.dropdown_item_class }}">
+										Editar Perfil
 									</a>
 								</li>
 								<li>
-									<a href="{{ path('app_design_auth_sign_up') }}" class="menu-dropdown-item group {{ menuAuth.dropdown_item_class }}">
-										Sign Up
+									<a href="{{ path('app_admin_logout') }}" data-turbo-prefetch="false" class="menu-dropdown-item group menu-dropdown-item-inactive">
+										Salir
 									</a>
 								</li>
 							</ul>

@@ -53,7 +53,7 @@ final class PokemonController extends AbstractController
 
         return $this->render('@admin/pokemons/index.html.twig', [
             'controller_name' => 'PokemonController',
-            'active_menu' => 'dashboard',
+            'active_menu' => 'pokemon_list',
             'active_page' => 'pokemon_list',
             'search_form' => $form->createView(),
             'current_sort' => $sort,

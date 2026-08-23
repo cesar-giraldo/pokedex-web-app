@@ -35,6 +35,12 @@
 						title: 'Usuarios',
 						icon: 'heroicons:users'
 					}) }}
+
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_design_index'),
+						title: 'UI Kit',
+						icon: 'heroicons:puzzle-piece'
+					}) }}
 				{% endif %}
 			</div>
 		</div>

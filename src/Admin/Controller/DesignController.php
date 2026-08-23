@@ -16,7 +16,7 @@ final class DesignController extends AbstractController
     {
         return $this->render('@admin/design/index.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'dashboard',
+            'active_menu' => 'ui_kit',
             'active_page' => 'dashboard',
         ]);
     }
@@ -26,7 +26,7 @@ final class DesignController extends AbstractController
     {
         return $this->render('@admin/design/form/index.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'forms',
+            'active_menu' => 'ui_kit',
             'active_page' => 'form_elements',
         ]);
     }
@@ -36,7 +36,7 @@ final class DesignController extends AbstractController
     {
         return $this->render('@admin/design/tables/basic.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'tables',
+            'active_menu' => 'ui_kit',
             'active_page' => 'basic_tables',
         ]);
     }
@@ -46,7 +46,7 @@ final class DesignController extends AbstractController
     {
         return $this->render('@admin/design/profile/index.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'user_profile',
+            'active_menu' => 'ui_kit',
             'active_page' => 'user_profile',
         ]);
     }
@@ -58,7 +58,7 @@ final class DesignController extends AbstractController
         // fileManager, pricingTables, page500, page503, success, faq, comingSoon, maintenance
         return $this->render('@admin/design/blank_page.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'pages',
+            'active_menu' => 'ui_kit',
             'active_page' => 'blank_page',
         ]);
     }
@@ -70,7 +70,7 @@ final class DesignController extends AbstractController
         // fileManager, pricingTables, page500, page503, success, faq, comingSoon, maintenance
         return $this->render('@admin/design/page_404.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'pages',
+            'active_menu' => 'ui_kit',
             'active_page' => 'page_404',
         ]);
     }
@@ -82,7 +82,7 @@ final class DesignController extends AbstractController
         // fileManager, pricingTables, page503, success, faq, comingSoon, maintenance
         return $this->render('@admin/design/page_500.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'pages',
+            'active_menu' => 'ui_kit',
             'active_page' => 'page_500',
         ]);
     }
@@ -92,7 +92,7 @@ final class DesignController extends AbstractController
     {
         return $this->render('@admin/design/ui_elements/alerts.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'ui_elements',
+            'active_menu' => 'ui_kit',
             'active_page' => 'ui_alerts',
         ]);
     }
@@ -102,7 +102,7 @@ final class DesignController extends AbstractController
     {
         return $this->render('@admin/design/ui_elements/badge.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'ui_elements',
+            'active_menu' => 'ui_kit',
             'active_page' => 'ui_badge',
         ]);
     }
@@ -112,7 +112,7 @@ final class DesignController extends AbstractController
     {
         return $this->render('@admin/design/ui_elements/buttons.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'ui_elements',
+            'active_menu' => 'ui_kit',
             'active_page' => 'ui_buttons',
         ]);
     }
@@ -122,7 +122,7 @@ final class DesignController extends AbstractController
     {
         return $this->render('@admin/design/ui_elements/images.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'ui_elements',
+            'active_menu' => 'ui_kit',
             'active_page' => 'ui_images',
         ]);
     }
@@ -132,7 +132,7 @@ final class DesignController extends AbstractController
     {
         return $this->render('@admin/design/ui_elements/videos.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'ui_elements',
+            'active_menu' => 'ui_kit',
             'active_page' => 'ui_videos',
         ]);
     }
@@ -145,7 +145,7 @@ final class DesignController extends AbstractController
 
         return $this->render('@admin/design/charts/line_chart.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'charts',
+            'active_menu' => 'ui_kit',
             'active_page' => 'line_chart',
             'months' => $months,
             'registeredUsers' => $registeredUsers,
@@ -161,7 +161,7 @@ final class DesignController extends AbstractController
 
         return $this->render('@admin/design/charts/bar_chart.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'charts',
+            'active_menu' => 'ui_kit',
             'active_page' => 'bar_chart',
             'categories' => $categories,
             'sells' => $sells,
@@ -177,7 +177,7 @@ final class DesignController extends AbstractController
 
         return $this->render('@admin/design/charts/pie_chart.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'charts',
+            'active_menu' => 'ui_kit',
             'active_page' => 'pie_chart',
             'labels' => $labels,
             'data' => $data,
@@ -189,7 +189,7 @@ final class DesignController extends AbstractController
     {
         return $this->render('@admin/design/auth/sign_in.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'auth',
+            'active_menu' => 'ui_kit',
             'active_page' => 'sign_in',
         ]);
     }
@@ -199,7 +199,7 @@ final class DesignController extends AbstractController
     {
         return $this->render('@admin/design/auth/sign_up.html.twig', [
             'controller_name' => 'DesignController',
-            'active_menu' => 'auth',
+            'active_menu' => 'ui_kit',
             'active_page' => 'sign_up',
         ]);
     }
