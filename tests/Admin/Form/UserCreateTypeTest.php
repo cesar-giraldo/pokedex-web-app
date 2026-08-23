@@ -42,7 +42,7 @@ final class UserCreateTypeTest extends KernelTestCase
             'email' => '',
             'nickname' => 'test-admin-user',
             'countryCode' => '57',
-            'cellphone' => '3001234567',
+            'cellphone' => '3999001001',
             'status' => 'active',
             'applicationRoles' => ['admin'],
             'plainPassword' => 'Secret1',

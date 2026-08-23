@@ -119,7 +119,7 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
         }
 
         $event->setResponse(new RedirectResponse(
-            $this->urlGenerator->generate('app_backend_pokemons'),
+            $this->urlGenerator->generate('app_backend_home'),
         ));
     }
 

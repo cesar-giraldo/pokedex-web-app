@@ -32,7 +32,7 @@ final class UserEditTypeTest extends KernelTestCase
             ->setNickname('editable-user')
             ->setApplicationRoles([UserRole::Operator])
             ->setCountryCode(57)
-            ->setCellphone('3001234567');
+            ->setCellphone('3999002001');
         $user->setPassword('existing-hash');
 
         $form = $formFactory->create(UserEditType::class, $user, [
@@ -51,7 +51,7 @@ final class UserEditTypeTest extends KernelTestCase
             'email' => '',
             'nickname' => 'editable-user',
             'countryCode' => '57',
-            'cellphone' => '3001234567',
+            'cellphone' => '3999002001',
             'status' => 'active',
             'applicationRoles' => ['operator'],
             'plainPassword' => '',
@@ -79,7 +79,7 @@ final class UserEditTypeTest extends KernelTestCase
             ->setNickname('no-email-user')
             ->setApplicationRoles([UserRole::Operator])
             ->setCountryCode(57)
-            ->setCellphone('3001234567');
+            ->setCellphone('3999002002');
         $user->setPassword('existing-hash');
 
         $form = $formFactory->create(UserEditType::class, $user, [
@@ -94,7 +94,7 @@ final class UserEditTypeTest extends KernelTestCase
             'email' => 'new-email@example.com',
             'nickname' => 'no-email-user',
             'countryCode' => '57',
-            'cellphone' => '3001234567',
+            'cellphone' => '3999002002',
             'status' => 'active',
             'applicationRoles' => ['operator'],
             'plainPassword' => '',

@@ -36,7 +36,7 @@ final class SecurityControllerTest extends WebTestCase
             '_password' => 'Secret123',
         ]);
 
-        self::assertResponseRedirects('/admin/pokemons');
+        self::assertResponseRedirects('/admin/home');
         $client->followRedirect();
         self::assertResponseIsSuccessful();
     }
@@ -69,7 +69,7 @@ final class SecurityControllerTest extends WebTestCase
             '_remember_me' => 'on',
         ]);
 
-        self::assertResponseRedirects('/admin/pokemons');
+        self::assertResponseRedirects('/admin/home');
         $client->followRedirect();
         self::assertResponseIsSuccessful();
 

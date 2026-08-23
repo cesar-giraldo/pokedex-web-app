@@ -17,7 +17,7 @@ final class SecurityController extends AbstractController
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         if (null !== $this->getUser() && $this->isGranted('ROLE_ADMIN')) {
-            return $this->redirectToRoute('app_backend_pokemons');
+            return $this->redirectToRoute('app_backend_home');
         }
 
         $loginForm = $this->createForm(LoginFormType::class, [
