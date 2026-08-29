@@ -6,7 +6,7 @@ namespace App\Admin\Controller;
 
 use App\Admin\Controller\Concerns\AdminPaginatorTrait;
 use App\Admin\Controller\Concerns\FlashesFormValidationErrorsTrait;
-use App\Admin\Data\AmericasCountryCodes;
+use App\Admin\Data\WorldCountryCodes;
 use App\Admin\Form\SearchUserType;
 use App\Admin\Form\UserCreateType;
 use App\Admin\Form\UserEditType;
@@ -219,9 +219,10 @@ final class UserController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        $countryOptions = $this->buildCountryOptions();
+        $profileFormOptions = $this->buildProfileFormOptions();
+        $countryOptions = WorldCountryCodes::viewOptions($profileFormOptions['country_choice_key']);
 
-        $infoForm = $this->createForm(UserProfileInfoType::class, $user);
+        $infoForm = $this->createForm(UserProfileInfoType::class, $user, $profileFormOptions);
         $passwordForm = $this->createForm(UserProfilePasswordType::class, null, [
             'user' => $user,
             'password_hasher' => $passwordHasher,
@@ -336,6 +337,7 @@ final class UserController extends AbstractController
      * @return array{
      *     show_is_hidden: bool,
      *     assignable_roles: list<UserRole>,
+     *     country_choice_key: 'name'|'alpha2'|'alpha3',
      *     default_roles?: list<UserRole>
      * }
      */
@@ -344,6 +346,7 @@ final class UserController extends AbstractController
         $options = [
             'show_is_hidden' => $this->isGranted('ROLE_DEVELOPER'),
             'assignable_roles' => $policy->getAssignableRoles($editor),
+            'country_choice_key' => WorldCountryCodes::DEFAULT_CHOICE_KEY,
         ];
 
         if ($isCreate) {
@@ -354,7 +357,11 @@ final class UserController extends AbstractController
     }
 
     /**
-     * @param array{show_is_hidden: bool, assignable_roles: list<UserRole>} $formOptions
+     * @param array{
+     *     show_is_hidden: bool,
+     *     assignable_roles: list<UserRole>,
+     *     country_choice_key?: 'name'|'alpha2'|'alpha3'
+     * } $formOptions
      * @param FormInterface<User>                                           $form
      *
      * @return array<string, mixed>
@@ -371,10 +378,9 @@ final class UserController extends AbstractController
             $statusOptions[$status->value] = $status->label();
         }
 
-        $countryOptions = [];
-        foreach (AmericasCountryCodes::formChoices() as $label => $code) {
-            $countryOptions[sprintf('%d', $code)] = $label;
-        }
+        $countryOptions = WorldCountryCodes::viewOptions(
+            $this->resolveCountryChoiceKey($formOptions),
+        );
 
         return [
             'user' => $user,
@@ -416,20 +422,22 @@ final class UserController extends AbstractController
     }
 
     /**
-     * @return array<string, string>
+     * @return array{country_choice_key: 'name'|'alpha2'|'alpha3'}
      */
-    private function buildCountryOptions(): array
+    private function buildProfileFormOptions(): array
     {
-        $choices = AmericasCountryCodes::formChoices();
-        $labels = array_keys($choices);
-        $codes = array_map(
-            static fn (int $code): string => (string) $code,
-            array_values($choices),
-        );
+        return [
+            'country_choice_key' => WorldCountryCodes::DEFAULT_CHOICE_KEY,
+        ];
+    }
 
-        /** @var array<string, string> $countryOptions */
-        $countryOptions = array_combine($codes, $labels);
-
-        return $countryOptions;
+    /**
+     * @param array{country_choice_key?: 'name'|'alpha2'|'alpha3'} $formOptions
+     *
+     * @return 'name'|'alpha2'|'alpha3'
+     */
+    private function resolveCountryChoiceKey(array $formOptions): string
+    {
+        return $formOptions['country_choice_key'] ?? WorldCountryCodes::DEFAULT_CHOICE_KEY;
     }
 }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Admin\Form;
 
-use App\Admin\Data\AmericasCountryCodes;
+use App\Admin\Data\WorldCountryCodes;
+use App\Admin\Form\Type\CountryCodeChoiceType;
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -22,8 +22,6 @@ final class UserProfileInfoType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $countryChoices = AmericasCountryCodes::formChoices();
-
         $builder
             ->add('name', TextType::class, [
                 'label' => false,
@@ -50,14 +48,8 @@ final class UserProfileInfoType extends AbstractType
                     new Length(min: 5, minMessage: 'El nickname debe tener al menos {{ limit }} caracteres.'),
                 ],
             ])
-            ->add('countryCode', ChoiceType::class, [
-                'label' => false,
-                'choices' => $countryChoices,
-                'placeholder' => 'Seleccione un país',
-                'choice_value' => static fn (?int $value): ?string => null === $value ? null : (string) $value,
-                'constraints' => [
-                    new NotBlank(message: 'Debes seleccionar un código de país.'),
-                ],
+            ->add('countryCode', CountryCodeChoiceType::class, [
+                'country_choice_key' => $options['country_choice_key'],
             ])
             ->add('cellphone', TextType::class, [
                 'label' => false,
@@ -73,5 +65,7 @@ final class UserProfileInfoType extends AbstractType
         $resolver->setDefaults([
             'data_class' => User::class,
         ]);
+
+        WorldCountryCodes::configureChoiceKeyOption($resolver);
     }
 }

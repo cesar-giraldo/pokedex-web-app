@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Admin\Form;
 
-use App\Admin\Data\AmericasCountryCodes;
+use App\Admin\Data\WorldCountryCodes;
+use App\Admin\Form\Type\CountryCodeChoiceType;
 use App\Admin\Validator\Constraints\PasswordStrength;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
@@ -44,8 +45,6 @@ final class UserEditType extends AbstractType
             $roleChoices[$role->label()] = $role->value;
         }
 
-        $countryChoices = AmericasCountryCodes::formChoices();
-
         $builder
             ->add('name', TextType::class, [
                 'label' => false,
@@ -70,14 +69,8 @@ final class UserEditType extends AbstractType
                     new Length(min: 5, minMessage: 'El nickname debe tener al menos {{ limit }} caracteres.'),
                 ],
             ])
-            ->add('countryCode', ChoiceType::class, [
-                'label' => false,
-                'choices' => $countryChoices,
-                'placeholder' => 'Seleccione un país',
-                'choice_value' => static fn (?int $value): ?string => null === $value ? null : (string) $value,
-                'constraints' => [
-                    new NotBlank(message: 'Debes seleccionar un código de país.'),
-                ],
+            ->add('countryCode', CountryCodeChoiceType::class, [
+                'country_choice_key' => $options['country_choice_key'],
             ])
             ->add('cellphone', TextType::class, [
                 'label' => false,
@@ -182,6 +175,8 @@ final class UserEditType extends AbstractType
             'show_is_hidden' => false,
             'assignable_roles' => [],
         ]);
+
+        WorldCountryCodes::configureChoiceKeyOption($resolver);
 
         $resolver->setAllowedTypes('show_is_hidden', 'bool');
         $resolver->setAllowedTypes('assignable_roles', 'array');
