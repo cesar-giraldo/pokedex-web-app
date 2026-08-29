@@ -77,17 +77,12 @@ final class WorldCountryCodes
     }
 
     /**
-     * @param 'name'|'alpha2'|'alpha3' $key
-     *
      * @return array<string, int> country identifier => numeric calling code (without +)
      */
     private static function countryPhoneCodes(string $key = self::DEFAULT_CHOICE_KEY): array
     {
         if (!in_array($key, self::CHOICE_KEYS, true)) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid country key "%s". Expected "name", "alpha2" or "alpha3".',
-                $key,
-            ));
+            throw new InvalidArgumentException(sprintf('Invalid country key "%s". Expected "name", "alpha2" or "alpha3".', $key));
         }
 
         $choices = [];

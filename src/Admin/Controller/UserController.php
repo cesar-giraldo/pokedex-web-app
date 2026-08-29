@@ -362,7 +362,7 @@ final class UserController extends AbstractController
      *     assignable_roles: list<UserRole>,
      *     country_choice_key?: 'name'|'alpha2'|'alpha3'
      * } $formOptions
-     * @param FormInterface<User>                                           $form
+     * @param FormInterface<User> $form
      *
      * @return array<string, mixed>
      */
