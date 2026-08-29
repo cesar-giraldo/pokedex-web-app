@@ -40,7 +40,7 @@ final class UserCreateTypeTest extends KernelTestCase
             'name' => 'Test',
             'lastname' => 'Admin',
             'email' => '',
-            'nickname' => 'test-admin-user',
+            'nickname' => 'tstadmin01',
             'countryCode' => '57',
             'cellphone' => '3999001001',
             'status' => 'active',

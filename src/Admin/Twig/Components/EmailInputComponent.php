@@ -70,6 +70,8 @@ final class EmailInputComponent
 
     public string $invalidEmailMessage = 'Introduce un correo electrónico válido.';
 
+    public int $maxLength = 0;
+
     public bool $required = false;
 
     public bool $disabled = false;
@@ -86,6 +88,10 @@ final class EmailInputComponent
 
         if ('' === $this->name) {
             $this->name = $this->id;
+        }
+
+        if ($this->maxLength < 0) {
+            $this->maxLength = 0;
         }
     }
 

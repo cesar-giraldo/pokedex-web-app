@@ -14,6 +14,7 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 use function is_string;
@@ -29,23 +30,38 @@ final class UserProfilePasswordType extends AbstractType
             ->add('currentPassword', PasswordType::class, [
                 'label' => false,
                 'mapped' => false,
+                'attr' => ['maxlength' => 128],
                 'constraints' => [
                     new NotBlank(message: 'Este campo es obligatorio.'),
+                    new Length(
+                        max: 128,
+                        maxMessage: 'La contraseña no puede tener más de {{ limit }} caracteres.',
+                    ),
                 ],
             ])
             ->add('plainPassword', PasswordType::class, [
                 'label' => false,
                 'mapped' => false,
+                'attr' => ['maxlength' => 128],
                 'constraints' => [
                     new NotBlank(message: 'Este campo es obligatorio.'),
                     new PasswordStrength(),
+                    new Length(
+                        max: 128,
+                        maxMessage: 'La contraseña no puede tener más de {{ limit }} caracteres.',
+                    ),
                 ],
             ])
             ->add('confirmPassword', PasswordType::class, [
                 'label' => false,
                 'mapped' => false,
+                'attr' => ['maxlength' => 128],
                 'constraints' => [
                     new NotBlank(message: 'Este campo es obligatorio.'),
+                    new Length(
+                        max: 128,
+                        maxMessage: 'La contraseña no puede tener más de {{ limit }} caracteres.',
+                    ),
                 ],
             ]);
 

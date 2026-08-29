@@ -48,25 +48,48 @@ final class UserEditType extends AbstractType
         $builder
             ->add('name', TextType::class, [
                 'label' => false,
+                'attr' => ['maxlength' => 50],
                 'constraints' => [
                     new NotBlank(message: 'Este campo es obligatorio.'),
+                    new Length(
+                        max: 50,
+                        maxMessage: 'Este campo no puede tener más de {{ limit }} caracteres.',
+                    ),
                 ],
             ])
             ->add('lastname', TextType::class, [
                 'label' => false,
+                'attr' => ['maxlength' => 70],
                 'constraints' => [
                     new NotBlank(message: 'Este campo es obligatorio.'),
+                    new Length(
+                        max: 70,
+                        maxMessage: 'Este campo no puede tener más de {{ limit }} caracteres.',
+                    ),
                 ],
             ])
             ->add('email', EmailType::class, [
                 'label' => false,
                 'required' => false,
+                'attr' => ['maxlength' => 100],
+                'constraints' => [
+                    new Length(
+                        max: 100,
+                        maxMessage: 'Este campo no puede tener más de {{ limit }} caracteres.',
+                    ),
+                ],
             ])
             ->add('nickname', TextType::class, [
                 'label' => false,
+                'attr' => ['maxlength' => 20],
                 'constraints' => [
                     new NotBlank(message: 'Este campo es obligatorio.'),
-                    new Length(min: 5, minMessage: 'El nickname debe tener al menos {{ limit }} caracteres.'),
+                    new Length(
+                        min: 5,
+                        max: 20,
+                        minMessage: 'El nickname debe tener al menos {{ limit }} caracteres.',
+                        maxMessage: 'El nickname no puede tener más de {{ limit }} caracteres.',
+                    ),
                 ],
             ])
             ->add('countryCode', CountryCodeChoiceType::class, [
@@ -74,9 +97,15 @@ final class UserEditType extends AbstractType
             ])
             ->add('cellphone', TextType::class, [
                 'label' => false,
+                'attr' => ['maxlength' => 12],
                 'constraints' => [
                     new NotBlank(message: 'Este campo es obligatorio.'),
-                    new Length(min: 8, minMessage: 'El celular debe tener al menos {{ limit }} caracteres.'),
+                    new Length(
+                        min: 8,
+                        max: 12,
+                        minMessage: 'El celular debe tener al menos {{ limit }} caracteres.',
+                        maxMessage: 'El celular no puede tener más de {{ limit }} caracteres.',
+                    ),
                 ],
             ])
             ->add('status', EnumType::class, [
@@ -119,9 +148,14 @@ final class UserEditType extends AbstractType
                 'label' => false,
                 'mapped' => false,
                 'required' => false,
+                'attr' => ['maxlength' => 128],
                 'constraints' => [
                     new Optional([
                         new PasswordStrength(),
+                        new Length(
+                            max: 128,
+                            maxMessage: 'La contraseña no puede tener más de {{ limit }} caracteres.',
+                        ),
                     ]),
                 ],
             ])
@@ -129,6 +163,15 @@ final class UserEditType extends AbstractType
                 'label' => false,
                 'mapped' => false,
                 'required' => false,
+                'attr' => ['maxlength' => 128],
+                'constraints' => [
+                    new Optional([
+                        new Length(
+                            max: 128,
+                            maxMessage: 'La contraseña no puede tener más de {{ limit }} caracteres.',
+                        ),
+                    ]),
+                ],
             ]);
 
         if ($options['show_is_hidden']) {

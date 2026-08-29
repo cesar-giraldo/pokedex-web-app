@@ -67,6 +67,8 @@ final class UrlInputComponent
 
     public string $invalidUrlMessage = 'Introduce una URL válida.';
 
+    public int $maxLength = 0;
+
     public bool $required = false;
 
     public bool $disabled = false;
@@ -88,6 +90,20 @@ final class UrlInputComponent
         if ('' === $this->prefix) {
             $this->prefix = 'http://';
         }
+
+        if ($this->maxLength < 0) {
+            $this->maxLength = 0;
+        }
+    }
+
+    #[ExposeInTemplate('visibleMaxLength')]
+    public function getVisibleMaxLength(): int
+    {
+        if ($this->maxLength <= 0) {
+            return 0;
+        }
+
+        return max(0, $this->maxLength - strlen($this->prefix));
     }
 
     #[ExposeInTemplate('displayValue')]

@@ -23,26 +23,34 @@ final class LoginFormType extends AbstractType
         $builder
             ->add('_username', TextType::class, [
                 'label' => 'Nickname',
+                'attr' => [
+                    'maxlength' => 20,
+                    'autocomplete' => 'username',
+                    'placeholder' => 'tu-nickname',
+                ],
                 'constraints' => [
                     new NotBlank(message: 'El nickname es obligatorio.'),
                     new Length(
                         min: 5,
+                        max: 20,
                         minMessage: 'El nickname debe tener al menos {{ limit }} caracteres.',
+                        maxMessage: 'El nickname no puede tener más de {{ limit }} caracteres.',
                     ),
-                ],
-                'attr' => [
-                    'autocomplete' => 'username',
-                    'placeholder' => 'tu-nickname',
                 ],
             ])
             ->add('_password', PasswordType::class, [
                 'label' => 'Contraseña',
-                'constraints' => [
-                    new NotBlank(message: 'La contraseña es obligatoria.'),
-                ],
                 'attr' => [
+                    'maxlength' => 128,
                     'autocomplete' => 'current-password',
                     'placeholder' => 'Ingresa tu contraseña',
+                ],
+                'constraints' => [
+                    new NotBlank(message: 'La contraseña es obligatoria.'),
+                    new Length(
+                        max: 128,
+                        maxMessage: 'La contraseña no puede tener más de {{ limit }} caracteres.',
+                    ),
                 ],
             ])
             ->add('_remember_me', CheckboxType::class, [

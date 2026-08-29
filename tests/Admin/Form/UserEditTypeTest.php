@@ -29,10 +29,10 @@ final class UserEditTypeTest extends KernelTestCase
         $user = new User()
             ->setName('Editable')
             ->setLastname('User')
-            ->setNickname('editable-user')
+            ->setNickname('edituser1')
             ->setApplicationRoles([UserRole::Operator])
             ->setCountryCode(57)
-            ->setCellphone('3999002001');
+            ->setCellphone('3099010001');
         $user->setPassword('existing-hash');
 
         $form = $formFactory->create(UserEditType::class, $user, [
@@ -49,9 +49,9 @@ final class UserEditTypeTest extends KernelTestCase
             'name' => 'Editable',
             'lastname' => 'User',
             'email' => '',
-            'nickname' => 'editable-user',
+            'nickname' => 'edituser1',
             'countryCode' => '57',
-            'cellphone' => '3999002001',
+            'cellphone' => '3099010001',
             'status' => 'active',
             'applicationRoles' => ['operator'],
             'plainPassword' => '',
@@ -76,10 +76,10 @@ final class UserEditTypeTest extends KernelTestCase
             ->setName('NoEmail')
             ->setLastname('User')
             ->setEmail(null)
-            ->setNickname('no-email-user')
+            ->setNickname('noemail01')
             ->setApplicationRoles([UserRole::Operator])
             ->setCountryCode(57)
-            ->setCellphone('3999002002');
+            ->setCellphone('3099010002');
         $user->setPassword('existing-hash');
 
         $form = $formFactory->create(UserEditType::class, $user, [
@@ -92,9 +92,9 @@ final class UserEditTypeTest extends KernelTestCase
             'name' => 'NoEmail',
             'lastname' => 'User',
             'email' => 'new-email@example.com',
-            'nickname' => 'no-email-user',
+            'nickname' => 'noemail01',
             'countryCode' => '57',
-            'cellphone' => '3999002002',
+            'cellphone' => '3099010002',
             'status' => 'active',
             'applicationRoles' => ['operator'],
             'plainPassword' => '',

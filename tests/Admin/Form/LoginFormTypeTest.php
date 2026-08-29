@@ -43,6 +43,34 @@ final class LoginFormTypeTest extends KernelTestCase
         self::assertGreaterThan(0, $form->get('_username')->getErrors(true)->count());
     }
 
+    public function testUsernameRejectsValuesAboveMaxLength(): void
+    {
+        self::bootKernel();
+
+        /** @var FormFactoryInterface $formFactory */
+        $formFactory = static::getContainer()->get(FormFactoryInterface::class);
+        $form = $formFactory->create(LoginFormType::class);
+        $form->submit([
+            '_username' => str_repeat('a', 21),
+            '_password' => 'Secret123',
+        ]);
+
+        self::assertFalse($form->isValid());
+        self::assertGreaterThan(0, $form->get('_username')->getErrors(true)->count());
+    }
+
+    public function testLoginFieldsExposeMaxlengthAttributes(): void
+    {
+        self::bootKernel();
+
+        /** @var FormFactoryInterface $formFactory */
+        $formFactory = static::getContainer()->get(FormFactoryInterface::class);
+        $view = $formFactory->create(LoginFormType::class)->createView();
+
+        self::assertSame(20, $view['_username']->vars['attr']['maxlength']);
+        self::assertSame(128, $view['_password']->vars['attr']['maxlength']);
+    }
+
     public function testFieldNamesMatchSecurityFirewallParameters(): void
     {
         self::bootKernel();

@@ -8,6 +8,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SearchType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Length;
 
 /**
  * Form type for searching backend users (no mapped to any entity).
@@ -23,7 +24,14 @@ class SearchUserType extends AbstractType
                 'label' => false,
                 'required' => false,
                 'attr' => [
+                    'maxlength' => 30,
                     'placeholder' => 'Buscar usuarios...',
+                ],
+                'constraints' => [
+                    new Length(
+                        max: 30,
+                        maxMessage: 'La búsqueda no puede tener más de {{ limit }} caracteres.',
+                    ),
                 ],
             ]);
     }

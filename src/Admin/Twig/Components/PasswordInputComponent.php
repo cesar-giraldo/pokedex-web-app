@@ -56,6 +56,8 @@ final class PasswordInputComponent
 
     public string $autocomplete = 'current-password';
 
+    public int $maxLength = 0;
+
     public bool $required = false;
 
     public bool $disabled = false;
@@ -72,6 +74,10 @@ final class PasswordInputComponent
 
         if ('' === $this->name) {
             $this->name = $this->id;
+        }
+
+        if ($this->maxLength < 0) {
+            $this->maxLength = 0;
         }
     }
 

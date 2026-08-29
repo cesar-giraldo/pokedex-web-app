@@ -25,6 +25,7 @@
 			name="{{ name }}"
 			value="{{ value }}"
 			data-component-url-input-target="hiddenInput"
+			{% if maxLength > 0 %}maxlength="{{ maxLength }}"{% endif %}
 			{% if required %}required{% endif %}
 			{% if disabled %}disabled{% endif %}
 		>
@@ -39,6 +40,7 @@
 			data-component-url-input-target="input"
 			data-action="input->component-url-input#onInput blur->component-url-input#onBlur invalid->component-url-input#onInvalid"
 			class="{{ inputClasses }}"
+			{% if visibleMaxLength > 0 %}maxlength="{{ visibleMaxLength }}"{% endif %}
 			{% if disabled %}disabled{% endif %}
 			{% if error %}
 				aria-invalid="true"

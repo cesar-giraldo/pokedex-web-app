@@ -48,6 +48,7 @@
 			data-component-email-input-target="input"
 			data-action="input->component-email-input#onInput blur->component-email-input#onBlur invalid->component-email-input#onInvalid"
 			class="{{ inputClasses }}"
+			{% if maxLength > 0 %}maxlength="{{ maxLength }}"{% endif %}
 			{% if required %}required{% endif %}
 			{% if disabled %}disabled{% endif %}
 			{% if error %}

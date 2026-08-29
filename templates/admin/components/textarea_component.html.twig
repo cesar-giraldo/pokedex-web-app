@@ -12,6 +12,7 @@
 		rows="{{ rows }}"
 		placeholder="{{ placeholder }}"
 		class="{{ textareaClasses }}"
+		{% if maxLength > 0 %}maxlength="{{ maxLength }}"{% endif %}
 		{% if required %}required{% endif %}
 		{% if disabled %}disabled{% endif %}
 		{% if error %}

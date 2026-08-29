@@ -15,6 +15,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Positive;
 use Symfony\Component\Validator\Constraints\Url;
@@ -34,6 +35,7 @@ final class PokemonEditType extends AbstractType
         $builder
             ->add('height', IntegerType::class, [
                 'label' => false,
+                'attr' => ['maxlength' => 3],
                 'setter' => static function (Pokemon $pokemon, ?int $value): void {
                     if (null !== $value) {
                         $pokemon->setHeight($value);
@@ -43,6 +45,7 @@ final class PokemonEditType extends AbstractType
             ])
             ->add('weight', IntegerType::class, [
                 'label' => false,
+                'attr' => ['maxlength' => 3],
                 'setter' => static function (Pokemon $pokemon, ?int $value): void {
                     if (null !== $value) {
                         $pokemon->setWeight($value);
@@ -67,20 +70,31 @@ final class PokemonEditType extends AbstractType
                 'label' => false,
                 'required' => false,
                 'default_protocol' => 'https',
+                'attr' => ['maxlength' => 255],
                 'constraints' => [
                     new Url(message: 'Introduce una URL válida.'),
+                    new Length(
+                        max: 255,
+                        maxMessage: 'La URL no puede tener más de {{ limit }} caracteres.',
+                    ),
                 ],
             ])
             ->add('spriteBack', UrlType::class, [
                 'label' => false,
                 'required' => false,
                 'default_protocol' => 'https',
+                'attr' => ['maxlength' => 255],
                 'constraints' => [
                     new Url(message: 'Introduce una URL válida.'),
+                    new Length(
+                        max: 255,
+                        maxMessage: 'La URL no puede tener más de {{ limit }} caracteres.',
+                    ),
                 ],
             ])
             ->add('attack', IntegerType::class, [
                 'label' => false,
+                'attr' => ['maxlength' => 3],
                 'setter' => static function (Pokemon $pokemon, ?int $value): void {
                     if (null !== $value) {
                         $pokemon->setAttack($value);
@@ -90,6 +104,7 @@ final class PokemonEditType extends AbstractType
             ])
             ->add('defense', IntegerType::class, [
                 'label' => false,
+                'attr' => ['maxlength' => 3],
                 'setter' => static function (Pokemon $pokemon, ?int $value): void {
                     if (null !== $value) {
                         $pokemon->setDefense($value);
@@ -99,6 +114,7 @@ final class PokemonEditType extends AbstractType
             ])
             ->add('speed', IntegerType::class, [
                 'label' => false,
+                'attr' => ['maxlength' => 3],
                 'setter' => static function (Pokemon $pokemon, ?int $value): void {
                     if (null !== $value) {
                         $pokemon->setSpeed($value);
@@ -108,6 +124,7 @@ final class PokemonEditType extends AbstractType
             ])
             ->add('healthPoints', IntegerType::class, [
                 'label' => false,
+                'attr' => ['maxlength' => 3],
                 'setter' => static function (Pokemon $pokemon, ?int $value): void {
                     if (null !== $value) {
                         $pokemon->setHealthPoints($value);
@@ -122,6 +139,13 @@ final class PokemonEditType extends AbstractType
             ->add('description', TextareaType::class, [
                 'label' => false,
                 'required' => false,
+                'attr' => ['maxlength' => 5000],
+                'constraints' => [
+                    new Length(
+                        max: 5000,
+                        maxMessage: 'La descripción no puede tener más de {{ limit }} caracteres.',
+                    ),
+                ],
             ]);
     }
 

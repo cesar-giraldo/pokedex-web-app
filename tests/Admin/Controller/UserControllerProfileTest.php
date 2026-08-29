@@ -38,13 +38,14 @@ final class UserControllerProfileTest extends WebTestCase
         $user = $this->loginAsAdmin($client);
 
         $crawler = $client->request('GET', '/admin/profile');
+        $updatedEmail = 'profile-upd-' . bin2hex(random_bytes(4)) . '@example.com';
         $form = $crawler->filter('form[name="user_profile_info"]')->form();
         $form['user_profile_info[name]'] = 'Updated';
         $form['user_profile_info[lastname]'] = 'Name';
-        $form['user_profile_info[email]'] = 'updated-profile@example.com';
+        $form['user_profile_info[email]'] = $updatedEmail;
         $form['user_profile_info[nickname]'] = $user->getNickname();
         $form['user_profile_info[countryCode]'] = '57';
-        $form['user_profile_info[cellphone]'] = '3001234567';
+        $form['user_profile_info[cellphone]'] = $user->getCellphone() ?? '3018001001';
 
         $client->submit($form);
 
@@ -56,7 +57,7 @@ final class UserControllerProfileTest extends WebTestCase
     public function testIncompleteProfileBecomesActiveAfterContactInfoIsSaved(): void
     {
         $client = static::createClient();
-        $nickname = 'profile-incomplete-user';
+        $nickname = 'pincomp01';
         $this->createProfileUser($nickname, UserStatus::UncompleteProfileInfo, null, null, null);
 
         $container = static::getContainer();
@@ -71,10 +72,10 @@ final class UserControllerProfileTest extends WebTestCase
         $form = $crawler->filter('form[name="user_profile_info"]')->form();
         $form['user_profile_info[name]'] = 'Incomplete';
         $form['user_profile_info[lastname]'] = 'User';
-        $form['user_profile_info[email]'] = 'incomplete-profile@example.com';
+        $form['user_profile_info[email]'] = 'incomplete-' . bin2hex(random_bytes(4)) . '@example.com';
         $form['user_profile_info[nickname]'] = $nickname;
         $form['user_profile_info[countryCode]'] = '57';
-        $form['user_profile_info[cellphone]'] = '3009876543';
+        $form['user_profile_info[cellphone]'] = '3018041001';
 
         $client->submit($form);
 
@@ -92,8 +93,14 @@ final class UserControllerProfileTest extends WebTestCase
     public function testPasswordChangeRequiresCurrentPassword(): void
     {
         $client = static::createClient();
-        $nickname = 'profile-password-user';
-        $this->createProfileUser($nickname, UserStatus::Active, 'profile-password@example.com', 57, '3001112233');
+        $nickname = 'profpwd01';
+        $this->createProfileUser(
+            $nickname,
+            UserStatus::Active,
+            'profile-pwd-' . bin2hex(random_bytes(4)) . '@example.com',
+            57,
+            '3018041002',
+        );
 
         $container = static::getContainer();
         /** @var UserRepository $userRepository */
@@ -119,8 +126,15 @@ final class UserControllerProfileTest extends WebTestCase
     public function testOperatorCanAccessProfilePage(): void
     {
         $client = static::createClient();
-        $nickname = 'profile-operator-user';
-        $this->createProfileUser($nickname, UserStatus::Active, 'operator-profile@example.com', 57, '3002223344', UserRole::Operator);
+        $nickname = 'profopr01';
+        $this->createProfileUser(
+            $nickname,
+            UserStatus::Active,
+            'profile-opr-' . bin2hex(random_bytes(4)) . '@example.com',
+            57,
+            '3018041003',
+            UserRole::Operator,
+        );
 
         $container = static::getContainer();
         /** @var UserRepository $userRepository */
@@ -154,6 +168,17 @@ final class UserControllerProfileTest extends WebTestCase
         if ($existingUser instanceof User) {
             $entityManager->remove($existingUser);
             $entityManager->flush();
+        }
+
+        if (null !== $countryCode && null !== $cellphone) {
+            $existingPhoneUser = $userRepository->findOneBy([
+                'countryCode' => $countryCode,
+                'cellphone' => $cellphone,
+            ]);
+            if ($existingPhoneUser instanceof User && $existingPhoneUser->getNickname() !== $nickname) {
+                $entityManager->remove($existingPhoneUser);
+                $entityManager->flush();
+            }
         }
 
         $user = new User()

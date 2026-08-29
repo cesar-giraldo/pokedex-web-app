@@ -14,9 +14,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 trait AdminAuthenticatedClientTrait
 {
-    private const string FUNCTIONAL_ADMIN_NICKNAME = 'functional-admin';
+    private const string FUNCTIONAL_ADMIN_NICKNAME = 'tst-admin';
 
-    private const string FUNCTIONAL_DEVELOPER_NICKNAME = 'functional-developer';
+    private const string FUNCTIONAL_DEVELOPER_NICKNAME = 'tst-devel';
 
     private function loginAsAdmin(KernelBrowser $client): User
     {
@@ -52,8 +52,10 @@ trait AdminAuthenticatedClientTrait
         $user = new User()
             ->setName('Functional')
             ->setLastname('Admin')
-            ->setEmail('functional-admin@example.com')
+            ->setEmail('tst-admin@example.com')
             ->setNickname(self::FUNCTIONAL_ADMIN_NICKNAME)
+            ->setCountryCode(57)
+            ->setCellphone('3018001001')
             ->setApplicationRoles([UserRole::Admin])
             ->setStatus(UserStatus::Active)
             ->setIsHidden(true);
@@ -85,8 +87,10 @@ trait AdminAuthenticatedClientTrait
         $user = new User()
             ->setName('Functional')
             ->setLastname('Developer')
-            ->setEmail('functional-developer@example.com')
+            ->setEmail('tst-devel@example.com')
             ->setNickname(self::FUNCTIONAL_DEVELOPER_NICKNAME)
+            ->setCountryCode(57)
+            ->setCellphone('3018001002')
             ->setApplicationRoles([UserRole::Developer])
             ->setStatus(UserStatus::Active)
             ->setIsHidden(true);

@@ -33,6 +33,7 @@
 							name="{{ info_form.name.vars.full_name }}"
 							id="profile-name"
 							value="{{ info_form.name.vars.data ?? '' }}"
+							:maxLength="form_field_max_length(info_form.name)"
 							:required="true"
 							error="{{ field_error(info_form.name) }}"
 						/>
@@ -44,6 +45,7 @@
 							name="{{ info_form.lastname.vars.full_name }}"
 							id="profile-lastname"
 							value="{{ info_form.lastname.vars.data ?? '' }}"
+							:maxLength="form_field_max_length(info_form.lastname)"
 							:required="true"
 							error="{{ field_error(info_form.lastname) }}"
 						/>
@@ -56,6 +58,7 @@
 							id="profile-email"
 							value="{{ info_form.email.vars.data ?? '' }}"
 							placeholder="correo@ejemplo.com"
+							:maxLength="form_field_max_length(info_form.email)"
 							:required="true"
 							error="{{ field_error(info_form.email) }}"
 						/>
@@ -69,6 +72,7 @@
 							value="{{ info_form.nickname.vars.data ?? '' }}"
 							:lowercase="true"
 							:minLength="5"
+							:maxLength="form_field_max_length(info_form.nickname)"
 							:required="true"
 							error="{{ field_error(info_form.nickname) }}"
 						/>
@@ -95,6 +99,7 @@
 							value="{{ info_form.cellphone.vars.data ?? '' }}"
 							:onlyNumbers="true"
 							:minLength="8"
+							:maxLength="form_field_max_length(info_form.cellphone)"
 							:required="true"
 							error="{{ field_error(info_form.cellphone) }}"
 							help="Solo dígitos, sin código de país."

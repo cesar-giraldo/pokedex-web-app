@@ -56,6 +56,8 @@ final class TextareaComponent
 
     public int $rows = 6;
 
+    public int $maxLength = 0;
+
     public bool $required = false;
 
     public bool $disabled = false;
@@ -76,6 +78,10 @@ final class TextareaComponent
 
         if ($this->rows < 1) {
             $this->rows = 1;
+        }
+
+        if ($this->maxLength < 0) {
+            $this->maxLength = 0;
         }
     }
 

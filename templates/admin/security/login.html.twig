@@ -49,6 +49,7 @@
 					autocomplete="username"
 					placeholder="tu-nickname"
 					:minLength="5"
+					:maxLength="form_field_max_length(loginForm['_username'])"
 					:required="true"
 					error="{{ field_error(loginForm['_username']) }}"
 				/>
@@ -59,6 +60,7 @@
 					id="login-password"
 					autocomplete="current-password"
 					placeholder="Ingresa tu contraseña"
+					:maxLength="form_field_max_length(loginForm['_password'])"
 					:required="true"
 					error="{{ field_error(loginForm['_password']) }}"
 				/>

@@ -9,6 +9,7 @@
 			name="{{ form.name.vars.full_name }}"
 			id="user-name"
 			value="{{ form.name.vars.data ?? '' }}"
+			:maxLength="form_field_max_length(form.name)"
 			:required="true"
 			error="{{ field_error(form.name) }}"
 		/>
@@ -18,6 +19,7 @@
 			name="{{ form.lastname.vars.full_name }}"
 			id="user-lastname"
 			value="{{ form.lastname.vars.data ?? '' }}"
+			:maxLength="form_field_max_length(form.lastname)"
 			:required="true"
 			error="{{ field_error(form.lastname) }}"
 		/>
@@ -28,6 +30,7 @@
 			id="user-email"
 			value="{{ form.email.vars.data ?? '' }}"
 			placeholder="correo@ejemplo.com"
+			:maxLength="form_field_max_length(form.email)"
 			error="{{ field_error(form.email) }}"
 			help="Opcional. Debe ser único si se proporciona."
 		/>
@@ -39,6 +42,7 @@
 			value="{{ form.nickname.vars.data ?? '' }}"
 			:lowercase="true"
 			:minLength="5"
+			:maxLength="form_field_max_length(form.nickname)"
 			:required="true"
 			error="{{ field_error(form.nickname) }}"
 		/>
@@ -61,6 +65,7 @@
 			value="{{ form.cellphone.vars.data ?? '' }}"
 			:onlyNumbers="true"
 			:minLength="8"
+			:maxLength="form_field_max_length(form.cellphone)"
 			:required="true"
 			error="{{ field_error(form.cellphone) }}"
 			help="Solo dígitos, sin código de país."
@@ -94,6 +99,7 @@
 			id="user-plain-password"
 			placeholder="Ingresa la contraseña"
 			autocomplete="new-password"
+			:maxLength="form_field_max_length(form.plainPassword)"
 			:required="form.plainPassword.vars.required"
 			error="{{ field_error(form.plainPassword) }}"
 			help="{{ password_help|default('Mínimo 5 caracteres, con letras y números.') }}"
@@ -105,6 +111,7 @@
 			id="user-confirm-password"
 			placeholder="Confirma la contraseña"
 			autocomplete="new-password"
+			:maxLength="form_field_max_length(form.confirmPassword)"
 			:required="form.confirmPassword.vars.required"
 			error="{{ field_error(form.confirmPassword) }}"
 		/>

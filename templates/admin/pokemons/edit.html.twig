@@ -57,6 +57,7 @@
 					id="pokemon-height"
 					value="{{ form.height.vars.data is not null ? form.height.vars.data : '' }}"
 					:onlyNumbers="true"
+					:maxLength="form_field_max_length(form.height)"
 					:required="true"
 					error="{{ field_error(form.height) }}"
 				/>
@@ -67,6 +68,7 @@
 					id="pokemon-weight"
 					value="{{ form.weight.vars.data is not null ? form.weight.vars.data : '' }}"
 					:onlyNumbers="true"
+					:maxLength="form_field_max_length(form.weight)"
 					:required="true"
 					error="{{ field_error(form.weight) }}"
 				/>
@@ -88,6 +90,7 @@
 					id="pokemon-speed"
 					value="{{ form.speed.vars.data is not null ? form.speed.vars.data : '' }}"
 					:onlyNumbers="true"
+					:maxLength="form_field_max_length(form.speed)"
 					:required="true"
 					error="{{ field_error(form.speed) }}"
 				/>
@@ -98,6 +101,7 @@
 					id="pokemon-attack"
 					value="{{ form.attack.vars.data is not null ? form.attack.vars.data : '' }}"
 					:onlyNumbers="true"
+					:maxLength="form_field_max_length(form.attack)"
 					:required="true"
 					error="{{ field_error(form.attack) }}"
 				/>
@@ -108,6 +112,7 @@
 					id="pokemon-defense"
 					value="{{ form.defense.vars.data is not null ? form.defense.vars.data : '' }}"
 					:onlyNumbers="true"
+					:maxLength="form_field_max_length(form.defense)"
 					:required="true"
 					error="{{ field_error(form.defense) }}"
 				/>
@@ -120,6 +125,7 @@
 					inputMode="numeric"
 					pattern="[0-9]+"
 					patternErrorMessage="Introduce un número entero positivo."
+					:maxLength="form_field_max_length(form.healthPoints)"
 					:required="true"
 					error="{{ field_error(form.healthPoints) }}"
 				/>
@@ -141,6 +147,7 @@
 					value="{{ form.spriteFront.vars.data ?? '' }}"
 					placeholder="raw.githubusercontent.com/..."
 					prefix="https://"
+					:maxLength="form_field_max_length(form.spriteFront)"
 					error="{{ field_error(form.spriteFront) }}"
 				/>
 
@@ -151,6 +158,7 @@
 					value="{{ form.spriteBack.vars.data ?? '' }}"
 					placeholder="raw.githubusercontent.com/..."
 					prefix="https://"
+					:maxLength="form_field_max_length(form.spriteBack)"
 					error="{{ field_error(form.spriteBack) }}"
 				/>
 			</div>
@@ -162,6 +170,7 @@
 				value="{{ form.description.vars.data ?? '' }}"
 				placeholder="Descripción del Pokémon..."
 				:rows="6"
+				:maxLength="form_field_max_length(form.description)"
 				error="{{ field_error(form.description) }}"
 			/>
 		</div>
