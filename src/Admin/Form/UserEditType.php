@@ -24,7 +24,6 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
 
 use function is_array;
@@ -49,48 +48,23 @@ final class UserEditType extends AbstractType
             ->add('name', TextType::class, [
                 'label' => false,
                 'attr' => ['maxlength' => 50],
-                'constraints' => [
-                    new NotBlank(message: 'Este campo es obligatorio.'),
-                    new Length(
-                        max: 50,
-                        maxMessage: 'Este campo no puede tener más de {{ limit }} caracteres.',
-                    ),
-                ],
+                'constraints' => UserFieldConstraints::name(),
             ])
             ->add('lastname', TextType::class, [
                 'label' => false,
                 'attr' => ['maxlength' => 70],
-                'constraints' => [
-                    new NotBlank(message: 'Este campo es obligatorio.'),
-                    new Length(
-                        max: 70,
-                        maxMessage: 'Este campo no puede tener más de {{ limit }} caracteres.',
-                    ),
-                ],
+                'constraints' => UserFieldConstraints::lastname(),
             ])
             ->add('email', EmailType::class, [
                 'label' => false,
                 'required' => false,
                 'attr' => ['maxlength' => 100],
-                'constraints' => [
-                    new Length(
-                        max: 100,
-                        maxMessage: 'Este campo no puede tener más de {{ limit }} caracteres.',
-                    ),
-                ],
+                'constraints' => UserFieldConstraints::optionalEmail(),
             ])
             ->add('nickname', TextType::class, [
                 'label' => false,
                 'attr' => ['maxlength' => 20],
-                'constraints' => [
-                    new NotBlank(message: 'Este campo es obligatorio.'),
-                    new Length(
-                        min: 5,
-                        max: 20,
-                        minMessage: 'El nickname debe tener al menos {{ limit }} caracteres.',
-                        maxMessage: 'El nickname no puede tener más de {{ limit }} caracteres.',
-                    ),
-                ],
+                'constraints' => UserFieldConstraints::nickname(),
             ])
             ->add('countryCode', CountryCodeChoiceType::class, [
                 'country_choice_key' => $options['country_choice_key'],
@@ -98,15 +72,7 @@ final class UserEditType extends AbstractType
             ->add('cellphone', TextType::class, [
                 'label' => false,
                 'attr' => ['maxlength' => 12],
-                'constraints' => [
-                    new NotBlank(message: 'Este campo es obligatorio.'),
-                    new Length(
-                        min: 8,
-                        max: 12,
-                        minMessage: 'El celular debe tener al menos {{ limit }} caracteres.',
-                        maxMessage: 'El celular no puede tener más de {{ limit }} caracteres.',
-                    ),
-                ],
+                'constraints' => UserFieldConstraints::cellphone(),
             ])
             ->add('status', EnumType::class, [
                 'class' => UserStatus::class,
@@ -209,6 +175,8 @@ final class UserEditType extends AbstractType
                 $form->get('confirmPassword')->addError(new FormError('Las contraseñas no coinciden.'));
             }
         });
+
+        UserFieldConstraints::registerOptionalEmailNormalization($builder);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

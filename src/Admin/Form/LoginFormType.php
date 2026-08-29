@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Form;
 
+use App\Admin\Validator\Normalizer;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -28,15 +29,7 @@ final class LoginFormType extends AbstractType
                     'autocomplete' => 'username',
                     'placeholder' => 'tu-nickname',
                 ],
-                'constraints' => [
-                    new NotBlank(message: 'El nickname es obligatorio.'),
-                    new Length(
-                        min: 5,
-                        max: 20,
-                        minMessage: 'El nickname debe tener al menos {{ limit }} caracteres.',
-                        maxMessage: 'El nickname no puede tener más de {{ limit }} caracteres.',
-                    ),
-                ],
+                'constraints' => UserFieldConstraints::loginNickname(),
             ])
             ->add('_password', PasswordType::class, [
                 'label' => 'Contraseña',
@@ -46,10 +39,11 @@ final class LoginFormType extends AbstractType
                     'placeholder' => 'Ingresa tu contraseña',
                 ],
                 'constraints' => [
-                    new NotBlank(message: 'La contraseña es obligatoria.'),
+                    new NotBlank(message: 'La contraseña es obligatoria.', normalizer: Normalizer::trim(...)),
                     new Length(
                         max: 128,
                         maxMessage: 'La contraseña no puede tener más de {{ limit }} caracteres.',
+                        normalizer: Normalizer::trim(...),
                     ),
                 ],
             ])

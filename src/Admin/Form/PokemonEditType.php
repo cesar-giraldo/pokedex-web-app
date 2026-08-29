@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Admin\Form;
 
+use App\Admin\Validator\Constraints\HttpsOnlyUrl;
+use App\Admin\Validator\Normalizer;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
 use App\Repository\PokemonTypeRepository;
@@ -18,7 +20,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Positive;
-use Symfony\Component\Validator\Constraints\Url;
 
 /**
  * @extends AbstractType<Pokemon>
@@ -72,10 +73,11 @@ final class PokemonEditType extends AbstractType
                 'default_protocol' => 'https',
                 'attr' => ['maxlength' => 255],
                 'constraints' => [
-                    new Url(message: 'Introduce una URL válida.'),
+                    new HttpsOnlyUrl(),
                     new Length(
                         max: 255,
                         maxMessage: 'La URL no puede tener más de {{ limit }} caracteres.',
+                        normalizer: Normalizer::trim(...),
                     ),
                 ],
             ])
@@ -85,10 +87,11 @@ final class PokemonEditType extends AbstractType
                 'default_protocol' => 'https',
                 'attr' => ['maxlength' => 255],
                 'constraints' => [
-                    new Url(message: 'Introduce una URL válida.'),
+                    new HttpsOnlyUrl(),
                     new Length(
                         max: 255,
                         maxMessage: 'La URL no puede tener más de {{ limit }} caracteres.',
+                        normalizer: Normalizer::trim(...),
                     ),
                 ],
             ])

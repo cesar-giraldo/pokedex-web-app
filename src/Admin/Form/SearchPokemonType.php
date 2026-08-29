@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Form;
 
+use App\Admin\Validator\Normalizer;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SearchType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -31,6 +32,7 @@ class SearchPokemonType extends AbstractType
                     new Length(
                         max: 30,
                         maxMessage: 'La búsqueda no puede tener más de {{ limit }} caracteres.',
+                        normalizer: Normalizer::trim(...),
                     ),
                 ],
             ]);
