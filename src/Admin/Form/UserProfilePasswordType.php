@@ -82,8 +82,16 @@ final class UserProfilePasswordType extends AbstractType
             $plainPassword = is_string($plainPassword) ? $plainPassword : '';
             $confirmPassword = is_string($confirmPassword) ? $confirmPassword : '';
 
-            if ('' !== $currentPassword && !$passwordHasher->isPasswordValid($user, $currentPassword)) {
+            $currentPasswordValid = '' !== $currentPassword && $passwordHasher->isPasswordValid($user, $currentPassword);
+
+            if ('' !== $currentPassword && !$currentPasswordValid) {
                 $form->get('currentPassword')->addError(new FormError('La contraseña actual no es correcta.'));
+
+                return;
+            }
+
+            if ($currentPasswordValid && '' !== $plainPassword && $passwordHasher->isPasswordValid($user, $plainPassword)) {
+                $form->get('plainPassword')->addError(new FormError('La nueva contraseña no puede ser igual a la contraseña actual.'));
 
                 return;
             }

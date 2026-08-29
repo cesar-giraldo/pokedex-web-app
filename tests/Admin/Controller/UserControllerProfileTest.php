@@ -90,6 +90,42 @@ final class UserControllerProfileTest extends WebTestCase
         self::assertSame(UserStatus::Active, $updatedUser->getStatus());
     }
 
+    public function testPasswordChangeRejectsSamePasswordAsCurrent(): void
+    {
+        $client = static::createClient();
+        $nickname = 'profpwd02';
+        $this->createProfileUser(
+            $nickname,
+            UserStatus::Active,
+            'profile-same-' . bin2hex(random_bytes(4)) . '@example.com',
+            57,
+            '3018041004',
+        );
+
+        $container = static::getContainer();
+        /** @var UserRepository $userRepository */
+        $userRepository = $container->get(UserRepository::class);
+        $user = $userRepository->findOneByNickname($nickname);
+        self::assertInstanceOf(User::class, $user);
+
+        $client->loginUser($user, 'main');
+
+        $client->request('POST', '/admin/profile', [
+            'user_profile_password' => [
+                'currentPassword' => 'Secret123',
+                'plainPassword' => 'Secret123',
+                'confirmPassword' => 'Secret123',
+                '_token' => $this->getPasswordFormToken($client),
+            ],
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains(
+            'body',
+            'Revisa los campos marcados: La nueva contraseña no puede ser igual a la contraseña actual.',
+        );
+    }
+
     public function testPasswordChangeRequiresCurrentPassword(): void
     {
         $client = static::createClient();
