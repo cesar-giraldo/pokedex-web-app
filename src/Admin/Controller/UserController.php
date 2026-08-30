@@ -12,7 +12,9 @@ use App\Admin\Form\UserCreateType;
 use App\Admin\Form\UserEditType;
 use App\Admin\Form\UserProfileInfoType;
 use App\Admin\Form\UserProfilePasswordType;
+use App\Admin\Security\EffectiveRoleChecker;
 use App\Admin\Service\GeneralSettingsProvider;
+use App\Admin\Service\ImpersonationPolicy;
 use App\Admin\Service\UserManagementPolicy;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
@@ -39,11 +41,17 @@ final class UserController extends AbstractController
     use AdminPaginatorTrait;
     use FlashesFormValidationErrorsTrait;
 
+    public function __construct(
+        private readonly EffectiveRoleChecker $effectiveRoleChecker,
+    ) {
+    }
+
     #[Route('/users', name: 'app_backend_users')]
     #[IsGranted('ROLE_ADMIN')]
     public function index(
         UserRepository $userRepository,
         UserManagementPolicy $userManagementPolicy,
+        ImpersonationPolicy $impersonationPolicy,
         GeneralSettingsProvider $generalSettingsProvider,
         Request $request,
     ): Response {
@@ -58,7 +66,7 @@ final class UserController extends AbstractController
 
         $sort = $request->query->get('sort', 'u.createdAt');
         $direction = $request->query->get('direction', 'desc');
-        $isDeveloper = $this->isGranted('ROLE_DEVELOPER');
+        $isDeveloper = $this->effectiveRoleChecker->isGranted('ROLE_DEVELOPER');
         $showHiddenUsers = $generalSettingsProvider->get()->isShowHiddenUsers();
 
         $queryBuilder = $userRepository->findBackendUsersQueryBuilder(
@@ -77,9 +85,18 @@ final class UserController extends AbstractController
         $currentUser = $this->getUser();
 
         $editableUserIds = [];
+        $impersonatableUserIds = [];
+
         foreach ($pagination['entities']->getCurrentPageResults() as $listedUser) {
             if ($listedUser instanceof User && $userManagementPolicy->canEdit($currentUser, $listedUser)) {
                 $editableUserIds[] = $listedUser->getId();
+            }
+
+            if (
+                $listedUser instanceof User
+                && $impersonationPolicy->canImpersonate($currentUser, $listedUser)
+            ) {
+                $impersonatableUserIds[] = $listedUser->getId();
             }
         }
 
@@ -93,6 +110,7 @@ final class UserController extends AbstractController
             'search_term' => $term,
             'current_user' => $currentUser,
             'editable_user_ids' => $editableUserIds,
+            'impersonatable_user_ids' => $impersonatableUserIds,
             ...$pagination,
         ]);
     }
@@ -347,7 +365,7 @@ final class UserController extends AbstractController
     private function buildFormOptions(User $editor, UserManagementPolicy $policy, bool $isCreate): array
     {
         $options = [
-            'show_is_hidden' => $this->isGranted('ROLE_DEVELOPER'),
+            'show_is_hidden' => $this->effectiveRoleChecker->isGranted('ROLE_DEVELOPER'),
             'assignable_roles' => $policy->getAssignableRoles($editor),
             'country_choice_key' => WorldCountryCodes::DEFAULT_CHOICE_KEY,
         ];

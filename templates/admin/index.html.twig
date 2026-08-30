@@ -29,7 +29,7 @@
 					image_alt: 'Pokemons'
 				}) }}
 
-				{% if is_granted('ROLE_DEVELOPER') or is_granted('ROLE_ADMIN') %}
+				{% if effective_is_granted('ROLE_DEVELOPER') or effective_is_granted('ROLE_ADMIN') %}
 					{{ include('@admin/partials/_quick_access_card.html.twig', {
 						href: path('app_backend_users'),
 						title: 'Usuarios',
@@ -37,7 +37,7 @@
 					}) }}
 				{% endif %}
 
-				{% if is_granted('ROLE_DEVELOPER') %}
+				{% if effective_is_granted('ROLE_DEVELOPER') %}
 					{{ include('@admin/partials/_quick_access_card.html.twig', {
 						href: path('app_design_index'),
 						title: 'UI Kit',

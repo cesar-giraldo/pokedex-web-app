@@ -68,7 +68,7 @@
 					<!-- Menu Item Pokemons -->
 
 					<!-- Menu Item Usuarios -->
-					{% if is_granted('ROLE_ADMIN') %}
+					{% if effective_is_granted('ROLE_ADMIN') %}
 					<li>
 						{% set userList = get_menu_classes(active_menu, active_page, 'user_profile', 'user_list') %}
 						<a href="{{ path('app_backend_users') }}"
@@ -83,7 +83,7 @@
 					{% endif %}
 					<!-- Menu Item Usuarios -->
 
-					{% if is_granted('ROLE_DEVELOPER') %}
+					{% if effective_is_granted('ROLE_DEVELOPER') %}
 						<!-- Menu Item UI Kit -->
 						<li class="group-menu-ui-kit">
 							{# Call twig function (custom extension) to determine classes values #}

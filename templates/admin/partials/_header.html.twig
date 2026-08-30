@@ -340,7 +340,7 @@
 								Editar perfil
 							</a>
 						</li>
-						{% if is_granted('ROLE_DEVELOPER') %}
+						{% if effective_is_granted('ROLE_DEVELOPER') %}
 							<li>
 								<a href="{{ path('app_backend_general_settings') }}" class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
 									{{ ux_icon('heroicons:cog-6-tooth', { class: 'w-6 h-6' }) }}
@@ -355,6 +355,12 @@
 							</a>
 						</li>
 					</ul>
+					{% if is_impersonating() %}
+						<a href="{{ path('app_backend_home', {'_switch_user': '_exit'}) }}" data-turbo-prefetch="false" class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+							{{ ux_icon('heroicons:identification', { class: 'w-6 h-6' }) }}
+							Volver a mi sesión
+						</a>
+					{% endif %}
 					<a href="{{ path('app_admin_logout') }}" data-turbo-prefetch="false" class="group text-theme-sm mt-3 flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
 						{{ ux_icon('heroicons:arrow-left-start-on-rectangle', { class: 'w-6 h-6' }) }}
 						Sign out

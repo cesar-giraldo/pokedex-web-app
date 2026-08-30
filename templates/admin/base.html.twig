@@ -57,6 +57,10 @@
         {{ include('@admin/partials/_header.html.twig') }}
         <!-- ===== Header End ===== -->
 
+        {% if is_impersonating() %}
+            {{ include('@admin/partials/_impersonation_banner.html.twig') }}
+        {% endif %}
+
         <!-- ===== Main Content Start ===== -->
         <main>
           <div class="mx-auto max-w-(--breakpoint-2xl) p-4 md:p-6">
