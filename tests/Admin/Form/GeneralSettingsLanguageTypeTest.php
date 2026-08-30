@@ -7,9 +7,9 @@ namespace App\Tests\Admin\Form;
 use App\Admin\Form\GeneralSettingsLanguageType;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\GeneralSettings;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class GeneralSettingsLanguageTypeTest extends KernelTestCase
 {

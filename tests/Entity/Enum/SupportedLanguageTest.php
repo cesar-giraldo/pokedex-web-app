@@ -11,19 +11,28 @@ final class SupportedLanguageTest extends TestCase
 {
     public function testProvidesLocalizedLabels(): void
     {
-        self::assertSame('es - Español', SupportedLanguage::Spanish->label());
-        self::assertSame('en - English', SupportedLanguage::English->label());
-        self::assertSame('pt - Português', SupportedLanguage::Portuguese->label());
-        self::assertSame('fr - Français', SupportedLanguage::French->label());
+        self::assertSame('Español - es', SupportedLanguage::Spanish->label());
+        self::assertSame('English - en', SupportedLanguage::English->label());
+        self::assertSame('Português - pt', SupportedLanguage::Portuguese->label());
+        self::assertSame('Français - fr', SupportedLanguage::French->label());
     }
 
     public function testBuildsChoicesForForms(): void
     {
         $choices = SupportedLanguage::choices();
 
-        self::assertSame('es', $choices['es - Español']);
-        self::assertSame('en', $choices['en - English']);
+        self::assertSame('es', $choices['Español - es']);
+        self::assertSame('en', $choices['English - en']);
         self::assertCount(4, $choices);
+    }
+
+    public function testBuildsOptionsForComponents(): void
+    {
+        $options = SupportedLanguage::options();
+
+        self::assertSame('Español - es', $options['es']);
+        self::assertSame('English - en', $options['en']);
+        self::assertCount(4, $options);
     }
 
     public function testFiltersStoredValues(): void

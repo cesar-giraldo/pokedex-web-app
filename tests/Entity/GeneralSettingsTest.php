@@ -29,7 +29,7 @@ final class GeneralSettingsTest extends TestCase
         $settings->touchLastUpdatedAt();
 
         self::assertGreaterThan(
-            (new DateTime('2020-01-01 00:00:00'))->getTimestamp(),
+            new DateTime('2020-01-01 00:00:00')->getTimestamp(),
             $settings->getLastUpdatedAt()->getTimestamp(),
         );
     }

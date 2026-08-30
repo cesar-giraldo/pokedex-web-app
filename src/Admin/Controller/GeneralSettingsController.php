@@ -159,7 +159,7 @@ final class GeneralSettingsController extends AbstractController
         bool $editGeneral,
         bool $editLanguage,
     ): array {
-        $languageOptions = SupportedLanguage::choices();
+        $languageOptions = SupportedLanguage::options();
 
         return [
             'settings' => $settings,

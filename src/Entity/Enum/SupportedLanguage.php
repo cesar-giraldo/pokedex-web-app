@@ -14,14 +14,16 @@ enum SupportedLanguage: string
     public function label(): string
     {
         return match ($this) {
-            self::Spanish => 'es - Español',
-            self::English => 'en - English',
-            self::Portuguese => 'pt - Português',
-            self::French => 'fr - Français',
+            self::Spanish => 'Español - es',
+            self::English => 'English - en',
+            self::Portuguese => 'Português - pt',
+            self::French => 'Français - fr',
         };
     }
 
     /**
+     * Opciones para Symfony ChoiceType (label => value).
+     *
      * @return array<string, string>
      */
     public static function choices(): array
@@ -33,6 +35,22 @@ enum SupportedLanguage: string
         }
 
         return $choices;
+    }
+
+    /**
+     * Opciones para componentes Twig del admin (value => label).
+     *
+     * @return array<string, string>
+     */
+    public static function options(): array
+    {
+        $options = [];
+
+        foreach (self::cases() as $language) {
+            $options[$language->value] = $language->label();
+        }
+
+        return $options;
     }
 
     /**

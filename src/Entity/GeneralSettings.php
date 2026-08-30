@@ -24,9 +24,9 @@ class GeneralSettings
 {
     public const bool DEFAULT_SHOW_HIDDEN_USERS = true;
 
-  /**
-   * @var list<string>
-   */
+    /**
+     * @var list<string>
+     */
     public const array DEFAULT_ENABLED_LANGUAGES = [SupportedLanguage::Spanish->value];
 
     public const string DEFAULT_WEBSITE_DEFAULT_LANGUAGE = SupportedLanguage::Spanish->value;
