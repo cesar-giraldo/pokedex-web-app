@@ -477,6 +477,14 @@
 										Editar Perfil
 									</a>
 								</li>
+								{% if effective_is_granted('ROLE_DEVELOPER') %}
+									<li>
+										{% set menuAuth = get_menu_classes(active_menu, active_page, 'auth', 'general_settings') %}
+										<a href="{{ path('app_backend_general_settings') }}" class="menu-dropdown-item group {{ menuAuth.dropdown_item_class }}">
+											Config. General
+										</a>
+									</li>
+								{% endif %}
 								<li>
 									<a href="{{ path('app_admin_logout') }}" data-turbo-prefetch="false" class="menu-dropdown-item group menu-dropdown-item-inactive">
 										Salir

@@ -357,7 +357,7 @@
 					</ul>
 					{% if is_impersonating() %}
 						<a href="{{ path('app_backend_home', {'_switch_user': '_exit'}) }}" data-turbo-prefetch="false" class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
-							{{ ux_icon('heroicons:identification', { class: 'w-6 h-6' }) }}
+							{{ ux_icon('heroicons:arrow-up-on-square', { class: 'w-6 h-6' }) }}
 							Volver a mi sesión
 						</a>
 					{% endif %}

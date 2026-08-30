@@ -2,7 +2,7 @@
 	<div class="mx-auto flex max-w-(--breakpoint-2xl) flex-wrap items-center justify-between gap-3">
 		<p class="text-theme-sm font-medium text-warning-800 dark:text-warning-400">
 			Estás viendo la aplicación como
-			<strong>{{ app.user.name }} {{ app.user.lastname }} (@{{ app.user.nickname }})</strong>
+			<strong>{{ app.user.name|title }} {{ app.user.lastname|title }} (@{{ app.user.nickname }})</strong>
 		</p>
 
 		<a href="{{ path('app_backend_home', {'_switch_user': '_exit'}) }}" data-turbo-prefetch="false"
