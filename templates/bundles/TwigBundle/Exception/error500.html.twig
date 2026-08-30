@@ -1,5 +1,4 @@
 {% set is_admin = app.request.pathInfo starts with '/admin' %}
-{% set is_admin = true %}
 {% extends is_admin ? '@admin/base_error.html.twig' : '@web/base.html.twig' %}
 
 {% block title %}500 - Error interno del servidor{% endblock %}
