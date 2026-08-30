@@ -2,12 +2,12 @@
 {% set is_admin = true %}
 {% extends is_admin ? '@admin/base_error.html.twig' : '@web/base.html.twig' %}
 
-{% block title %}500 - Error interno del servidor{% endblock %}
+{% block title %}403 - Acceso denegado{% endblock %}
 
 {% block body %}
 	{% if is_admin %}
-		{% include '@admin/error/_500_body.html.twig' %}
+		{% include '@admin/error/_403_body.html.twig' %}
 	{% else %}
-		{% include '@web/error/_500_body.html.twig' %}
+		{% include '@web/error/_403_body.html.twig' %}
 	{% endif %}
 {% endblock %}
