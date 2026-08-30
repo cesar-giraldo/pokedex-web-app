@@ -6,7 +6,9 @@ namespace App\Admin\Command;
 
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
+use App\Entity\GeneralSettings;
 use App\Entity\User;
+use App\Repository\GeneralSettingsRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;
@@ -25,12 +27,13 @@ use const FILTER_VALIDATE_EMAIL;
 
 #[AsCommand(
     name: 'app:create-initial-data',
-    description: 'Crea el usuario inicial de la plataforma si aún no existe.',
+    description: 'Crea los datos iniciales de la plataforma si aún no existen.',
 )]
 final class CreateInitialDataCommand extends Command
 {
     public function __construct(
         private readonly UserRepository $userRepository,
+        private readonly GeneralSettingsRepository $generalSettingsRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
         #[Autowire('%env(default::INITIAL_USER_EMAIL)%')]
@@ -62,22 +65,48 @@ final class CreateInitialDataCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        $this->ensureGeneralSettings($io);
+
+        if (!$this->ensureInitialUser($input, $io)) {
+            return Command::FAILURE;
+        }
+
+        return Command::SUCCESS;
+    }
+
+    private function ensureGeneralSettings(SymfonyStyle $io): void
+    {
+        if ($this->generalSettingsRepository->findSingleton() instanceof GeneralSettings) {
+            $io->warning('Ya existen configuraciones generales en la base de datos. No se creó ningún registro.');
+
+            return;
+        }
+
+        $settings = GeneralSettings::createWithDefaults();
+        $this->entityManager->persist($settings);
+        $this->entityManager->flush();
+
+        $io->success('Configuraciones generales creadas correctamente.');
+    }
+
+    private function ensureInitialUser(InputInterface $input, SymfonyStyle $io): bool
+    {
         $initialUserEmail = $this->resolveInitialUserEmail($input, $io);
 
         if (null === $initialUserEmail) {
-            return Command::FAILURE;
+            return false;
         }
 
         if ($this->userRepository->existsByNicknameOrEmail($initialUserEmail, $initialUserEmail)) {
             $io->warning('Ya existe un usuario con el nickname o email configurado. No se creó ningún registro.');
 
-            return Command::SUCCESS;
+            return true;
         }
 
         $plainPassword = $this->resolvePassword($input, $io);
 
         if (null === $plainPassword) {
-            return Command::FAILURE;
+            return false;
         }
 
         $user = new User()
@@ -97,7 +126,7 @@ final class CreateInitialDataCommand extends Command
 
         $io->success('Usuario inicial creado correctamente.');
 
-        return Command::SUCCESS;
+        return true;
     }
 
     private function resolveInitialUserEmail(InputInterface $input, SymfonyStyle $io): ?string

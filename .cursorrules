@@ -39,6 +39,7 @@
 - Keep code compatible with the existing Docker-based workflow and environment configuration.
 - Respect .env-based configuration and avoid hard-coding environment-specific values.
 - When changing persistence logic, ensure migrations and entity updates remain consistent.
+- When an entity change alters the database schema, generate migrations in **both** `migrations/postgresql/` and `migrations/mysql/`, keeping each engine's migration history in sync.
 
 ## AI Behavior
 - Be concise and avoid re-explaining basic Symfony concepts unless necessary.

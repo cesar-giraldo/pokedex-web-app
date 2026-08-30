@@ -1,0 +1,215 @@
+{% extends '@admin/base.html.twig' %}
+
+{% from '@admin/macros/form.html.twig' import field_error %}
+
+{% block title %}Configuración General{% endblock %}
+
+{% block page_title %}
+	Configuración General
+{% endblock %}
+
+{% block breadcrumb %}
+	<li class="text-sm text-gray-800 dark:text-white/90">Configuración General</li>
+{% endblock %}
+
+{% block body %}
+	<div
+		data-controller="general-settings"
+		data-general-settings-edit-general-value="{{ edit_general ? 'true' : 'false' }}"
+		data-general-settings-edit-language-value="{{ edit_language ? 'true' : 'false' }}"
+		data-general-settings-show-hidden-users-value="{{ settings.showHiddenUsers ? 'true' : 'false' }}"
+		data-general-settings-enabled-languages-value="{{ settings.enabledLanguages|json_encode|e('html_attr') }}"
+		data-general-settings-default-language-value="{{ settings.websiteDefaultLanguage }}"
+		class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6"
+	>
+		<div class="mb-6 rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
+			<div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+				<div class="w-full">
+					<h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+						Configuración General
+					</h4>
+
+					<div data-general-settings-target="generalView" class="{{ edit_general ? 'hidden' : '' }}">
+						<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+							<div class="lg:col-span-2">
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Mostrar usuarios ocultos
+								</p>
+								<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+									{{ settings.showHiddenUsers ? 'Sí' : 'No' }}
+								</p>
+								<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+									Si se habilita esta opción, los usuarios de rol developer podrán visualizar los usuarios ocultos en la lista de usuarios.
+								</p>
+							</div>
+						</div>
+					</div>
+
+					<div data-general-settings-target="generalEdit" class="{{ edit_general ? '' : 'hidden' }}">
+						{{ form_start(general_form, {
+							action: path('app_backend_general_settings'),
+							attr: { class: 'flex flex-col gap-6' },
+							render_rest: false,
+						}) }}
+							<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+								<div class="lg:col-span-2">
+									<twig:component_toggle_switch
+										label="Mostrar usuarios ocultos"
+										name="{{ general_form.showHiddenUsers.vars.full_name }}"
+										id="general-settings-show-hidden-users"
+										:checked="general_form.showHiddenUsers.vars.data"
+										help="Si se habilita esta opción, los usuarios de rol developer podrán visualizar los usuarios ocultos en la lista de usuarios."
+										error="{{ field_error(general_form.showHiddenUsers) }}"
+									/>
+								</div>
+							</div>
+
+							<div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+								<button
+									type="button"
+									data-action="click->general-settings#cancelGeneralEdit"
+									class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
+								>
+									Cancelar
+								</button>
+								<button
+									type="submit"
+									id="{{ general_form.save.vars.id }}"
+									name="{{ general_form.save.vars.full_name }}"
+									class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
+								>
+									Guardar Cambios
+								</button>
+							</div>
+
+							{{ form_widget(general_form._token) }}
+						{{ form_end(general_form, { render_rest: false }) }}
+					</div>
+				</div>
+
+				<div
+					data-general-settings-target="generalEditButton"
+					class="{{ edit_general ? 'hidden' : '' }}"
+				>
+					<button
+						type="button"
+						data-action="click->general-settings#startGeneralEdit"
+						class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+					>
+						{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+						Editar
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="mb-6 rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
+			<div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+				<div class="w-full">
+					<h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+						Configuración de Idioma
+					</h4>
+
+					<div data-general-settings-target="languageView" class="{{ edit_language ? 'hidden' : '' }}">
+						<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+							<div>
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Idiomas habilitados
+								</p>
+								<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+									{% if settings.enabledLanguageLabels|length > 0 %}
+										{{ settings.enabledLanguageLabels|join(', ') }}
+									{% else %}
+										—
+									{% endif %}
+								</p>
+							</div>
+
+							<div>
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Idioma por defecto
+								</p>
+								<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+									{{ settings.websiteDefaultLanguageLabel ?? '—' }}
+								</p>
+							</div>
+						</div>
+					</div>
+
+					<div data-general-settings-target="languageEdit" class="{{ edit_language ? '' : 'hidden' }}">
+						{{ form_start(language_form, {
+							action: path('app_backend_general_settings'),
+							attr: { class: 'flex flex-col gap-6' },
+							render_rest: false,
+						}) }}
+							<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+								<div>
+									<twig:component_multi_select
+										label="Idiomas habilitados"
+										name="{{ language_form.enabledLanguages.vars.full_name }}"
+										id="general-settings-enabled-languages"
+										:options="language_options"
+										:selected="language_form.enabledLanguages.vars.data ?? []"
+										:required="true"
+										error="{{ field_error(language_form.enabledLanguages) }}"
+									/>
+								</div>
+
+								<div>
+									<twig:component_single_select
+										label="Idioma por defecto"
+										name="{{ language_form.websiteDefaultLanguage.vars.full_name }}"
+										id="general-settings-default-language"
+										placeholder="Selecciona un idioma"
+										:options="language_options"
+										selected="{{ language_form.websiteDefaultLanguage.vars.data ?? '' }}"
+										:required="true"
+										error="{{ field_error(language_form.websiteDefaultLanguage) }}"
+									/>
+								</div>
+							</div>
+
+							<div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+								<button
+									type="button"
+									data-action="click->general-settings#cancelLanguageEdit"
+									class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
+								>
+									Cancelar
+								</button>
+								<button
+									type="submit"
+									id="{{ language_form.save.vars.id }}"
+									name="{{ language_form.save.vars.full_name }}"
+									class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
+								>
+									Guardar Cambios
+								</button>
+							</div>
+
+							{{ form_widget(language_form._token) }}
+						{{ form_end(language_form, { render_rest: false }) }}
+					</div>
+				</div>
+
+				<div
+					data-general-settings-target="languageEditButton"
+					class="{{ edit_language ? 'hidden' : '' }}"
+				>
+					<button
+						type="button"
+						data-action="click->general-settings#startLanguageEdit"
+						class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+					>
+						{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+						Editar
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<p class="text-xs text-gray-500 dark:text-gray-400">
+			Última actualización: {{ settings.lastUpdatedAt|date('d/m/Y H:i') }}
+		</p>
+	</div>
+{% endblock %}

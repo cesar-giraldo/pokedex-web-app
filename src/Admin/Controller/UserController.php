@@ -12,6 +12,7 @@ use App\Admin\Form\UserCreateType;
 use App\Admin\Form\UserEditType;
 use App\Admin\Form\UserProfileInfoType;
 use App\Admin\Form\UserProfilePasswordType;
+use App\Admin\Service\GeneralSettingsProvider;
 use App\Admin\Service\UserManagementPolicy;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
@@ -43,6 +44,7 @@ final class UserController extends AbstractController
     public function index(
         UserRepository $userRepository,
         UserManagementPolicy $userManagementPolicy,
+        GeneralSettingsProvider $generalSettingsProvider,
         Request $request,
     ): Response {
         $form = $this->createForm(SearchUserType::class);
@@ -57,6 +59,7 @@ final class UserController extends AbstractController
         $sort = $request->query->get('sort', 'u.createdAt');
         $direction = $request->query->get('direction', 'desc');
         $isDeveloper = $this->isGranted('ROLE_DEVELOPER');
+        $showHiddenUsers = $generalSettingsProvider->get()->isShowHiddenUsers();
 
         $queryBuilder = $userRepository->findBackendUsersQueryBuilder(
             $term,
@@ -64,7 +67,7 @@ final class UserController extends AbstractController
             $direction,
             [
                 'excludeDevelopers' => !$isDeveloper,
-                'excludeHidden' => !$isDeveloper,
+                'excludeHidden' => !($isDeveloper && $showHiddenUsers),
             ],
         );
 
