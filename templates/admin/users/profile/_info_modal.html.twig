@@ -22,7 +22,7 @@
 
 		{{ form_start(info_form, {
 			action: path('app_backend_user_profile'),
-			attr: { class: 'flex flex-col', enctype: 'multipart/form-data' },
+			attr: { class: 'flex flex-col', enctype: 'multipart/form-data', 'data-turbo': 'false' },
 			render_rest: false,
 		}) }}
 			<div class="custom-scrollbar h-[450px] overflow-y-auto px-2">

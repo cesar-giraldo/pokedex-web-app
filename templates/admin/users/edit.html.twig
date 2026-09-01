@@ -30,7 +30,7 @@
 			</h3>
 		</div>
 
-		{{ form_start(form, { attr: { class: 'space-y-0', enctype: 'multipart/form-data' }, render_rest: false }) }}
+		{{ form_start(form, { attr: { class: 'space-y-0', enctype: 'multipart/form-data', 'data-turbo': 'false' }, render_rest: false }) }}
 		{% include '@admin/users/_form.html.twig' with {
 			password_help: 'Opcional. Déjala en blanco para mantener la contraseña actual.',
 		} %}

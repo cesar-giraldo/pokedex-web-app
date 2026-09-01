@@ -16,6 +16,7 @@ use App\Admin\Security\EffectiveRoleChecker;
 use App\Admin\Service\GeneralSettingsProvider;
 use App\Admin\Service\ImpersonationPolicy;
 use App\Admin\Service\Storage\UserProfileImageFormHandler;
+use App\Admin\Service\Storage\UserProfileImageUploadException;
 use App\Admin\Service\UserManagementPolicy;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
@@ -24,6 +25,7 @@ use App\Repository\UserRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -136,7 +138,7 @@ final class UserController extends AbstractController
 
         if ($form->isSubmitted()) {
             if (!$form->isValid()) {
-                $this->addFlash('error', 'Revisa los campos marcados.');
+                $this->flashFormValidationErrors($form);
 
                 return $this->render('@admin/users/new.html.twig', $this->buildFormViewData($user, $form, $formOptions));
             }
@@ -161,7 +163,15 @@ final class UserController extends AbstractController
                 $entityManager->flush();
                 $this->profileImageFormHandler->handleFromForm($user, $form, false);
                 $entityManager->flush();
+            } catch (UserProfileImageUploadException $exception) {
+                $this->addProfileImageFormError($form, $exception->getMessage());
+
+                return $this->render('@admin/users/new.html.twig', $this->buildFormViewData($user, $form, $formOptions));
             } catch (Throwable) {
+                $this->addProfileImageFormError(
+                    $form,
+                    'No se pudo guardar la imagen de perfil. Inténtelo de nuevo.',
+                );
                 $this->addFlash('error', 'No se pudo crear el usuario. Inténtelo de nuevo.');
 
                 return $this->render('@admin/users/new.html.twig', $this->buildFormViewData($user, $form, $formOptions));
@@ -202,34 +212,44 @@ final class UserController extends AbstractController
 
         if ($form->isSubmitted()) {
             if (!$form->isValid()) {
-                $this->addFlash('error', 'Revisa los campos marcados.');
-            } else {
-                /** @var list<UserRole> $selectedRoles */
-                $selectedRoles = $user->getApplicationRoles();
+                $this->flashFormValidationErrors($form);
 
-                if (!$userManagementPolicy->canAssignRoles($editor, $selectedRoles)) {
-                    throw new AccessDeniedHttpException('No tienes permiso para asignar uno o más roles seleccionados.');
-                }
-
-                $plainPassword = $form->get('plainPassword')->getData();
-                if (is_string($plainPassword) && '' !== $plainPassword) {
-                    $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
-                    $user->setPasswordUpdatedAt(new DateTime());
-                }
-
-                try {
-                    $this->profileImageFormHandler->handleFromForm($user, $form, true);
-                    $entityManager->flush();
-                } catch (Throwable) {
-                    $this->addFlash('error', 'No se pudo actualizar el usuario. Inténtelo de nuevo.');
-
-                    return $this->render('@admin/users/edit.html.twig', $this->buildFormViewData($user, $form, $formOptions));
-                }
-
-                $this->addFlash('success', sprintf('El usuario "%s" se actualizó correctamente.', $user->getNickname()));
-
-                return $this->redirectToRoute('app_backend_users');
+                return $this->render('@admin/users/edit.html.twig', $this->buildFormViewData($user, $form, $formOptions));
             }
+
+            /** @var list<UserRole> $selectedRoles */
+            $selectedRoles = $user->getApplicationRoles();
+
+            if (!$userManagementPolicy->canAssignRoles($editor, $selectedRoles)) {
+                throw new AccessDeniedHttpException('No tienes permiso para asignar uno o más roles seleccionados.');
+            }
+
+            $plainPassword = $form->get('plainPassword')->getData();
+            if (is_string($plainPassword) && '' !== $plainPassword) {
+                $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+                $user->setPasswordUpdatedAt(new DateTime());
+            }
+
+            try {
+                $this->profileImageFormHandler->handleFromForm($user, $form, true);
+                $entityManager->flush();
+            } catch (UserProfileImageUploadException $exception) {
+                $this->addProfileImageFormError($form, $exception->getMessage());
+
+                return $this->render('@admin/users/edit.html.twig', $this->buildFormViewData($user, $form, $formOptions));
+            } catch (Throwable) {
+                $this->addProfileImageFormError(
+                    $form,
+                    'No se pudo actualizar la imagen de perfil. Inténtelo de nuevo.',
+                );
+                $this->addFlash('error', 'No se pudo actualizar el usuario. Inténtelo de nuevo.');
+
+                return $this->render('@admin/users/edit.html.twig', $this->buildFormViewData($user, $form, $formOptions));
+            }
+
+            $this->addFlash('success', sprintf('El usuario "%s" se actualizó correctamente.', $user->getNickname()));
+
+            return $this->redirectToRoute('app_backend_users');
         }
 
         return $this->render('@admin/users/edit.html.twig', $this->buildFormViewData($user, $form, $formOptions));
@@ -281,7 +301,22 @@ final class UserController extends AbstractController
             try {
                 $this->profileImageFormHandler->handleFromForm($user, $infoForm, true);
                 $entityManager->flush();
+            } catch (UserProfileImageUploadException $exception) {
+                $this->addProfileImageFormError($infoForm, $exception->getMessage());
+
+                return $this->render('@admin/users/profile/index.html.twig', $this->buildProfileViewData(
+                    $user,
+                    $infoForm,
+                    $passwordForm,
+                    $countryOptions,
+                    true,
+                    false,
+                ));
             } catch (Throwable) {
+                $this->addProfileImageFormError(
+                    $infoForm,
+                    'No se pudo guardar la imagen de perfil. Inténtelo de nuevo.',
+                );
                 $this->addFlash('error', 'No se pudo actualizar tu perfil. Inténtelo de nuevo.');
 
                 return $this->render('@admin/users/profile/index.html.twig', $this->buildProfileViewData(
@@ -466,5 +501,17 @@ final class UserController extends AbstractController
     private function resolveCountryChoiceKey(array $formOptions): string
     {
         return $formOptions['country_choice_key'] ?? WorldCountryCodes::DEFAULT_CHOICE_KEY;
+    }
+
+    /**
+     * @param FormInterface<mixed> $form
+     */
+    private function addProfileImageFormError(FormInterface $form, string $message): void
+    {
+        if ($form->has('profileImage')) {
+            $form->get('profileImage')->addError(new FormError($message));
+        }
+
+        $this->addFlash('error', $message);
     }
 }

@@ -16,6 +16,29 @@ export default class extends Controller {
 
     connect() {
         this.syncSelectedFileName();
+        this.boundSubmitHandler = this.onFormSubmit.bind(this);
+        this.formElement = this.element.closest('form');
+
+        if (this.formElement) {
+            this.formElement.addEventListener('submit', this.boundSubmitHandler);
+        }
+    }
+
+    disconnect() {
+        if (this.formElement && this.boundSubmitHandler) {
+            this.formElement.removeEventListener('submit', this.boundSubmitHandler);
+        }
+    }
+
+    onFormSubmit(event) {
+        if (this.disabledValue) {
+            return;
+        }
+
+        if (!this.validateFiles(this.inputTarget.files)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
     }
 
     openFileDialog(event) {
@@ -90,8 +113,6 @@ export default class extends Controller {
             if (validationMessage !== null) {
                 this.showClientError(validationMessage);
                 this.inputTarget.setCustomValidity(validationMessage);
-                this.inputTarget.value = '';
-                this.syncSelectedFileName();
 
                 return false;
             }

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Admin\Service\Storage;
 
 use App\Entity\User;
+use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Throwable;
 
 use function bin2hex;
 use function in_array;
@@ -37,14 +39,14 @@ final class UserProfileImageStorage
     {
         $userId = $user->getId();
         if (null === $userId) {
-            throw new RuntimeException('El usuario debe persistirse antes de subir una imagen de perfil.');
+            throw new UserProfileImageUploadException('El usuario debe persistirse antes de subir una imagen de perfil.');
         }
 
         $mimeType = (string) $file->getMimeType();
-        $extension = self::ALLOWED_MIME_TYPES[$mimeType] ?? null;
+        $extension = $this->resolveExtension($file, $mimeType);
 
         if (null === $extension) {
-            throw new RuntimeException('Tipo de imagen no permitido.');
+            throw new UserProfileImageUploadException('Solo se permiten imágenes JPG, PNG o WebP.');
         }
 
         $objectKey = $this->buildObjectKey($userId, $extension);
@@ -56,6 +58,11 @@ final class UserProfileImageStorage
 
         try {
             $this->privateMediaStorage->writeStream($objectKey, $stream);
+        } catch (FilesystemException $exception) {
+            throw new UserProfileImageUploadException(
+                $this->buildUploadFailureMessage($exception),
+                previous: $exception,
+            );
         } finally {
             fclose($stream);
         }
@@ -106,6 +113,19 @@ final class UserProfileImageStorage
         };
     }
 
+    private function resolveExtension(UploadedFile $file, string $mimeType): ?string
+    {
+        if (isset(self::ALLOWED_MIME_TYPES[$mimeType])) {
+            return self::ALLOWED_MIME_TYPES[$mimeType];
+        }
+
+        $clientExtension = strtolower((string) $file->getClientOriginalExtension());
+
+        return in_array($clientExtension, self::ALLOWED_MIME_TYPES, true)
+            ? $clientExtension
+            : null;
+    }
+
     public function buildObjectKey(int $userId, string $extension): string
     {
         if (!in_array($extension, self::ALLOWED_MIME_TYPES, true)) {
@@ -119,5 +139,41 @@ final class UserProfileImageStorage
             bin2hex(random_bytes(16)),
             $extension,
         );
+    }
+
+    private function buildUploadFailureMessage(FilesystemException $exception): string
+    {
+        $message = strtolower($this->collectExceptionMessages($exception));
+
+        if (str_contains($message, 'accessdenied') || str_contains($message, '403 forbidden')) {
+            return 'No se pudo guardar la imagen en S3. Revisa los permisos IAM del usuario (s3:PutObject, s3:GetObject, s3:DeleteObject).';
+        }
+
+        if (str_contains($message, 'permanent redirect') || str_contains($message, 'correct region')) {
+            return 'No se pudo guardar la imagen en S3. La región configurada en AWS_REGION no coincide con la del bucket.';
+        }
+
+        if (str_contains($message, 'nosuchbucket')) {
+            return 'No se pudo guardar la imagen en S3. El bucket configurado en AWS_S3_BUCKET no existe o no es accesible.';
+        }
+
+        if (str_contains($message, 'invalidaccesskeyid') || str_contains($message, 'signaturedoesnotmatch')) {
+            return 'No se pudo guardar la imagen en S3. Las credenciales AWS no son válidas.';
+        }
+
+        return 'No se pudo guardar la imagen de perfil en el almacenamiento. Verifica la configuración de AWS S3.';
+    }
+
+    private function collectExceptionMessages(Throwable $throwable): string
+    {
+        $messages = [];
+        $current = $throwable;
+
+        while (null !== $current) {
+            $messages[] = $current->getMessage();
+            $current = $current->getPrevious();
+        }
+
+        return implode(' ', $messages);
     }
 }
