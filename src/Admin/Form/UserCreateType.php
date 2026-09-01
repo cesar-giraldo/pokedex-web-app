@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Form;
 
 use App\Admin\Data\WorldCountryCodes;
+use App\Admin\Form\Concerns\UserProfileImageFormFields;
 use App\Admin\Form\Type\CountryCodeChoiceType;
 use App\Admin\Validator\Constraints\PasswordStrength;
 use App\Entity\Enum\UserRole;
@@ -34,6 +35,8 @@ use function is_string;
  */
 final class UserCreateType extends AbstractType
 {
+    use UserProfileImageFormFields;
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         /** @var list<UserRole> $assignableRoles */
@@ -151,6 +154,8 @@ final class UserCreateType extends AbstractType
                 'required' => false,
             ]);
         }
+
+        $this->addProfileImageFields($builder, false);
 
         $builder->addEventListener(FormEvents::POST_SUBMIT, static function (FormEvent $event): void {
             $form = $event->getForm();

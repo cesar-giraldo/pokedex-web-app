@@ -1,0 +1,27 @@
+{#
+	Reusable user profile avatar.
+
+	Props:
+	- user: User entity
+	- size_class: Tailwind size classes (default h-20 w-20)
+	- icon_class: Tailwind classes for placeholder icon
+#}
+{% set avatarSizeClass = size_class|default('h-20 w-20') %}
+{% set avatarIconClass = icon_class|default('h-full w-full text-gray-400 dark:text-gray-500') %}
+{% set profileImageUrl = user_profile_image_url(user) %}
+
+<div class="{{ avatarSizeClass }} flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-800">
+	{% if profileImageUrl %}
+		<img
+			src="{{ profileImageUrl }}"
+			alt="Foto de perfil de {{ user.name }} {{ user.lastname }}"
+			width="80"
+			height="80"
+			class="h-full w-full object-cover"
+			loading="lazy"
+			decoding="async"
+		/>
+	{% else %}
+		{{ ux_icon('heroicons:user-circle', { class: avatarIconClass }) }}
+	{% endif %}
+</div>

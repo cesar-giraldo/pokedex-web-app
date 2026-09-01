@@ -22,11 +22,18 @@
 
 		{{ form_start(info_form, {
 			action: path('app_backend_user_profile'),
-			attr: { class: 'flex flex-col' },
+			attr: { class: 'flex flex-col', enctype: 'multipart/form-data' },
 			render_rest: false,
 		}) }}
 			<div class="custom-scrollbar h-[450px] overflow-y-auto px-2">
 				<div class="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+					<div class="col-span-2">
+						{% include '@admin/users/_profile_image_fields.html.twig' with {
+							form: info_form,
+							user: user,
+						} %}
+					</div>
+
 					<div class="col-span-2 lg:col-span-1">
 						<twig:component_text_input
 							label="Nombre"

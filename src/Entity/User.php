@@ -105,6 +105,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['default' => false])]
     private ?bool $isHidden = false;
 
+    #[ORM\Column(length: 512, nullable: true)]
+    private ?string $profileImagePath = null;
+
     public function __construct()
     {
         $now = new DateTime();
@@ -316,6 +319,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsHidden(?bool $isHidden): static
     {
         $this->isHidden = $isHidden;
+
+        return $this;
+    }
+
+    public function getProfileImagePath(): ?string
+    {
+        return $this->profileImagePath;
+    }
+
+    public function setProfileImagePath(?string $profileImagePath): static
+    {
+        if (null === $profileImagePath || '' === trim($profileImagePath)) {
+            $this->profileImagePath = null;
+
+            return $this;
+        }
+
+        $this->profileImagePath = $profileImagePath;
 
         return $this;
     }

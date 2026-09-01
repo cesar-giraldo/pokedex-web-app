@@ -312,7 +312,11 @@
 				<a class="flex items-center text-gray-700 dark:text-gray-400" href="#"
 					data-action="click->template-user-menu#toggleUserMenuDropdown">
 					<span class="mr-3 h-11 w-11 overflow-hidden rounded-full">
-						<img src="{{ asset('images/user/owner.jpg', 'admin') }}" alt="User"/>
+						{% include '@admin/partials/_user_profile_avatar.html.twig' with {
+							user: app.user,
+							size_class: 'h-11 w-11',
+							icon_class: 'h-11 w-11 text-gray-400 dark:text-gray-500',
+						} %}
 					</span>
 
 					<span class="text-theme-sm mr-1 block font-medium">

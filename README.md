@@ -82,6 +82,11 @@ Database settings are defined **once** in `.env`. Docker Compose and Symfony rea
 | `APP_SECRET` | empty in `.env`, set in `.env.dev` | Session/crypto secret |
 | `MESSENGER_TRANSPORT_DSN` | `doctrine://default?auto_setup=0` | Async queue backed by `messenger_messages` table |
 | `MAILER_DSN` | `null://null` | Mailer (disabled by default) |
+| `AWS_REGION` | `us-east-1` | AWS region for S3 |
+| `AWS_ACCESS_KEY_ID` | empty | IAM access key for application S3 user |
+| `AWS_SECRET_ACCESS_KEY` | empty | IAM secret key (set in `.env.local`) |
+| `AWS_S3_BUCKET` | empty | S3 bucket name for media files |
+| `AWS_S3_STORAGE_PREFIX` | `%env(APP_ENV)%` | Environment prefix inside the bucket (`dev`, `prod`, `test`) |
 
 ### Switch to MySQL 8.4 LTS
 

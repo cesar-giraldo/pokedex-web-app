@@ -1,0 +1,39 @@
+{% from '@admin/macros/form.html.twig' import field_error %}
+
+{% if form.profileImage is defined %}
+	<div class="col-span-1 sm:col-span-2">
+		<div class="flex flex-col gap-5 sm:flex-row sm:items-start">
+			{% include '@admin/partials/_user_profile_avatar.html.twig' with {
+				user: user,
+				size_class: 'h-20 w-20',
+			} %}
+
+			<div class="min-w-0 flex-1 space-y-4">
+				<twig:component_dropzone
+					label="Imagen de perfil"
+					name="{{ form.profileImage.vars.full_name }}"
+					id="user-profile-image"
+					title="Arrastra tu imagen aquí"
+					description="Sube una imagen JPG, PNG o WebP de hasta 6 MB"
+					browseLabel="Seleccionar imagen"
+					accept="image/jpeg,image/png,image/webp"
+					acceptErrorMessage="Solo se permiten imágenes JPG, PNG o WebP."
+					:maxFileSizeKb="6144"
+					maxFileSizeErrorMessage="La imagen no puede superar 6 MB."
+					error="{{ field_error(form.profileImage) }}"
+					help="Opcional. Tamaño máximo: 6 MB."
+				/>
+
+				{% if form.removeProfileImage is defined %}
+					<twig:component_toggle_switch
+						label="Eliminar imagen actual"
+						name="{{ form.removeProfileImage.vars.full_name }}"
+						id="user-remove-profile-image"
+						:checked="form.removeProfileImage.vars.data"
+						help="Al activarlo se quitará la imagen de perfil al guardar."
+					/>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+{% endif %}

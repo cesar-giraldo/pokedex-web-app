@@ -26,14 +26,7 @@
 		<div class="mb-6 rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
 			<div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
 				<div class="flex w-full flex-col items-center gap-6 xl:flex-row">
-					<div class="h-20 w-20 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800">
-						<img
-							src="{{ asset('images/user/owner.jpg', 'admin') }}"
-							alt="Foto de perfil de {{ user.name }} {{ user.lastname }}"
-							width="80"
-							height="80"
-						/>
-					</div>
+					{% include '@admin/partials/_user_profile_avatar.html.twig' with { user: user } %}
 					<div class="order-3 xl:order-2">
 						<h4 class="mb-2 text-center text-lg font-semibold text-gray-800 dark:text-white/90 xl:text-left">
 							{{ user.name }} {{ user.lastname }}

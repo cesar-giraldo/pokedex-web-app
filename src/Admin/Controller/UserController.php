@@ -15,6 +15,7 @@ use App\Admin\Form\UserProfilePasswordType;
 use App\Admin\Security\EffectiveRoleChecker;
 use App\Admin\Service\GeneralSettingsProvider;
 use App\Admin\Service\ImpersonationPolicy;
+use App\Admin\Service\Storage\UserProfileImageFormHandler;
 use App\Admin\Service\UserManagementPolicy;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
@@ -43,6 +44,7 @@ final class UserController extends AbstractController
 
     public function __construct(
         private readonly EffectiveRoleChecker $effectiveRoleChecker,
+        private readonly UserProfileImageFormHandler $profileImageFormHandler,
     ) {
     }
 
@@ -157,6 +159,8 @@ final class UserController extends AbstractController
             try {
                 $entityManager->persist($user);
                 $entityManager->flush();
+                $this->profileImageFormHandler->handleFromForm($user, $form, false);
+                $entityManager->flush();
             } catch (Throwable) {
                 $this->addFlash('error', 'No se pudo crear el usuario. Inténtelo de nuevo.');
 
@@ -214,6 +218,7 @@ final class UserController extends AbstractController
                 }
 
                 try {
+                    $this->profileImageFormHandler->handleFromForm($user, $form, true);
                     $entityManager->flush();
                 } catch (Throwable) {
                     $this->addFlash('error', 'No se pudo actualizar el usuario. Inténtelo de nuevo.');
@@ -274,6 +279,7 @@ final class UserController extends AbstractController
             }
 
             try {
+                $this->profileImageFormHandler->handleFromForm($user, $infoForm, true);
                 $entityManager->flush();
             } catch (Throwable) {
                 $this->addFlash('error', 'No se pudo actualizar tu perfil. Inténtelo de nuevo.');

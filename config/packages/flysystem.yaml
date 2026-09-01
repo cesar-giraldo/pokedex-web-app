@@ -1,0 +1,7 @@
+flysystem:
+    storages:
+        private.media.storage:
+            adapter: 'aws'
+            options:
+                client: 'aws_s3_client'
+                bucket: '%env(AWS_S3_BUCKET)%'

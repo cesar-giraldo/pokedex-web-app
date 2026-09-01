@@ -4,6 +4,8 @@
 
 <div class="space-y-6 border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
 	<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+		{% include '@admin/users/_profile_image_fields.html.twig' %}
+
 		<twig:component_text_input
 			label="Nombre"
 			name="{{ form.name.vars.full_name }}"

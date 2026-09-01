@@ -116,7 +116,12 @@
 								{% for user in entities %}
 									<tr>
 										<td class="px-5 py-4 sm:px-6">
-											<div class="flex items-center">
+											<div class="flex items-center gap-3">
+												{% include '@admin/partials/_user_profile_avatar.html.twig' with {
+													user: user,
+													size_class: 'h-10 w-10',
+													icon_class: 'h-10 w-10 text-gray-400 dark:text-gray-500',
+												} %}
 												<p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
 													{{ user.name }} {{ user.lastname }}
 												</p>
