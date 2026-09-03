@@ -96,6 +96,15 @@
         },
         "cs:check": "php-cs-fixer fix --dry-run --diff",
         "cs:fix": "php-cs-fixer fix",
+        "phpstan": "phpstan analyse",
+        "test": "phpunit",
+        "test:unit": "phpunit --testsuite=unit",
+        "test:integration": "phpunit --testsuite=integration",
+        "test:functional": "phpunit --testsuite=functional",
+        "test:static": [
+            "@phpstan",
+            "@cs:check"
+        ],
         "post-install-cmd": [
             "@auto-scripts"
         ],
@@ -124,6 +133,7 @@
         "symfony/css-selector": "8.0.*",
         "symfony/debug-bundle": "8.0.*",
         "symfony/maker-bundle": "^1.0",
+        "symfony/phpunit-bridge": "^8.0",
         "symfony/stopwatch": "8.0.*",
         "symfony/web-profiler-bundle": "8.0.*"
     }

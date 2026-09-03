@@ -6,9 +6,10 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\PasswordInputComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(PasswordInputComponent::class)]
+#[CoversClass(PasswordInputComponent::class)] #[Group('unit')]
 final class PasswordInputComponentTest extends TestCase
 {
     public function testMountGeneratesIdAndNameWhenMissing(): void

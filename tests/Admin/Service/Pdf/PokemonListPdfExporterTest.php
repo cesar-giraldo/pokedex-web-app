@@ -8,9 +8,11 @@ use App\Admin\Service\Pdf\GotenbergClient;
 use App\Admin\Service\Pdf\PokemonListPdfExporter;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Twig\Environment;
 
+#[Group('unit')]
 final class PokemonListPdfExporterTest extends TestCase
 {
     public function testExportWithoutRepeatedHeaderFooterDoesNotSendGotenbergHeaderOrFooter(): void

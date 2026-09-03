@@ -9,9 +9,11 @@ use App\Admin\Service\UserManagementPolicy;
 use App\Entity\Enum\UserRole;
 use App\Entity\User;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\FormFactoryInterface;
 
+#[Group('integration')]
 final class UserEditTypeTest extends KernelTestCase
 {
     use AdminAuthenticatedClientTrait;

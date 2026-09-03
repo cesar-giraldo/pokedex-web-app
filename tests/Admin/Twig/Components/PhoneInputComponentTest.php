@@ -6,11 +6,12 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\PhoneInputComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 use function sprintf;
 
-#[CoversClass(PhoneInputComponent::class)]
+#[CoversClass(PhoneInputComponent::class)] #[Group('unit')]
 final class PhoneInputComponentTest extends TestCase
 {
     public function testMountGeneratesIdNameAndCountryNameWhenMissing(): void

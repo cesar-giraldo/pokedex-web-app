@@ -6,9 +6,10 @@ namespace App\Tests\Admin\Twig\Components\Alerts;
 
 use App\Admin\Twig\Components\Alerts\AlertError;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(AlertError::class)]
+#[CoversClass(AlertError::class)] #[Group('unit')]
 final class AlertErrorTest extends TestCase
 {
     public function testMountGeneratesIdWhenMissing(): void

@@ -6,9 +6,10 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\RadioComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(RadioComponent::class)]
+#[CoversClass(RadioComponent::class)] #[Group('unit')]
 final class RadioComponentTest extends TestCase
 {
     public function testMountGeneratesIdAndNameWhenMissing(): void

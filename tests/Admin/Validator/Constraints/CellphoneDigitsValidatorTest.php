@@ -6,11 +6,13 @@ namespace App\Tests\Admin\Validator\Constraints;
 
 use App\Admin\Validator\Constraints\CellphoneDigits;
 use App\Admin\Validator\Constraints\CellphoneDigitsValidator;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 /**
  * @extends ConstraintValidatorTestCase<CellphoneDigitsValidator>
  */
+#[Group('unit')]
 final class CellphoneDigitsValidatorTest extends ConstraintValidatorTestCase
 {
     protected function createValidator(): CellphoneDigitsValidator

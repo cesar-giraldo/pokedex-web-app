@@ -9,11 +9,13 @@ use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 use function sprintf;
 
+#[Group('functional')]
 final class SecurityControllerTest extends WebTestCase
 {
     public function testLoginPageIsAccessibleForGuests(): void

@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Admin\Form;
 
 use App\Admin\Form\UserProfileImageConstraints;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+#[Group('integration')]
 final class UserProfileImageFormValidationTest extends KernelTestCase
 {
     public function testRejectsProfileImageAboveMaxSize(): void

@@ -8,9 +8,11 @@ use App\Admin\Service\ImpersonationPolicy;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 
+#[Group('unit')]
 final class ImpersonationPolicyTest extends TestCase
 {
     private ImpersonationPolicy $policy;

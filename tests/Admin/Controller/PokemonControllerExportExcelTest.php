@@ -10,8 +10,10 @@ use App\Entity\Pokemon;
 use App\Entity\PokemonType;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
+#[Group('functional')]
 final class PokemonControllerExportExcelTest extends WebTestCase
 {
     use AdminAuthenticatedClientTrait;

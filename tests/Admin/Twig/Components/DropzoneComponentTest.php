@@ -6,9 +6,10 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\DropzoneComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(DropzoneComponent::class)]
+#[CoversClass(DropzoneComponent::class)] #[Group('unit')]
 final class DropzoneComponentTest extends TestCase
 {
     public function testMountGeneratesIdAndNameWhenMissing(): void

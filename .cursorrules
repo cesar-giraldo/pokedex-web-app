@@ -6,7 +6,7 @@
 - The codebase is organized by context: src/Admin for the administrative backend, src/Web for the public website, and src/Api for API services.
 - Shared domain logic belongs in src/Entity and shared Doctrine queries in src/Repository.
 - Templates are separated by context in templates/admin and templates/web.
-- Tests are grouped by context in tests/Admin, tests/Web, and future tests/Api.
+- Tests are grouped by context in tests/Admin, tests/Web, tests/Api, tests/Entity, tests/Repository, and tests/EventSubscriber.
 - Database migrations live under migrations/postgresql and migrations/mysql, and the active engine is selected via DATABASE_ENGINE.
 - The project is developed and run primarily with Docker Compose, including FrankenPHP and a database service.
 - When writing queries in DQL or SQL, it is important that the query syntax be compatible with both the MySQL and PostgreSQL engines.
@@ -35,7 +35,67 @@
 
 ## Testing & Quality
 - Add or update PHPUnit tests when changing behavior.
-- Place tests in the corresponding context folder: tests/Admin for admin features, tests/Web for public website features, and tests/Api for API behavior.
+- Full testing guide: `docs/testing.md`. CI runs only static analysis and unit tests (see `.github/workflows/ci.yml`).
+
+### Test layers (PHPUnit suites)
+The project uses **three suites** defined in `phpunit.dist.xml`. Directory placement and `#[Group]` must always match:
+
+| Suite | `#[Group]` | Base class | Infrastructure | When to use |
+| ----- | ---------- | ---------- | -------------- | ------------- |
+| **unit** | `unit` | `PHPUnit\Framework\TestCase`, `ConstraintValidatorTestCase` | None (no kernel, no HTTP, no DB) | Entities, enums, services with mocks, validators, Twig component PHP classes, event subscribers tested in isolation |
+| **integration** | `integration` | `KernelTestCase` | Symfony kernel, DI container, DB | Form types, repositories, console commands |
+| **functional** | `functional` | `WebTestCase` | Kernel + HTTP client (`createClient()`) | Controllers, routes, auth flows, full HTTP responses |
+
+### Directory placement rules
+Mirror the source context (`src/Admin`, `src/Web`, `src/Api`) under `tests/`, then place by **test layer**:
+
+| Layer | Required directories / paths |
+| ----- | ---------------------------- |
+| `integration` | `tests/Repository/`, `tests/Admin/Form/`, `tests/Admin/Command/` |
+| `functional` | `tests/Admin/Controller/`, `tests/Web/Controller/`, `tests/Api/Controller/` |
+| `unit` | Any other path under `tests/` (e.g. `tests/Entity/`, `tests/Admin/Service/`, `tests/Admin/Validator/`, `tests/Admin/Twig/`, `tests/Admin/Security/`, `tests/Admin/EventSubscriber/`, `tests/Api/EventSubscriber/`, `tests/EventSubscriber/` except controller-style HTTP tests) |
+
+**Decision checklist for new tests:**
+1. Does it call `createClient()` or assert HTTP responses/redirects? → **functional** → `tests/{Context}/Controller/`
+2. Does it call `bootKernel()` for forms, repositories, or commands? → **integration** → `tests/Repository/`, `tests/Admin/Form/`, or `tests/Admin/Command/`
+3. Everything else (pure PHP, mocked dependencies) → **unit** → mirror source path under `tests/`
+
+### Required conventions for every new test class
+- Namespace: `App\Tests\...` matching the directory (PSR-4 autoload in `composer.json`).
+- Class name: `{Subject}Test`, declare `final class`, start file with `declare(strict_types=1);`.
+- Always add the matching group attribute on the class:
+  ```php
+  use PHPUnit\Framework\Attributes\Group;
+
+  #[Group('unit')]        // or 'integration' or 'functional'
+  final class MyServiceTest extends TestCase
+  ```
+- Prefer `#[CoversClass(TargetClass::class)]` on unit tests for Twig components and focused classes.
+- Reuse shared test helpers from `tests/Admin/Support/` (e.g. `AdminAuthenticatedClientTrait`) in functional admin tests; do not duplicate login/setup logic.
+- Mock external HTTP (PokeAPI, Gotenberg, S3) in unit tests; use container overrides in functional tests when the real service must not run.
+- Clean up persisted test data in `tearDown()` when writing integration or functional tests that touch the database.
+
+### What NOT to do
+- Do not put `WebTestCase` classes outside `tests/*/Controller/`.
+- Do not put `KernelTestCase` form/repository/command tests outside the integration directories listed above.
+- Do not use `bootKernel()` or `createClient()` in unit tests.
+- Do not omit `#[Group]` — directory and group must stay in sync for `phpunit.dist.xml` suites to work.
+- Do not add integration/functional tests expecting them to run in CI today; only `test:unit` and `test:static` run in the pipeline.
+
+### Static analysis (not PHPUnit)
+- PHPStan (`composer phpstan`) and PHP-CS-Fixer (`composer cs:check`) are separate from PHPUnit; run together via `composer test:static`.
+- PHPStan level 8 covers `src/` and `tests/`.
+
+### Running tests (Docker)
+```bash
+docker compose exec php composer test:static      # PHPStan + cs:check
+docker compose exec php composer test:unit
+docker compose exec php composer test:integration
+docker compose exec php composer test:functional
+docker compose exec php composer test             # all suites
+```
+
+### Other quality rules
 - Keep code compatible with the existing Docker-based workflow and environment configuration.
 - Respect .env-based configuration and avoid hard-coding environment-specific values.
 - When changing persistence logic, ensure migrations and entity updates remain consistent.

@@ -9,11 +9,13 @@ use App\Admin\Service\Excel\PokemonSpriteImageLoader;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 
 use function dirname;
 
+#[Group('unit')]
 final class PokemonListExcelExporterTest extends TestCase
 {
     public function testExportGeneratesValidSpreadsheetWithPokemonData(): void

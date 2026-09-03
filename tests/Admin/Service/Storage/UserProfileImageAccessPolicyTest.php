@@ -8,12 +8,14 @@ use App\Admin\Security\EffectiveRoleChecker;
 use App\Admin\Service\Storage\UserProfileImageAccessPolicy;
 use App\Entity\Enum\UserRole;
 use App\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Role\RoleHierarchy;
 
+#[Group('unit')]
 final class UserProfileImageAccessPolicyTest extends TestCase
 {
     public function testOperatorCanViewVisibleUser(): void

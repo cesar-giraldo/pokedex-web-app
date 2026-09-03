@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\EventSubscriber;
 
 use App\EventSubscriber\HtmlExceptionSubscriber;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Throwable;
 use Twig\Environment;
 
+#[Group('unit')]
 final class HtmlExceptionSubscriberTest extends TestCase
 {
     public function testRenders404TemplateForNotFoundException(): void

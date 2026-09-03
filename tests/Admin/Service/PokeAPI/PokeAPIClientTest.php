@@ -7,11 +7,13 @@ namespace App\Tests\Admin\Service\PokeAPI;
 use App\Admin\Service\PokeAPI\PokeAPIClient;
 use App\Admin\Service\PokeAPI\PokemonDetails;
 use Exception;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
+#[Group('unit')]
 class PokeAPIClientTest extends TestCase
 {
     public function testGetPokemonByNameReturnsPokemonDetailsOnSuccess(): void

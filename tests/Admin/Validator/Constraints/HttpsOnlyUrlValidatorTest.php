@@ -6,11 +6,13 @@ namespace App\Tests\Admin\Validator\Constraints;
 
 use App\Admin\Validator\Constraints\HttpsOnlyUrl;
 use App\Admin\Validator\Constraints\HttpsOnlyUrlValidator;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 /**
  * @extends ConstraintValidatorTestCase<HttpsOnlyUrlValidator>
  */
+#[Group('unit')]
 final class HttpsOnlyUrlValidatorTest extends ConstraintValidatorTestCase
 {
     protected function createValidator(): HttpsOnlyUrlValidator

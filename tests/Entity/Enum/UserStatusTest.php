@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Entity\Enum;
 
 use App\Entity\Enum\UserStatus;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
+#[Group('unit')]
 final class UserStatusTest extends TestCase
 {
     public function testLabelsAreDefinedInSpanish(): void

@@ -10,9 +10,11 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+#[Group('functional')]
 final class UserImpersonationTest extends WebTestCase
 {
     use AdminAuthenticatedClientTrait;

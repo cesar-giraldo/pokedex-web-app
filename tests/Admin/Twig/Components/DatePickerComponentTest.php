@@ -6,9 +6,10 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\DatePickerComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(DatePickerComponent::class)]
+#[CoversClass(DatePickerComponent::class)] #[Group('unit')]
 final class DatePickerComponentTest extends TestCase
 {
     public function testMountGeneratesIdAndNameWhenMissing(): void

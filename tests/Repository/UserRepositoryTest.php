@@ -9,11 +9,13 @@ use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 use function sprintf;
 
+#[Group('integration')]
 final class UserRepositoryTest extends KernelTestCase
 {
     /** @var list<int> */

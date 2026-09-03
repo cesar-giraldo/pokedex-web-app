@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\EventSubscriber;
 
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 use const JSON_THROW_ON_ERROR;
 
+#[Group('functional')]
 final class HtmlExceptionPageTest extends WebTestCase
 {
     public function testWebNotFoundReturnsCustomPageInProduction(): void

@@ -160,17 +160,30 @@ docker compose exec php vendor/bin/phpstan analyse
 
 ## 6.8 · Tests (PHPUnit)
 
+Las pruebas están organizadas en tres suites: `unit`, `integration` y `functional`. Guía completa: [`../../testing.md`](../../testing.md).
+
 ```bash
+# Análisis estático (PHPStan + PHP-CS-Fixer)
+docker compose exec php composer test:static
+
+# Todas las suites
+docker compose exec php composer test
+
+# Por suite
+docker compose exec php composer test:unit
+docker compose exec php composer test:integration
+docker compose exec php composer test:functional
+
 # Crear un test
 docker compose exec php php bin/console make:test
 
-# Ejecutar todos los tests
-docker compose exec php php bin/phpunit
+# Ejecutar un archivo específico
+docker compose exec php php bin/phpunit tests/Entity/UserTest.php
 
-# Ejecutar un test específico
-docker compose exec php php bin/phpunit tests/Controller/HomeControllerTest.php
+# Filtrar por grupo
+docker compose exec php php bin/phpunit --group=unit
 
-# Ejecutar con cobertura
+# Cobertura
 docker compose exec php php bin/phpunit --coverage-html var/coverage
 ```
 
@@ -562,7 +575,7 @@ pokedex-web-app/
 2. **Formularios:** `php bin/console make:form PokemonType` (o el formulario que necesites).
 3. **API REST:** instala `api-platform/core` para exponer Pokémon vía API.
 4. **Mailer:** Symfony Mailer + MailHog en otro contenedor para probar emails.
-5. **CI:** añadir workflow en `.github/workflows/` para `phpunit`, `cs:check` y `phpstan`.
+5. **CI:** workflow en `.github/workflows/ci.yml` — PHPStan, `cs:check` y `test:unit` en cada PR.
 6. **Producción:** revisa <https://github.com/dunglas/symfony-docker> para Dockerfile multi-stage optimizado.
 
 ---

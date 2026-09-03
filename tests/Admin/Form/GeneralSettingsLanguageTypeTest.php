@@ -7,10 +7,12 @@ namespace App\Tests\Admin\Form;
 use App\Admin\Form\GeneralSettingsLanguageType;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\GeneralSettings;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 
+#[Group('integration')]
 final class GeneralSettingsLanguageTypeTest extends KernelTestCase
 {
     public function testRejectsDefaultLanguageOutsideEnabledLanguages(): void

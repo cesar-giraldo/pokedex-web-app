@@ -7,8 +7,10 @@ namespace App\Tests\Repository;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\GeneralSettings;
 use App\Repository\GeneralSettingsRepository;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
+#[Group('integration')]
 final class GeneralSettingsRepositoryTest extends KernelTestCase
 {
     public function testGetOrCreateSingletonReturnsSameRecord(): void

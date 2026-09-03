@@ -9,9 +9,11 @@ use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use DateTime;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 
+#[Group('unit')]
 final class UserCheckerTest extends TestCase
 {
     private UserChecker $userChecker;

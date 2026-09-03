@@ -6,9 +6,10 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\SingleSelectComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(SingleSelectComponent::class)]
+#[CoversClass(SingleSelectComponent::class)] #[Group('unit')]
 final class SingleSelectComponentTest extends TestCase
 {
     public function testMountGeneratesIdAndNameWhenMissing(): void

@@ -7,8 +7,10 @@ namespace App\Tests\Entity;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\GeneralSettings;
 use DateTime;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
+#[Group('unit')]
 final class GeneralSettingsTest extends TestCase
 {
     public function testCreatesWithDefaultValues(): void

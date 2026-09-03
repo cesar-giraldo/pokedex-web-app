@@ -6,6 +6,7 @@ namespace App\Tests\Api\EventSubscriber;
 
 use App\Api\EventSubscriber\ApiExceptionSubscriber;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +17,7 @@ use Throwable;
 
 use const JSON_THROW_ON_ERROR;
 
+#[Group('unit')]
 final class ApiExceptionSubscriberTest extends TestCase
 {
     #[DataProvider('provideApiExceptionCases')]

@@ -6,11 +6,13 @@ namespace App\Tests\Admin\Validator\Constraints;
 
 use App\Admin\Validator\Constraints\NicknameFormat;
 use App\Admin\Validator\Constraints\NicknameFormatValidator;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 /**
  * @extends ConstraintValidatorTestCase<NicknameFormatValidator>
  */
+#[Group('unit')]
 final class NicknameFormatValidatorTest extends ConstraintValidatorTestCase
 {
     protected function createValidator(): NicknameFormatValidator

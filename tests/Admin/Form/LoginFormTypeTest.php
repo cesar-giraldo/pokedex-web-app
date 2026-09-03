@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Admin\Form;
 
 use App\Admin\Form\LoginFormType;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\FormFactoryInterface;
 
+#[Group('integration')]
 final class LoginFormTypeTest extends KernelTestCase
 {
     public function testEmptySubmissionHasValidationErrors(): void

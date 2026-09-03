@@ -6,10 +6,11 @@ namespace App\Tests\Admin\Twig\Extensions;
 
 use App\Admin\Twig\Extensions\FormExtension;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormView;
 
-#[CoversClass(FormExtension::class)]
+#[CoversClass(FormExtension::class)] #[Group('unit')]
 final class FormExtensionTest extends TestCase
 {
     private FormExtension $extension;

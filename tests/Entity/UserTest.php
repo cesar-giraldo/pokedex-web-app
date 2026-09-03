@@ -8,8 +8,10 @@ use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use DateTime;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
+#[Group('unit')]
 final class UserTest extends TestCase
 {
     public function testMapsApplicationRolesToSymfonyRoles(): void

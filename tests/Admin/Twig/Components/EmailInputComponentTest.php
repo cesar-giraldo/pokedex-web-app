@@ -6,9 +6,10 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\EmailInputComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(EmailInputComponent::class)]
+#[CoversClass(EmailInputComponent::class)] #[Group('unit')]
 final class EmailInputComponentTest extends TestCase
 {
     public function testMountGeneratesIdAndNameWhenMissing(): void

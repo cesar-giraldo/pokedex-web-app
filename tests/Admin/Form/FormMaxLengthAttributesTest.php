@@ -17,6 +17,7 @@ use App\Entity\Pokemon;
 use App\Entity\User;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormView;
@@ -24,7 +25,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 use function sprintf;
 
-#[CoversClass(UserCreateType::class)]
+#[CoversClass(UserCreateType::class)] #[Group('integration')]
 final class FormMaxLengthAttributesTest extends KernelTestCase
 {
     use AdminAuthenticatedClientTrait;

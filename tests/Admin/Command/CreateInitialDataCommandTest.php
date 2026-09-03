@@ -9,9 +9,11 @@ use App\Entity\GeneralSettings;
 use App\Entity\User;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\UserRepository;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
+#[Group('integration')]
 final class CreateInitialDataCommandTest extends KernelTestCase
 {
     private const string INITIAL_EMAIL = 'initial-user@example.com';

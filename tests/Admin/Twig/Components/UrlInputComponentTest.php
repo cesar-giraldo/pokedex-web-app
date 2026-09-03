@@ -6,9 +6,10 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\UrlInputComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(UrlInputComponent::class)]
+#[CoversClass(UrlInputComponent::class)] #[Group('unit')]
 final class UrlInputComponentTest extends TestCase
 {
     public function testMountGeneratesIdAndNameWhenMissing(): void

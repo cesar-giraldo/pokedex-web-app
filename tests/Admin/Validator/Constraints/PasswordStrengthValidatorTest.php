@@ -6,11 +6,13 @@ namespace App\Tests\Admin\Validator\Constraints;
 
 use App\Admin\Validator\Constraints\PasswordStrength;
 use App\Admin\Validator\Constraints\PasswordStrengthValidator;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 /**
  * @extends ConstraintValidatorTestCase<PasswordStrengthValidator>
  */
+#[Group('unit')]
 final class PasswordStrengthValidatorTest extends ConstraintValidatorTestCase
 {
     protected function createValidator(): PasswordStrengthValidator

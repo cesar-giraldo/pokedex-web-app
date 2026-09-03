@@ -6,11 +6,12 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\MultiSelectComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 use function sprintf;
 
-#[CoversClass(MultiSelectComponent::class)]
+#[CoversClass(MultiSelectComponent::class)] #[Group('unit')]
 final class MultiSelectComponentTest extends TestCase
 {
     public function testMountGeneratesIdAndNameWhenMissing(): void

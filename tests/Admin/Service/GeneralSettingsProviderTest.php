@@ -7,8 +7,10 @@ namespace App\Tests\Admin\Service;
 use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\GeneralSettings;
 use App\Repository\GeneralSettingsRepository;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
+#[Group('unit')]
 final class GeneralSettingsProviderTest extends TestCase
 {
     public function testReturnsPersistedSettings(): void

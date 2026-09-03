@@ -7,9 +7,11 @@ namespace App\Tests\Admin\Service;
 use App\Admin\Service\UserManagementPolicy;
 use App\Entity\Enum\UserRole;
 use App\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 
+#[Group('unit')]
 final class UserManagementPolicyTest extends TestCase
 {
     private UserManagementPolicy $policy;

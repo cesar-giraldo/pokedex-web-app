@@ -8,12 +8,14 @@ use App\Admin\Security\EffectiveRoleChecker;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Role\RoleHierarchy;
 
+#[Group('unit')]
 final class EffectiveRoleCheckerTest extends TestCase
 {
     public function testGrantsDeveloperRoleForDeveloperUser(): void

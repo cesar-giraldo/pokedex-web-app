@@ -7,6 +7,7 @@ namespace App\Tests\Admin\Service\Pdf;
 use App\Admin\Service\Pdf\GotenbergClient;
 use App\Admin\Service\Pdf\PdfGenerationException;
 use Exception;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -14,6 +15,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 use function rtrim;
 
+#[Group('unit')]
 final class GotenbergClientTest extends TestCase
 {
     private string $gotenbergUrl;

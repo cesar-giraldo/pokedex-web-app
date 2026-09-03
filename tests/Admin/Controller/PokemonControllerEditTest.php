@@ -8,10 +8,12 @@ use App\Entity\Pokemon;
 use App\Entity\PokemonType;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 use function sprintf;
 
+#[Group('functional')]
 final class PokemonControllerEditTest extends WebTestCase
 {
     use AdminAuthenticatedClientTrait;

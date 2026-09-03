@@ -6,9 +6,10 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\TextareaComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(TextareaComponent::class)]
+#[CoversClass(TextareaComponent::class)] #[Group('unit')]
 final class TextareaComponentTest extends TestCase
 {
     public function testMountGeneratesIdAndNameWhenMissing(): void

@@ -18,8 +18,26 @@
     </php>
 
     <testsuites>
-        <testsuite name="Project Test Suite">
+        <testsuite name="unit">
             <directory>tests</directory>
+            <exclude>tests/Admin/Controller</exclude>
+            <exclude>tests/Web/Controller</exclude>
+            <exclude>tests/Api/Controller</exclude>
+            <exclude>tests/Repository</exclude>
+            <exclude>tests/Admin/Form</exclude>
+            <exclude>tests/Admin/Command</exclude>
+            <exclude>tests/EventSubscriber/HtmlExceptionPageTest.php</exclude>
+        </testsuite>
+        <testsuite name="integration">
+            <directory>tests/Repository</directory>
+            <directory>tests/Admin/Form</directory>
+            <directory>tests/Admin/Command</directory>
+        </testsuite>
+        <testsuite name="functional">
+            <directory>tests/Admin/Controller</directory>
+            <directory>tests/Web/Controller</directory>
+            <directory>tests/Api/Controller</directory>
+            <file>tests/EventSubscriber/HtmlExceptionPageTest.php</file>
         </testsuite>
     </testsuites>
 
@@ -40,5 +58,9 @@
     </source>
 
     <extensions>
+        <bootstrap class="Symfony\Bridge\PhpUnit\SymfonyExtension">
+            <parameter name="clock-mock-namespaces" value="App" />
+            <parameter name="dns-mock-namespaces" value="App" />
+        </bootstrap>
     </extensions>
 </phpunit>

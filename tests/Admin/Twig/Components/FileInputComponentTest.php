@@ -6,9 +6,10 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\FileInputComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(FileInputComponent::class)]
+#[CoversClass(FileInputComponent::class)] #[Group('unit')]
 final class FileInputComponentTest extends TestCase
 {
     public function testMountGeneratesIdAndNameWhenMissing(): void

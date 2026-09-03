@@ -6,9 +6,10 @@ namespace App\Tests\Admin\Twig\Components;
 
 use App\Admin\Twig\Components\TextInputComponent;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(TextInputComponent::class)]
+#[CoversClass(TextInputComponent::class)] #[Group('unit')]
 final class TextInputComponentTest extends TestCase
 {
     public function testMountGeneratesIdAndNameWhenMissing(): void

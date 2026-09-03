@@ -149,10 +149,14 @@ docker compose exec php php bin/console tailwind:build --watch
 # Code quality
 docker compose exec php composer cs:check
 docker compose exec php composer cs:fix
-docker compose exec php vendor/bin/phpstan analyse
+docker compose exec php composer phpstan
+docker compose exec php composer test:static   # PHPStan + cs:check
 
-# Tests
-docker compose exec php php bin/phpunit
+# Tests (see docs/testing.md for suite details)
+docker compose exec php composer test          # all suites
+docker compose exec php composer test:unit
+docker compose exec php composer test:integration
+docker compose exec php composer test:functional
 
 # Messenger worker
 docker compose exec php php bin/console messenger:consume async -vv
@@ -161,11 +165,22 @@ docker compose exec php php bin/console messenger:consume async -vv
 Testing
 -------
 
+Tests are split into three PHPUnit suites: **unit**, **integration**, and **functional**. Full details: [`docs/testing.md`](docs/testing.md).
+
 ```bash
-docker compose exec php php bin/phpunit
+# Static analysis (no database required)
+docker compose exec php composer test:static
+
+# All PHPUnit suites
+docker compose exec php composer test
+
+# By suite
+docker compose exec php composer test:unit
+docker compose exec php composer test:integration
+docker compose exec php composer test:functional
 ```
 
-Tests live under `tests/` (e.g. `HomeControllerTest`, `PokeAPIClientTest`).
+CI (GitHub Actions) currently runs only static quality checks and unit tests — see `.github/workflows/ci.yml`.
 
 Frontend / assets
 -----------------

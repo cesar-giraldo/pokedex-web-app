@@ -7,12 +7,14 @@ namespace App\Tests\Admin\Service\Excel;
 use App\Admin\Service\Excel\PokemonSpriteImageLoader;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
 use function dirname;
 
+#[Group('unit')]
 final class PokemonSpriteImageLoaderTest extends TestCase
 {
     public function testLoadUsesFallbackWhenPokemonHasNoSprite(): void

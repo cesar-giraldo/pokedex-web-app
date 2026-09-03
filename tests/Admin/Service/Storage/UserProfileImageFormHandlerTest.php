@@ -9,6 +9,7 @@ use App\Admin\Service\Storage\UserProfileImageStorage;
 use App\Entity\User;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 use RuntimeException;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use const DIRECTORY_SEPARATOR;
 
+#[Group('unit')]
 final class UserProfileImageFormHandlerTest extends TestCase
 {
     private string $tempDirectory = '';
