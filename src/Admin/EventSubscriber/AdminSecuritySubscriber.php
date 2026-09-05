@@ -15,9 +15,12 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
+
+use function is_string;
 
 final class AdminSecuritySubscriber implements EventSubscriberInterface
 {
@@ -88,6 +91,11 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
         }
 
         $user->resetFailedLoginAttempts();
+
+        if ($this->shouldRecordInteractiveLogin($event, $user)) {
+            $user->recordSuccessfulInteractiveLogin($event->getRequest()->getClientIp());
+        }
+
         $this->entityManager->flush();
 
         if (!$user->hasBackendAccess()) {
@@ -159,5 +167,25 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
         }
 
         return '/admin/login' === $path;
+    }
+
+    private function shouldRecordInteractiveLogin(LoginSuccessEvent $event, User $user): bool
+    {
+        if (!$user->hasBackendAccess()) {
+            return false;
+        }
+
+        if ($event->getAuthenticatedToken() instanceof SwitchUserToken) {
+            return false;
+        }
+
+        $switchUser = $event->getRequest()->query->get('_switch_user')
+            ?? $event->getRequest()->request->get('_switch_user');
+
+        if (is_string($switchUser) && '' !== $switchUser) {
+            return false;
+        }
+
+        return 'app_admin_login' === $event->getRequest()->attributes->get('_route');
     }
 }

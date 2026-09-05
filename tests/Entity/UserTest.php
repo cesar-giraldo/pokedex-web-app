@@ -36,6 +36,7 @@ final class UserTest extends TestCase
         self::assertNotNull($user->getNoLoginUntil());
         self::assertTrue($user->isLoginTemporarilyBlocked());
         self::assertSame(0, $user->getFailedLoginAttempts());
+        self::assertNotNull($user->getLastFailedLoginAt());
 
         $noLoginUntil = $user->getNoLoginUntil();
         $remainingSeconds = $noLoginUntil->getTimestamp() - time();
@@ -77,6 +78,24 @@ final class UserTest extends TestCase
         self::assertSame(0, $user->getFailedLoginAttempts());
         self::assertNull($user->getNoLoginUntil());
         self::assertFalse($user->isLoginTemporarilyBlocked());
+        self::assertNotNull($user->getLastFailedLoginAt());
+    }
+
+    public function testRecordsSuccessfulInteractiveLogin(): void
+    {
+        $user = new User();
+
+        $user->recordSuccessfulInteractiveLogin('127.0.0.1');
+
+        self::assertNotNull($user->getLastLoginAt());
+        self::assertSame('127.0.0.1', $user->getLastLoginIp());
+    }
+
+    public function testNormalizesEmptyLastLoginIpToNull(): void
+    {
+        $user = new User()->setLastLoginIp('   ');
+
+        self::assertNull($user->getLastLoginIp());
     }
 
     public function testStatusMessagesAreDefinedInSpanish(): void

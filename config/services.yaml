@@ -60,3 +60,8 @@ services:
 
     App\EventSubscriber\:
         resource: '../src/EventSubscriber/'
+
+    App\Doctrine\:
+        resource: '../src/Doctrine/'
+        exclude:
+            - '../src/Doctrine/Dql/'

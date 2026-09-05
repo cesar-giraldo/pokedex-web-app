@@ -41,6 +41,18 @@ final class SecurityControllerTest extends WebTestCase
         self::assertResponseRedirects('/admin/home');
         $client->followRedirect();
         self::assertResponseIsSuccessful();
+
+        $container = static::getContainer();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(EntityManagerInterface::class);
+        $entityManager->clear();
+
+        /** @var UserRepository $userRepository */
+        $userRepository = $container->get(UserRepository::class);
+        $loggedInUser = $userRepository->findOneByNickname('admin-login');
+        self::assertInstanceOf(User::class, $loggedInUser);
+        self::assertNotNull($loggedInUser->getLastLoginAt());
+        self::assertNotNull($loggedInUser->getLastLoginIp());
     }
 
     public function testUnknownNicknameShowsGenericInvalidCredentialsMessage(): void
@@ -120,6 +132,18 @@ final class SecurityControllerTest extends WebTestCase
         self::assertResponseRedirects('/admin/login');
         $client->followRedirect();
         self::assertSelectorTextContains('body', 'No tienes acceso al panel de administración.');
+
+        $container = static::getContainer();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(EntityManagerInterface::class);
+        $entityManager->clear();
+
+        /** @var UserRepository $userRepository */
+        $userRepository = $container->get(UserRepository::class);
+        $webUser = $userRepository->findOneByNickname('web-user');
+        self::assertInstanceOf(User::class, $webUser);
+        self::assertNull($webUser->getLastLoginAt());
+        self::assertNull($webUser->getLastLoginIp());
     }
 
     private function createUser(
