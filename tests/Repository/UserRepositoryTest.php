@@ -80,23 +80,6 @@ final class UserRepositoryTest extends KernelTestCase
         self::assertNotContains($client->getNickname(), $nicknames);
     }
 
-    public function testFindBackendUsersQueryBuilderExcludesDevelopersForAdminScope(): void
-    {
-        $repository = $this->getRepository();
-        $developer = $this->createUser('repo-scope-dev', UserRole::Developer);
-        $admin = $this->createUser('repo-scope-admin', UserRole::Admin);
-
-        $results = $repository
-            ->findBackendUsersQueryBuilder(null, 'u.createdAt', 'desc', ['excludeDevelopers' => true])
-            ->getQuery()
-            ->getResult();
-
-        $nicknames = array_map(static fn (User $user): string => $user->getNickname(), $results);
-
-        self::assertNotContains($developer->getNickname(), $nicknames);
-        self::assertContains($admin->getNickname(), $nicknames);
-    }
-
     public function testFindBackendUsersQueryBuilderFiltersBySearchTerm(): void
     {
         $repository = $this->getRepository();

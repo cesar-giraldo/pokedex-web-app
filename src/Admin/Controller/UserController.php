@@ -78,7 +78,6 @@ final class UserController extends AbstractController
             $sort,
             $direction,
             [
-                'excludeDevelopers' => !$isDeveloper,
                 'excludeHidden' => !($isDeveloper && $showHiddenUsers),
             ],
         );
