@@ -39,7 +39,9 @@ final class UserProfileImageStorage
     {
         $userId = $user->getId();
         if (null === $userId) {
-            throw new UserProfileImageUploadException('El usuario debe persistirse antes de subir una imagen de perfil.');
+            throw new UserProfileImageUploadException(
+                'El usuario debe persistirse antes de subir una imagen de perfil.'
+            );
         }
 
         $mimeType = (string) $file->getMimeType();
@@ -61,7 +63,7 @@ final class UserProfileImageStorage
         } catch (FilesystemException $exception) {
             throw new UserProfileImageUploadException(
                 $this->buildUploadFailureMessage($exception),
-                previous: $exception,
+                previous: $exception
             );
         } finally {
             fclose($stream);

@@ -32,6 +32,9 @@ return (new PhpCsFixer\Config())
             'imports_order' => ['class', 'function', 'const'],
         ],
         'phpdoc_to_comment' => false,
+        // Allow multi-line throw expressions when they improve readability.
+        // @Symfony enables single_line_throw by default, which collapses throws into one line.
+        'single_line_throw' => false,
         'concat_space' => ['spacing' => 'one'],
         'array_indentation' => true,
         'method_chaining_indentation' => true,

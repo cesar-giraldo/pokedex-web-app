@@ -65,7 +65,9 @@ class GotenbergClient
 
             $statusCode = $response->getStatusCode();
             if ($statusCode >= 400) {
-                throw new PdfGenerationException(sprintf('Gotenberg returned HTTP %d: %s', $statusCode, $response->getContent(false)));
+                throw new PdfGenerationException(
+                    sprintf('Gotenberg returned HTTP %d: %s', $statusCode, $response->getContent(false))
+                );
             }
 
             return $response->getContent();

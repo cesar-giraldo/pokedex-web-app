@@ -39,7 +39,9 @@ final class UserChecker implements UserCheckerInterface
         }
 
         if (UserStatus::Active !== $user->getStatus()) {
-            throw new CustomUserMessageAccountStatusException($user->getStatus()->loginDeniedMessage());
+            throw new CustomUserMessageAccountStatusException(
+                $user->getStatus()->loginDeniedMessage()
+            );
         }
     }
 }
