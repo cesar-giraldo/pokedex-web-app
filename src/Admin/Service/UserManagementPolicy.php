@@ -80,6 +80,15 @@ final class UserManagementPolicy
         return $this->hasOnlyRoles($target, [UserRole::Operator, UserRole::User]);
     }
 
+    public function canView(User $viewer, User $target): bool
+    {
+        if (true !== $target->isHidden()) {
+            return true;
+        }
+
+        return $this->isDeveloper($viewer);
+    }
+
     /**
      * @param list<UserRole> $allowedRoles
      */

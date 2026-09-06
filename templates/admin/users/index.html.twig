@@ -179,6 +179,11 @@
 										</td>
 										<td class="px-5 py-4 sm:px-6">
 											<div class="flex items-center gap-1">
+												<a href="{{ path('app_backend_user_show', { id: user.id }) }}"
+													class="inline-flex items-center justify-center rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-brand-500 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-brand-400"
+													title="Ver {{ user.nickname }}">
+													{{ ux_icon('heroicons:eye', { class: 'w-5 h-5' }) }}
+												</a>
 												{% if user.id in editable_user_ids %}
 													<a href="{{ path('app_backend_user_edit', { id: user.id }) }}"
 														class="inline-flex items-center justify-center rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-brand-500 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-brand-400"

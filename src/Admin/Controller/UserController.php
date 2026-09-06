@@ -184,6 +184,27 @@ final class UserController extends AbstractController
         return $this->render('@admin/users/new.html.twig', $this->buildFormViewData($user, $form, $formOptions));
     }
 
+    #[Route('/users/{id}', name: 'app_backend_user_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function show(
+        User $user,
+        UserManagementPolicy $userManagementPolicy,
+    ): Response {
+        /** @var User $viewer */
+        $viewer = $this->getUser();
+
+        if (!$userManagementPolicy->canView($viewer, $user)) {
+            throw $this->createNotFoundException();
+        }
+
+        return $this->render('@admin/users/show.html.twig', [
+            'user' => $user,
+            'can_edit' => $userManagementPolicy->canEdit($viewer, $user),
+            'active_menu' => 'user_profile',
+            'active_page' => 'user_list',
+        ]);
+    }
+
     #[Route('/users/{id}/edit', name: 'app_backend_user_edit', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function edit(
