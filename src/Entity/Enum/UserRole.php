@@ -41,6 +41,16 @@ enum UserRole: string
         };
     }
 
+    public function listBadgeClasses(): string
+    {
+        return match ($this) {
+            self::Developer => 'bg-gray-800 text-white dark:bg-white/15 dark:text-white',
+            self::Admin => 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400',
+            self::Operator => 'bg-blue-light-50 text-blue-light-700 dark:bg-blue-light-500/15 dark:text-blue-light-400',
+            self::User => 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80',
+        };
+    }
+
     public function hierarchyRank(): int
     {
         return match ($this) {
