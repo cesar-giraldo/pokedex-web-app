@@ -70,6 +70,18 @@
 					<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.formattedPhone ?? '—' }}</p>
 				</div>
 				<div>
+					<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Zona horaria</p>
+					<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.timezone|timezone_label }}</p>
+				</div>
+				<div>
+					<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Locale</p>
+					<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.localeLabel }}</p>
+				</div>
+				<div>
+					<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Formato de hora</p>
+					<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.timeFormatLabel }}</p>
+				</div>
+				<div>
 					<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Roles</p>
 					<p class="text-sm font-medium text-gray-800 dark:text-white/90">
 						{{ user.applicationRoles|map(role => role.label)|join(', ') }}
@@ -81,7 +93,7 @@
 				</div>
 				<div>
 					<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Fecha de creación</p>
-					<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.createdAt|date('d/m/Y H:i') }}</p>
+					<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.createdAt|app_datetime }}</p>
 				</div>
 			</div>
 		</div>
@@ -96,7 +108,7 @@
 					<div>
 						<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Último login</p>
 						<p class="text-sm font-medium text-gray-800 dark:text-white/90">
-							{{ user.lastLoginAt ? user.lastLoginAt|date('d/m/Y H:i') : '—' }}
+							{{ user.lastLoginAt|app_datetime }}
 						</p>
 					</div>
 					<div>
@@ -106,7 +118,7 @@
 					<div>
 						<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Último intento fallido</p>
 						<p class="text-sm font-medium text-gray-800 dark:text-white/90">
-							{{ user.lastFailedLoginAt ? user.lastFailedLoginAt|date('d/m/Y H:i') : '—' }}
+							{{ user.lastFailedLoginAt|app_datetime }}
 						</p>
 					</div>
 					<div>
@@ -117,7 +129,7 @@
 						<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Bloqueo de inicio de sesión</p>
 						<p class="text-sm font-medium text-gray-800 dark:text-white/90">
 							{% if user.loginTemporarilyBlocked and user.noLoginUntil %}
-								{{ user.noLoginUntil|date('d/m/Y H:i') }}
+								{{ user.noLoginUntil|app_datetime }}
 							{% else %}
 								No
 							{% endif %}
@@ -125,11 +137,11 @@
 					</div>
 					<div>
 						<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Última edición de datos</p>
-						<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.lastUpdatedAt|date('d/m/Y H:i') }}</p>
+						<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.lastUpdatedAt|app_datetime }}</p>
 					</div>
 					<div>
 						<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Última actualización de contraseña</p>
-						<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.passwordUpdatedAt|date('d/m/Y H:i') }}</p>
+						<p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ user.passwordUpdatedAt|app_datetime }}</p>
 					</div>
 					<div>
 						<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">Usuario oculto</p>

@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Admin\Service\Excel;
 
+use App\Admin\Service\DateTimeFormatter;
 use App\Admin\Service\Excel\PokemonListExcelExporter;
 use App\Admin\Service\Excel\PokemonSpriteImageLoader;
+use App\Admin\Service\GeneralSettingsProvider;
+use App\Entity\GeneralSettings;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
+use App\Repository\GeneralSettingsRepository;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpClient\MockHttpClient;
 
 use function dirname;
@@ -22,7 +27,7 @@ final class PokemonListExcelExporterTest extends TestCase
     {
         $pokemon = $this->createPokemon();
 
-        $exporter = new PokemonListExcelExporter($this->createSpriteImageLoader());
+        $exporter = new PokemonListExcelExporter($this->createSpriteImageLoader(), $this->createDateTimeFormatter());
         $content = $exporter->export(
             [$pokemon],
             searchTerm: 'pika',
@@ -64,7 +69,7 @@ final class PokemonListExcelExporterTest extends TestCase
 
     public function testExportHandlesEmptyPokemonList(): void
     {
-        $exporter = new PokemonListExcelExporter($this->createSpriteImageLoader());
+        $exporter = new PokemonListExcelExporter($this->createSpriteImageLoader(), $this->createDateTimeFormatter());
         $content = $exporter->export([]);
 
         self::assertNotSame('', $content);
@@ -82,6 +87,17 @@ final class PokemonListExcelExporterTest extends TestCase
             new MockHttpClient(),
             dirname(__DIR__, 4),
         );
+    }
+
+    private function createDateTimeFormatter(): DateTimeFormatter
+    {
+        $repository = $this->createMock(GeneralSettingsRepository::class);
+        $repository->method('findSingleton')->willReturn(GeneralSettings::createWithDefaults());
+
+        $security = $this->createMock(Security::class);
+        $security->method('getUser')->willReturn(null);
+
+        return new DateTimeFormatter(new GeneralSettingsProvider($repository), $security);
     }
 
     private function loadSheetFromContent(string $content): \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet

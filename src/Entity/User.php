@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\Enum\SupportedLocale;
+use App\Entity\Enum\TimeFormat;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Repository\UserRepository;
@@ -88,6 +90,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(enumType: UserStatus::class)]
     private UserStatus $status = UserStatus::UnconfirmedAccount;
+
+    #[ORM\Column(length: 64, options: ['default' => GeneralSettings::DEFAULT_TIMEZONE])]
+    #[Assert\NotBlank]
+    #[Assert\Timezone]
+    private string $timezone = GeneralSettings::DEFAULT_TIMEZONE;
+
+    #[ORM\Column(enumType: SupportedLocale::class, length: 16, options: ['default' => 'es-CO'])]
+    private SupportedLocale $locale = GeneralSettings::DEFAULT_LOCALE;
+
+    #[ORM\Column(enumType: TimeFormat::class, length: 8, options: ['default' => '12h'])]
+    private TimeFormat $timeFormat = GeneralSettings::DEFAULT_TIME_FORMAT;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $createdAt;
@@ -267,6 +280,52 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->status = $status;
 
         return $this;
+    }
+
+    public function getTimezone(): string
+    {
+        return $this->timezone;
+    }
+
+    public function setTimezone(?string $timezone): static
+    {
+        $this->timezone = $timezone ?? '';
+
+        return $this;
+    }
+
+    public function getLocale(): SupportedLocale
+    {
+        return $this->locale;
+    }
+
+    public function setLocale(SupportedLocale $locale): static
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
+
+    public function getLocaleLabel(): string
+    {
+        return $this->locale->label();
+    }
+
+    public function getTimeFormat(): TimeFormat
+    {
+        return $this->timeFormat;
+    }
+
+    public function setTimeFormat(TimeFormat $timeFormat): static
+    {
+        $this->timeFormat = $timeFormat;
+
+        return $this;
+    }
+
+    public function getTimeFormatLabel(): string
+    {
+        return $this->timeFormat->label();
     }
 
     public function getCreatedAt(): DateTimeInterface
@@ -480,6 +539,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         if (null === $this->cellphone || '' === trim($this->cellphone)) {
+            return false;
+        }
+
+        if ('' === trim($this->timezone)) {
             return false;
         }
 

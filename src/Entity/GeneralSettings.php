@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Entity\Enum\SupportedLanguage;
+use App\Entity\Enum\SupportedLocale;
+use App\Entity\Enum\TimeFormat;
 use App\Repository\GeneralSettingsRepository;
 use DateTime;
 use DateTimeInterface;
@@ -31,6 +33,12 @@ class GeneralSettings
 
     public const string DEFAULT_WEBSITE_DEFAULT_LANGUAGE = SupportedLanguage::Spanish->value;
 
+    public const string DEFAULT_TIMEZONE = 'America/Bogota';
+
+    public const SupportedLocale DEFAULT_LOCALE = SupportedLocale::SpanishColombia;
+
+    public const TimeFormat DEFAULT_TIME_FORMAT = TimeFormat::Hour12;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -47,6 +55,15 @@ class GeneralSettings
 
     #[ORM\Column(length: 5)]
     private string $websiteDefaultLanguage = self::DEFAULT_WEBSITE_DEFAULT_LANGUAGE;
+
+    #[ORM\Column(length: 64, options: ['default' => self::DEFAULT_TIMEZONE])]
+    private string $defaultTimezone = self::DEFAULT_TIMEZONE;
+
+    #[ORM\Column(enumType: SupportedLocale::class, length: 16, options: ['default' => 'es-CO'])]
+    private SupportedLocale $defaultLocale = self::DEFAULT_LOCALE;
+
+    #[ORM\Column(enumType: TimeFormat::class, length: 8, options: ['default' => '12h'])]
+    private TimeFormat $defaultTimeFormat = self::DEFAULT_TIME_FORMAT;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $lastUpdatedAt;
@@ -148,6 +165,52 @@ class GeneralSettings
     public function isWebsiteDefaultLanguageEnabled(): bool
     {
         return in_array($this->websiteDefaultLanguage, $this->enabledLanguages, true);
+    }
+
+    public function getDefaultTimezone(): string
+    {
+        return $this->defaultTimezone;
+    }
+
+    public function setDefaultTimezone(?string $defaultTimezone): static
+    {
+        $this->defaultTimezone = $defaultTimezone ?? '';
+
+        return $this;
+    }
+
+    public function getDefaultLocale(): SupportedLocale
+    {
+        return $this->defaultLocale;
+    }
+
+    public function setDefaultLocale(SupportedLocale $defaultLocale): static
+    {
+        $this->defaultLocale = $defaultLocale;
+
+        return $this;
+    }
+
+    public function getDefaultLocaleLabel(): string
+    {
+        return $this->defaultLocale->label();
+    }
+
+    public function getDefaultTimeFormat(): TimeFormat
+    {
+        return $this->defaultTimeFormat;
+    }
+
+    public function setDefaultTimeFormat(TimeFormat $defaultTimeFormat): static
+    {
+        $this->defaultTimeFormat = $defaultTimeFormat;
+
+        return $this;
+    }
+
+    public function getDefaultTimeFormatLabel(): string
+    {
+        return $this->defaultTimeFormat->label();
     }
 
     #[ORM\PrePersist]

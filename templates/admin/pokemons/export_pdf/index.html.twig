@@ -197,7 +197,7 @@
             <p>Exportación generada desde el panel administrativo</p>
         </div>
         <div>
-            <p>{{ generated_at|date('d/m/Y H:i') }}</p>
+            <p>{{ generated_at|app_datetime }}</p>
         </div>
     </header>
     {% endif %}

@@ -7,7 +7,7 @@
 FROM dunglas/frankenphp:1-php8.5.8 AS base
 
 # Argumentos para la zona horaria (puedes cambiarla)
-ARG TZ=America/Bogota
+ARG TZ=UTC
 ENV TZ=${TZ}
 
 # 1. Dependencias del sistema necesarias para Symfony, PostgreSQL y MySQL

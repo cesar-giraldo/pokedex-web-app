@@ -5,9 +5,13 @@ export default class extends Controller {
     static values = {
         editGeneral: Boolean,
         editLanguage: Boolean,
+        editDatetime: Boolean,
         showHiddenUsers: Boolean,
         enabledLanguages: Array,
         defaultLanguage: String,
+        defaultTimezone: String,
+        defaultLocale: String,
+        defaultTimeFormat: String,
     };
 
     static targets = [
@@ -17,11 +21,15 @@ export default class extends Controller {
         'languageView',
         'languageEdit',
         'languageEditButton',
+        'dateTimeView',
+        'dateTimeEdit',
+        'dateTimeEditButton',
     ];
 
     connect() {
         this.syncGeneralSection();
         this.syncLanguageSection();
+        this.syncDateTimeSection();
     }
 
     startGeneralEdit(event) {
@@ -46,12 +54,27 @@ export default class extends Controller {
         this.editLanguageValue = false;
     }
 
+    startDateTimeEdit(event) {
+        event.preventDefault();
+        this.editDatetimeValue = true;
+    }
+
+    cancelDateTimeEdit(event) {
+        event.preventDefault();
+        this.resetDateTimeForm();
+        this.editDatetimeValue = false;
+    }
+
     editGeneralValueChanged() {
         this.syncGeneralSection();
     }
 
     editLanguageValueChanged() {
         this.syncLanguageSection();
+    }
+
+    editDatetimeValueChanged() {
+        this.syncDateTimeSection();
     }
 
     syncGeneralSection() {
@@ -69,6 +92,15 @@ export default class extends Controller {
             this.hasLanguageViewTarget ? this.languageViewTarget : null,
             this.hasLanguageEditTarget ? this.languageEditTarget : null,
             this.hasLanguageEditButtonTarget ? this.languageEditButtonTarget : null,
+        );
+    }
+
+    syncDateTimeSection() {
+        this.toggleSection(
+            this.editDatetimeValue,
+            this.hasDateTimeViewTarget ? this.dateTimeViewTarget : null,
+            this.hasDateTimeEditTarget ? this.dateTimeEditTarget : null,
+            this.hasDateTimeEditButtonTarget ? this.dateTimeEditButtonTarget : null,
         );
     }
 
@@ -125,6 +157,26 @@ export default class extends Controller {
 
         const multiSelect = form.querySelector('[data-controller~="component-multi-select"]');
         this.resetMultiSelect(multiSelect, this.enabledLanguagesValue);
+    }
+
+    resetDateTimeForm() {
+        if (!this.hasDateTimeEditTarget) {
+            return;
+        }
+
+        this.clearFormErrors(this.dateTimeEditTarget);
+
+        this.resetSingleSelectById('general-settings-default-timezone', this.defaultTimezoneValue);
+        this.resetSingleSelectById('general-settings-default-locale', this.defaultLocaleValue);
+        this.resetSingleSelectById('general-settings-default-time-format', this.defaultTimeFormatValue);
+    }
+
+    resetSingleSelectById(id, value) {
+        const select = this.element.querySelector(`#${id}`);
+        if (select instanceof HTMLSelectElement) {
+            select.value = value;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
     }
 
     resetMultiSelect(element, values) {

@@ -66,6 +66,9 @@ final class CreateInitialDataCommandTest extends KernelTestCase
         self::assertSame(self::INITIAL_EMAIL, $user->getEmail());
         self::assertSame(self::INITIAL_EMAIL, $user->getNickname());
         self::assertSame([UserRole::Developer], $user->getApplicationRoles());
+        self::assertSame(GeneralSettings::DEFAULT_TIMEZONE, $user->getTimezone());
+        self::assertSame(GeneralSettings::DEFAULT_LOCALE, $user->getLocale());
+        self::assertSame(GeneralSettings::DEFAULT_TIME_FORMAT, $user->getTimeFormat());
     }
 
     public function testCreatesGeneralSettingsWhenTheyDoNotExist(): void
@@ -97,6 +100,9 @@ final class CreateInitialDataCommandTest extends KernelTestCase
         self::assertTrue($settings->isShowHiddenUsers());
         self::assertSame(['es'], $settings->getEnabledLanguages());
         self::assertSame('es', $settings->getWebsiteDefaultLanguage());
+        self::assertSame(GeneralSettings::DEFAULT_TIMEZONE, $settings->getDefaultTimezone());
+        self::assertSame(GeneralSettings::DEFAULT_LOCALE, $settings->getDefaultLocale());
+        self::assertSame(GeneralSettings::DEFAULT_TIME_FORMAT, $settings->getDefaultTimeFormat());
     }
 
     public function testDoesNotDuplicateGeneralSettings(): void

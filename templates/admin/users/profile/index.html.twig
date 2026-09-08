@@ -105,6 +105,33 @@
 								{{ user.formattedPhone ?? '—' }}
 							</p>
 						</div>
+
+						<div>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+								Zona horaria
+							</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.timezone|timezone_label }}
+							</p>
+						</div>
+
+						<div>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+								Locale
+							</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.localeLabel }}
+							</p>
+						</div>
+
+						<div>
+							<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+								Formato de hora
+							</p>
+							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+								{{ user.timeFormatLabel }}
+							</p>
+						</div>
 					</div>
 				</div>
 
@@ -141,7 +168,7 @@
 								Última actualización
 							</p>
 							<p class="text-sm font-medium text-gray-800 dark:text-white/90">
-								{{ user.passwordUpdatedAt|date('d/m/Y H:i') }}
+								{{ user.passwordUpdatedAt|app_datetime }}
 							</p>
 						</div>
 					</div>

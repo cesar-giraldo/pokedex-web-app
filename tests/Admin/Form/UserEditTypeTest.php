@@ -56,6 +56,9 @@ final class UserEditTypeTest extends KernelTestCase
             'cellphone' => '3099010001',
             'status' => 'active',
             'applicationRoles' => ['operator'],
+            'timezone' => 'America/Bogota',
+            'locale' => 'es-CO',
+            'timeFormat' => '12h',
             'plainPassword' => '',
             'confirmPassword' => '',
         ]);
@@ -99,6 +102,9 @@ final class UserEditTypeTest extends KernelTestCase
             'cellphone' => '3099010002',
             'status' => 'active',
             'applicationRoles' => ['operator'],
+            'timezone' => 'America/Bogota',
+            'locale' => 'es-CO',
+            'timeFormat' => '12h',
             'plainPassword' => '',
             'confirmPassword' => '',
         ]);

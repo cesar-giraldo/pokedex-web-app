@@ -6,6 +6,7 @@ namespace App\Admin\Controller;
 
 use App\Admin\Controller\Concerns\AdminPaginatorTrait;
 use App\Admin\Controller\Concerns\FlashesFormValidationErrorsTrait;
+use App\Admin\Data\IanaTimezones;
 use App\Admin\Data\WorldCountryCodes;
 use App\Admin\Form\SearchUserType;
 use App\Admin\Form\UserCreateType;
@@ -18,6 +19,8 @@ use App\Admin\Service\ImpersonationPolicy;
 use App\Admin\Service\Storage\UserProfileImageFormHandler;
 use App\Admin\Service\Storage\UserProfileImageUploadException;
 use App\Admin\Service\UserManagementPolicy;
+use App\Entity\Enum\SupportedLocale;
+use App\Entity\Enum\TimeFormat;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
@@ -125,11 +128,16 @@ final class UserController extends AbstractController
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
         UserManagementPolicy $userManagementPolicy,
+        GeneralSettingsProvider $generalSettingsProvider,
     ): Response {
         /** @var User $editor */
         $editor = $this->getUser();
 
-        $user = new User();
+        $settings = $generalSettingsProvider->get();
+        $user = new User()
+            ->setTimezone($settings->getDefaultTimezone())
+            ->setLocale($settings->getDefaultLocale())
+            ->setTimeFormat($settings->getDefaultTimeFormat());
         $formOptions = $this->buildFormOptions($editor, $userManagementPolicy, true);
 
         $form = $this->createForm(UserCreateType::class, $user, $formOptions);
@@ -470,6 +478,9 @@ final class UserController extends AbstractController
             'role_options' => $roleOptions,
             'status_options' => $statusOptions,
             'country_options' => $countryOptions,
+            'timezone_options' => IanaTimezones::options(),
+            'locale_options' => SupportedLocale::options(),
+            'time_format_options' => TimeFormat::options(),
             'show_is_hidden' => $formOptions['show_is_hidden'],
             'active_menu' => 'user_profile',
             'active_page' => 'user_form',
@@ -496,6 +507,9 @@ final class UserController extends AbstractController
             'info_form' => $infoForm,
             'password_form' => $passwordForm,
             'country_options' => $countryOptions,
+            'timezone_options' => IanaTimezones::options(),
+            'locale_options' => SupportedLocale::options(),
+            'time_format_options' => TimeFormat::options(),
             'open_info_modal' => $openInfoModal,
             'open_password_modal' => $openPasswordModal,
             'active_menu' => 'auth',

@@ -50,6 +50,8 @@ final class UserLastUpdatedAtPolicyTest extends TestCase
         self::assertTrue($this->policy->shouldTouch(['email', 'cellphone']));
         self::assertTrue($this->policy->shouldTouch(['profileImagePath']));
         self::assertTrue($this->policy->shouldTouch(['status', 'roles']));
+        self::assertTrue($this->policy->shouldTouch(['timezone']));
+        self::assertTrue($this->policy->shouldTouch(['locale', 'timeFormat']));
     }
 
     public function testTouchesWhenProfileDataChangesAlongsidePassword(): void

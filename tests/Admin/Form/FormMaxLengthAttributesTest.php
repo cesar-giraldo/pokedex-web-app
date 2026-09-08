@@ -144,6 +144,9 @@ final class FormMaxLengthAttributesTest extends KernelTestCase
             'cellphone' => '3099010003',
             'status' => 'active',
             'applicationRoles' => ['operator'],
+            'timezone' => 'America/Bogota',
+            'locale' => 'es-CO',
+            'timeFormat' => '12h',
             'plainPassword' => 'Secret1',
             'confirmPassword' => 'Secret1',
         ]);

@@ -6,6 +6,7 @@ namespace App\Admin\Form;
 
 use App\Admin\Data\WorldCountryCodes;
 use App\Admin\Form\Concerns\UserProfileImageFormFields;
+use App\Admin\Form\Concerns\UserRegionalFormFields;
 use App\Admin\Form\Type\CountryCodeChoiceType;
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
@@ -20,6 +21,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 final class UserProfileInfoType extends AbstractType
 {
     use UserProfileImageFormFields;
+    use UserRegionalFormFields;
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -52,6 +54,8 @@ final class UserProfileInfoType extends AbstractType
                 'attr' => ['maxlength' => 12],
                 'constraints' => UserFieldConstraints::cellphone(),
             ]);
+
+        $this->addRegionalFields($builder);
 
         $this->addProfileImageFields($builder, true);
     }

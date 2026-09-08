@@ -112,6 +112,45 @@
 							help="Solo dígitos, sin código de país."
 						/>
 					</div>
+
+					<div class="col-span-2 lg:col-span-1">
+						<twig:component_single_select
+							label="Zona horaria"
+							name="{{ info_form.timezone.vars.full_name }}"
+							id="profile-timezone"
+							placeholder="Seleccione una zona horaria"
+							:options="timezone_options"
+							selected="{{ info_form.timezone.vars.data ?? '' }}"
+							:required="true"
+							error="{{ field_error(info_form.timezone) }}"
+						/>
+					</div>
+
+					<div class="col-span-2 lg:col-span-1">
+						<twig:component_single_select
+							label="Locale"
+							name="{{ info_form.locale.vars.full_name }}"
+							id="profile-locale"
+							placeholder="Seleccione un locale"
+							:options="locale_options"
+							selected="{{ info_form.locale.vars.data ? info_form.locale.vars.data.value : '' }}"
+							:required="true"
+							error="{{ field_error(info_form.locale) }}"
+						/>
+					</div>
+
+					<div class="col-span-2 lg:col-span-1">
+						<twig:component_single_select
+							label="Formato de hora"
+							name="{{ info_form.timeFormat.vars.full_name }}"
+							id="profile-time-format"
+							placeholder="Seleccione un formato"
+							:options="time_format_options"
+							selected="{{ info_form.timeFormat.vars.data ? info_form.timeFormat.vars.data.value : '' }}"
+							:required="true"
+							error="{{ field_error(info_form.timeFormat) }}"
+						/>
+					</div>
 				</div>
 			</div>
 

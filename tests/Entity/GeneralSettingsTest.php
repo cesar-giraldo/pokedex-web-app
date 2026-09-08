@@ -20,6 +20,9 @@ final class GeneralSettingsTest extends TestCase
         self::assertTrue($settings->isShowHiddenUsers());
         self::assertSame([SupportedLanguage::Spanish->value], $settings->getEnabledLanguages());
         self::assertSame(SupportedLanguage::Spanish->value, $settings->getWebsiteDefaultLanguage());
+        self::assertSame(GeneralSettings::DEFAULT_TIMEZONE, $settings->getDefaultTimezone());
+        self::assertSame(GeneralSettings::DEFAULT_LOCALE, $settings->getDefaultLocale());
+        self::assertSame(GeneralSettings::DEFAULT_TIME_FORMAT, $settings->getDefaultTimeFormat());
         self::assertInstanceOf(DateTime::class, $settings->getLastUpdatedAt());
     }
 

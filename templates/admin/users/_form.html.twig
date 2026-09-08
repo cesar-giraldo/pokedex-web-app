@@ -74,6 +74,39 @@
 		/>
 
 		<twig:component_single_select
+			label="Zona horaria"
+			name="{{ form.timezone.vars.full_name }}"
+			id="user-timezone"
+			placeholder="Seleccione una zona horaria"
+			:options="timezone_options"
+			selected="{{ form.timezone.vars.data ?? '' }}"
+			:required="true"
+			error="{{ field_error(form.timezone) }}"
+		/>
+
+		<twig:component_single_select
+			label="Locale"
+			name="{{ form.locale.vars.full_name }}"
+			id="user-locale"
+			placeholder="Seleccione un locale"
+			:options="locale_options"
+			selected="{{ form.locale.vars.data ? form.locale.vars.data.value : '' }}"
+			:required="true"
+			error="{{ field_error(form.locale) }}"
+		/>
+
+		<twig:component_single_select
+			label="Formato de hora"
+			name="{{ form.timeFormat.vars.full_name }}"
+			id="user-time-format"
+			placeholder="Seleccione un formato"
+			:options="time_format_options"
+			selected="{{ form.timeFormat.vars.data ? form.timeFormat.vars.data.value : '' }}"
+			:required="true"
+			error="{{ field_error(form.timeFormat) }}"
+		/>
+
+		<twig:component_single_select
 			label="Estado"
 			name="{{ form.status.vars.full_name }}"
 			id="user-status"

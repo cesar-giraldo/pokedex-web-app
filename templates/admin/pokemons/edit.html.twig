@@ -47,7 +47,7 @@
 					label="Fecha de creación"
 					name="pokemon_created_at_display"
 					id="pokemon-created-at"
-					value="{{ pokemon.createdAt ? pokemon.createdAt|date('d-m-y h:i a') : '' }}"
+					value="{{ pokemon.createdAt ? pokemon.createdAt|app_datetime('') : '' }}"
 					:disabled="true"
 				/>
 
@@ -179,7 +179,7 @@
 			<p class="text-sm text-gray-500 dark:text-gray-400">
 				Última actualización:
 				<span class="font-medium text-gray-700 dark:text-gray-300">
-					{{ pokemon.lastUpdatedAt ? pokemon.lastUpdatedAt|date('d-m-y h:i a') : '—' }}
+					{{ pokemon.lastUpdatedAt ? pokemon.lastUpdatedAt|app_datetime : '—' }}
 				</span>
 			</p>
 
