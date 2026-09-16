@@ -76,14 +76,12 @@
 								>
 									Cancelar
 								</button>
-								<button
-									type="submit"
+								<twig:component_submit_button
+									label="Guardar Cambios"
 									id="{{ general_form.save.vars.id }}"
 									name="{{ general_form.save.vars.full_name }}"
-									class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
-								>
-									Guardar Cambios
-								</button>
+									layout="responsive"
+								/>
 							</div>
 
 							{{ form_widget(general_form._token) }}
@@ -181,14 +179,12 @@
 								>
 									Cancelar
 								</button>
-								<button
-									type="submit"
+								<twig:component_submit_button
+									label="Guardar Cambios"
 									id="{{ language_form.save.vars.id }}"
 									name="{{ language_form.save.vars.full_name }}"
-									class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
-								>
-									Guardar Cambios
-								</button>
+									layout="responsive"
+								/>
 							</div>
 
 							{{ form_widget(language_form._token) }}
@@ -306,14 +302,12 @@
 								>
 									Cancelar
 								</button>
-								<button
-									type="submit"
+								<twig:component_submit_button
+									label="Guardar Cambios"
 									id="{{ datetime_form.save.vars.id }}"
 									name="{{ datetime_form.save.vars.full_name }}"
-									class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
-								>
-									Guardar Cambios
-								</button>
+									layout="responsive"
+								/>
 							</div>
 
 							{{ form_widget(datetime_form._token) }}

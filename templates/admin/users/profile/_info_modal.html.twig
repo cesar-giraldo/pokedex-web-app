@@ -162,12 +162,10 @@
 				>
 					Cerrar
 				</button>
-				<button
-					type="submit"
-					class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
-				>
-					Guardar cambios
-				</button>
+				<twig:component_submit_button
+					label="Guardar cambios"
+					layout="responsive"
+				/>
 			</div>
 
 			{{ form_widget(info_form._token) }}

@@ -1,0 +1,14 @@
+<button
+	type="submit"
+	class="{{ buttonClasses }}"
+	data-controller="component-submit-button"
+	data-component-submit-button-label-value="{{ label }}"
+	data-component-submit-button-processing-label-value="{{ processingLabel }}"
+	data-component-submit-button-disabled-value="{{ disabled ? 'true' : 'false' }}"
+	{% if id is not empty %}id="{{ id }}"{% endif %}
+	{% if name is not empty %}name="{{ name }}"{% endif %}
+	{% if disabled %}disabled{% endif %}
+	{{ attributes }}
+>
+	{{ label }}
+</button>
