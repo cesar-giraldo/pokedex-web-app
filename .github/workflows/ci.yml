@@ -11,6 +11,13 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Kill switch: set to 'false' to disable automatic Cursor PR reviews (saves usage).
+  # Also set the first condition of job `cursor-pr-review.if` to false (job `if` cannot read env).
+  CURSOR_PR_REVIEW_ENABLED: 'true'
+  # Model for CI reviews — prefer Cursor Models pool to conserve Pro usage.
+  CURSOR_REVIEW_MODEL: 'composer-2.5'
+
 jobs:
   static-quality:
     name: Static quality (PHPStan + PHP-CS-Fixer)
@@ -87,3 +94,163 @@ jobs:
 
       - name: Run unit tests
         run: composer test:unit
+
+  cursor-pr-review:
+    name: Cursor PR review
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Does not block merge: agent/API failures must not fail the required CI path.
+    continue-on-error: true
+    permissions:
+      contents: read
+      pull-requests: write
+    # Kill switch: change the leading `true` to `false` (and env.CURSOR_PR_REVIEW_ENABLED) to disable.
+    # Runs only on PR opened, non-draft, non-fork.
+    if: >-
+      true
+      && github.event_name == 'pull_request'
+      && github.event.action == 'opened'
+      && github.event.pull_request.draft == false
+      && github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - name: Check kill switch and API key
+        id: gate
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          if [ "${{ env.CURSOR_PR_REVIEW_ENABLED }}" != "true" ]; then
+            echo "::notice::Cursor PR review disabled (CURSOR_PR_REVIEW_ENABLED!=true)"
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$CURSOR_API_KEY" ]; then
+            echo "::warning::CURSOR_API_KEY secret is missing; skipping review"
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        if: steps.gate.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install Cursor CLI
+        if: steps.gate.outputs.enabled == 'true'
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+
+      - name: Collect PR diff
+        if: steps.gate.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh pr diff "${{ github.event.pull_request.number }}" > /tmp/pr.diff
+          bytes=$(wc -c < /tmp/pr.diff | tr -d ' ')
+          echo "PR diff size: ${bytes} bytes"
+          # Keep agent context bounded to control cost.
+          if [ "$bytes" -gt 400000 ]; then
+            head -c 400000 /tmp/pr.diff > /tmp/pr.diff.truncated
+            printf '\n\n…[diff truncated for CI review cost control]\n' >> /tmp/pr.diff.truncated
+            mv /tmp/pr.diff.truncated /tmp/pr.diff
+            echo "::notice::PR diff truncated to 400KB for review"
+          fi
+
+      - name: Restrict Cursor CLI permissions
+        if: steps.gate.outputs.enabled == 'true'
+        run: |
+          mkdir -p .cursor
+          python3 -c 'from pathlib import Path; Path(".cursor/cli.json").write_text("""{
+            "permissions": {
+              "allow": [
+                "Read(**/*)",
+                "Write(cursor-review.md)",
+                "Shell(git)",
+                "Shell(rg)",
+                "Shell(grep)",
+                "Shell(find)",
+                "Shell(ls)",
+                "Shell(cat)",
+                "Shell(head)",
+                "Shell(wc)"
+              ],
+              "deny": [
+                "Shell(gh)",
+                "Shell(rm)",
+                "Shell(curl)",
+                "Shell(wget)",
+                "Write(.env*)",
+                "Write(**/.env*)",
+                "Write(src/**)",
+                "Write(templates/**)",
+                "Write(tests/**)",
+                "Write(migrations/**)",
+                "Write(.github/**)",
+                "Write(composer.json)",
+                "Write(composer.lock)"
+              ]
+            }
+          }
+          """, encoding="utf-8")'
+
+      - name: Run Cursor agent review
+        id: review
+        if: steps.gate.outputs.enabled == 'true'
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          set -euo pipefail
+          agent -p --trust --force --output-format text --model "${{ env.CURSOR_REVIEW_MODEL }}" \
+            "You are reviewing a GitHub pull request for this Symfony 8 / PHP 8.5 project.
+
+          Focus only on real issues: bugs, security problems, data-loss risks, broken auth/authorization,
+          incorrect Doctrine persistence, missing validation, and regressions. Ignore pure style nits
+          already covered by PHPStan/PHP-CS-Fixer.
+
+          Project conventions to enforce when relevant:
+          - Thin controllers; business logic in services/repositories/actions
+          - Context isolation: src/Admin, src/Web, src/Api
+          - Tests must use the correct PHPUnit suite placement and #[Group] (unit/integration/functional)
+          - Dual DB engines: MySQL + PostgreSQL compatible queries; migrations in both trees when schema changes
+          - No secrets or credentials in the diff
+
+          The PR diff is in /tmp/pr.diff. Read it and only the files needed for context.
+
+          Write your review ONLY to cursor-review.md as GitHub-flavored markdown with:
+          1. A one-line summary
+          2. Findings as a bullet list (Severity — file:line — issue). If none, say so clearly.
+          3. Optional short follow-ups (max 3)
+
+          Hard rules:
+          - Do NOT modify source files
+          - Do NOT run git commit/push
+          - Do NOT use gh or post comments yourself
+          - Do NOT approve or request changes
+          - Keep the review concise (aim under 80 lines)"
+
+          if [ -s cursor-review.md ]; then
+            echo "has_review=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::cursor-review.md was not created or is empty"
+            echo "has_review=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post review comment on PR
+        if: steps.gate.outputs.enabled == 'true' && steps.review.outputs.has_review == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          {
+            echo "## Cursor PR review"
+            echo
+            echo "_Automatic review on PR open (CLI). Not Bugbot. Re-runs only if you open a new PR._"
+            echo
+            cat cursor-review.md
+          } > /tmp/review-comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/review-comment.md
