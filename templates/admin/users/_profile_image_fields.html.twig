@@ -9,20 +9,14 @@
 				size_class: 'h-20 w-20',
 			} %}
 
-			<div class="min-w-0 flex-1 space-y-4">
-				<twig:component_dropzone
+			<div class="min-w-0 flex-1 space-y-3">
+				<twig:component_file_input
 					label="Imagen de perfil"
 					name="{{ form.profileImage.vars.full_name }}"
 					id="{{ form.profileImage.vars.id }}"
-					title="Arrastra tu imagen aquí"
-					description="Sube una imagen JPG, PNG o WebP de hasta 6 MB"
-					browseLabel="Seleccionar imagen"
 					accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
-					acceptErrorMessage="Solo se permiten imágenes JPG, PNG o WebP."
-					:maxFileSizeKb="6144"
-					maxFileSizeErrorMessage="La imagen no puede superar 6 MB."
 					error="{{ profileImageError }}"
-					help="Opcional. Tamaño máximo: 6 MB."
+					help="Opcional. JPG, PNG o WebP. Tamaño máximo: 6 MB."
 				/>
 
 				{% if form.removeProfileImage is defined %}

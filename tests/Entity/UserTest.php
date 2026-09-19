@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Entity;
 
+use App\Entity\Enum\SupportedLocale;
+use App\Entity\Enum\TimeFormat;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
+use App\Entity\GeneralSettings;
 use App\Entity\User;
 use DateTime;
 use PHPUnit\Framework\Attributes\Group;
@@ -36,6 +39,7 @@ final class UserTest extends TestCase
         self::assertNotNull($user->getNoLoginUntil());
         self::assertTrue($user->isLoginTemporarilyBlocked());
         self::assertSame(0, $user->getFailedLoginAttempts());
+        self::assertNotNull($user->getLastFailedLoginAt());
 
         $noLoginUntil = $user->getNoLoginUntil();
         $remainingSeconds = $noLoginUntil->getTimestamp() - time();
@@ -77,6 +81,24 @@ final class UserTest extends TestCase
         self::assertSame(0, $user->getFailedLoginAttempts());
         self::assertNull($user->getNoLoginUntil());
         self::assertFalse($user->isLoginTemporarilyBlocked());
+        self::assertNotNull($user->getLastFailedLoginAt());
+    }
+
+    public function testRecordsSuccessfulInteractiveLogin(): void
+    {
+        $user = new User();
+
+        $user->recordSuccessfulInteractiveLogin('127.0.0.1');
+
+        self::assertNotNull($user->getLastLoginAt());
+        self::assertSame('127.0.0.1', $user->getLastLoginIp());
+    }
+
+    public function testNormalizesEmptyLastLoginIpToNull(): void
+    {
+        $user = new User()->setLastLoginIp('   ');
+
+        self::assertNull($user->getLastLoginIp());
     }
 
     public function testStatusMessagesAreDefinedInSpanish(): void
@@ -119,6 +141,27 @@ final class UserTest extends TestCase
             ->setCellphone('3001234567');
 
         self::assertTrue($user->hasCompleteProfileContactInfo());
+    }
+
+    public function testIncompleteProfileWhenTimezoneIsEmpty(): void
+    {
+        $user = new User()
+            ->setEmail('complete@example.com')
+            ->setCountryCode(57)
+            ->setCellphone('3001234567')
+            ->setTimezone('');
+
+        self::assertFalse($user->hasCompleteProfileContactInfo());
+    }
+
+    public function testRegionalPreferencesDefaultToPlatformValues(): void
+    {
+        $user = new User();
+
+        self::assertSame(GeneralSettings::DEFAULT_TIMEZONE, $user->getTimezone());
+        self::assertSame(GeneralSettings::DEFAULT_LOCALE, $user->getLocale());
+        self::assertSame(SupportedLocale::SpanishColombia, $user->getLocale());
+        self::assertSame(TimeFormat::Hour12, $user->getTimeFormat());
     }
 
     public function testFormatsPhoneWithCountryCode(): void

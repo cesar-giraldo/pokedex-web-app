@@ -69,7 +69,7 @@ final class LoginFormTypeTest extends KernelTestCase
         $formFactory = static::getContainer()->get(FormFactoryInterface::class);
         $view = $formFactory->create(LoginFormType::class)->createView();
 
-        self::assertSame(20, $view['_username']->vars['attr']['maxlength']);
+        self::assertSame(40, $view['_username']->vars['attr']['maxlength']);
         self::assertSame(128, $view['_password']->vars['attr']['maxlength']);
     }
 

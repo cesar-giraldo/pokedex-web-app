@@ -51,6 +51,18 @@ final class UserImpersonationTest extends WebTestCase
             'Estás viendo la aplicación como',
             (string) $client->getResponse()->getContent(),
         );
+
+        $container = static::getContainer();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(EntityManagerInterface::class);
+        $entityManager->clear();
+
+        /** @var UserRepository $userRepository */
+        $userRepository = $container->get(UserRepository::class);
+        $reloadedOperator = $userRepository->findOneByNickname(self::FUNCTIONAL_OPERATOR_NICKNAME);
+        self::assertInstanceOf(User::class, $reloadedOperator);
+        self::assertNull($reloadedOperator->getLastLoginAt());
+        self::assertNull($reloadedOperator->getLastLoginIp());
     }
 
     public function testDeveloperCannotImpersonateAnotherDeveloper(): void

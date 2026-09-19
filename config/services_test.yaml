@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
+services:
+    App\Admin\Service\Storage\ObjectStorage:
+        arguments:
+            $privateMediaStorage: '@test.media.storage'

@@ -45,6 +45,9 @@ final class UserFormValidationTest extends KernelTestCase
             'cellphone' => '30012ab567',
             'status' => 'active',
             'applicationRoles' => ['operator'],
+            'timezone' => 'America/Bogota',
+            'locale' => 'es-CO',
+            'timeFormat' => '12h',
             'plainPassword' => 'Secret1',
             'confirmPassword' => 'Secret1',
         ]);
@@ -78,6 +81,9 @@ final class UserFormValidationTest extends KernelTestCase
             'cellphone' => '3001234567',
             'status' => 'active',
             'applicationRoles' => ['operator'],
+            'timezone' => 'America/Bogota',
+            'locale' => 'es-CO',
+            'timeFormat' => '12h',
             'plainPassword' => 'Secret1',
             'confirmPassword' => 'Secret1',
         ]);
@@ -111,11 +117,50 @@ final class UserFormValidationTest extends KernelTestCase
             'cellphone' => '3001234568',
             'status' => 'active',
             'applicationRoles' => ['operator'],
+            'timezone' => 'America/Bogota',
+            'locale' => 'es-CO',
+            'timeFormat' => '12h',
             'plainPassword' => 'Secret1',
             'confirmPassword' => 'Secret1',
         ]);
 
         self::assertTrue($form->get('email')->isValid(), (string) $form->get('email')->getErrors(true, false));
+    }
+
+    public function testUserCreateRejectsEmptyTimezone(): void
+    {
+        self::bootKernel();
+
+        /** @var FormFactoryInterface $formFactory */
+        $formFactory = static::getContainer()->get(FormFactoryInterface::class);
+        $developer = $this->ensureFunctionalDeveloperUser();
+        $policy = new UserManagementPolicy();
+
+        $form = $formFactory->create(UserCreateType::class, new User(), [
+            'csrf_protection' => false,
+            'show_is_hidden' => false,
+            'assignable_roles' => $policy->getAssignableRoles($developer),
+            'default_roles' => $policy->getDefaultRoles($developer),
+        ]);
+
+        $form->submit([
+            'name' => 'Test',
+            'lastname' => 'User',
+            'email' => '',
+            'nickname' => 'validnick3',
+            'countryCode' => '57',
+            'cellphone' => '3001234569',
+            'status' => 'active',
+            'applicationRoles' => ['operator'],
+            'timezone' => '',
+            'locale' => 'es-CO',
+            'timeFormat' => '12h',
+            'plainPassword' => 'Secret1',
+            'confirmPassword' => 'Secret1',
+        ]);
+
+        self::assertFalse($form->isValid());
+        self::assertGreaterThan(0, $form->get('timezone')->getErrors(true)->count());
     }
 
     public function testSearchUserTrimsQueryBeforeLengthValidation(): void

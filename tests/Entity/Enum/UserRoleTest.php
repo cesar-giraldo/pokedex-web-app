@@ -21,4 +21,11 @@ final class UserRoleTest extends TestCase
 
         self::assertSame(UserRole::Developer, $primary);
     }
+
+    public function testListBadgeClassesAreDefinedForAllRoles(): void
+    {
+        foreach (UserRole::cases() as $role) {
+            self::assertNotSame('', $role->listBadgeClasses());
+        }
+    }
 }

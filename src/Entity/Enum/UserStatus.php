@@ -40,4 +40,14 @@ enum UserStatus: string
             self::Inactive => 'Inactivo',
         };
     }
+
+    public function listBadgeClasses(): string
+    {
+        return match ($this) {
+            self::Active => 'bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-500',
+            self::UncompleteProfileInfo, self::UnconfirmedAccount => 'bg-warning-50 text-warning-700 dark:bg-warning-500/15 dark:text-warning-400',
+            self::Inactive => 'bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-white/80',
+            self::Banned => 'bg-error-50 text-error-700 dark:bg-error-500/15 dark:text-error-500',
+        };
+    }
 }

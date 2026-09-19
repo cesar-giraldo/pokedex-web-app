@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Admin\Form;
 
 use App\Admin\Form\PokemonEditType;
+use App\Admin\Form\PokemonImageUploadType;
 use App\Admin\Form\SearchPokemonType;
 use App\Admin\Form\SearchUserType;
 use App\Admin\Form\UserCreateType;
@@ -119,6 +120,17 @@ final class FormMaxLengthAttributesTest extends KernelTestCase
         $this->assertFieldMaxLength($view, 'description', 5000);
     }
 
+    public function testPokemonImageUploadTypeExposesMaxlengthAttributes(): void
+    {
+        self::bootKernel();
+
+        /** @var FormFactoryInterface $formFactory */
+        $formFactory = static::getContainer()->get(FormFactoryInterface::class);
+        $view = $formFactory->create(PokemonImageUploadType::class)->createView();
+
+        $this->assertFieldMaxLength($view, 'description', 255);
+    }
+
     public function testUserCreateTypeRejectsNicknameAboveMaxLength(): void
     {
         self::bootKernel();
@@ -144,6 +156,9 @@ final class FormMaxLengthAttributesTest extends KernelTestCase
             'cellphone' => '3099010003',
             'status' => 'active',
             'applicationRoles' => ['operator'],
+            'timezone' => 'America/Bogota',
+            'locale' => 'es-CO',
+            'timeFormat' => '12h',
             'plainPassword' => 'Secret1',
             'confirmPassword' => 'Secret1',
         ]);

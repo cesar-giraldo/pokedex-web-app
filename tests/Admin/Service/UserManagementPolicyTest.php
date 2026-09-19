@@ -95,6 +95,28 @@ final class UserManagementPolicyTest extends TestCase
         self::assertFalse($this->policy->canEdit($admin, $hiddenOperator));
     }
 
+    public function testAdminCanViewNonHiddenUsersButNotHiddenUsers(): void
+    {
+        $admin = $this->createUser(30, [UserRole::Admin]);
+        $operator = $this->createUser(31, [UserRole::Operator]);
+        $developer = $this->createUser(32, [UserRole::Developer]);
+        $hiddenOperator = $this->createUser(33, [UserRole::Operator]);
+        $hiddenOperator->setIsHidden(true);
+
+        self::assertTrue($this->policy->canView($admin, $operator));
+        self::assertTrue($this->policy->canView($admin, $developer));
+        self::assertFalse($this->policy->canView($admin, $hiddenOperator));
+    }
+
+    public function testDeveloperCanViewHiddenUsers(): void
+    {
+        $developer = $this->createUser(40, [UserRole::Developer]);
+        $hiddenOperator = $this->createUser(41, [UserRole::Operator]);
+        $hiddenOperator->setIsHidden(true);
+
+        self::assertTrue($this->policy->canView($developer, $hiddenOperator));
+    }
+
     /**
      * @param list<UserRole> $roles
      */

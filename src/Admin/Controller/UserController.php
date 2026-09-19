@@ -6,6 +6,7 @@ namespace App\Admin\Controller;
 
 use App\Admin\Controller\Concerns\AdminPaginatorTrait;
 use App\Admin\Controller\Concerns\FlashesFormValidationErrorsTrait;
+use App\Admin\Data\IanaTimezones;
 use App\Admin\Data\WorldCountryCodes;
 use App\Admin\Form\SearchUserType;
 use App\Admin\Form\UserCreateType;
@@ -18,6 +19,8 @@ use App\Admin\Service\ImpersonationPolicy;
 use App\Admin\Service\Storage\UserProfileImageFormHandler;
 use App\Admin\Service\Storage\UserProfileImageUploadException;
 use App\Admin\Service\UserManagementPolicy;
+use App\Entity\Enum\SupportedLocale;
+use App\Entity\Enum\TimeFormat;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
@@ -78,7 +81,6 @@ final class UserController extends AbstractController
             $sort,
             $direction,
             [
-                'excludeDevelopers' => !$isDeveloper,
                 'excludeHidden' => !($isDeveloper && $showHiddenUsers),
             ],
         );
@@ -126,11 +128,16 @@ final class UserController extends AbstractController
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
         UserManagementPolicy $userManagementPolicy,
+        GeneralSettingsProvider $generalSettingsProvider,
     ): Response {
         /** @var User $editor */
         $editor = $this->getUser();
 
-        $user = new User();
+        $settings = $generalSettingsProvider->get();
+        $user = new User()
+            ->setTimezone($settings->getDefaultTimezone())
+            ->setLocale($settings->getDefaultLocale())
+            ->setTimeFormat($settings->getDefaultTimeFormat());
         $formOptions = $this->buildFormOptions($editor, $userManagementPolicy, true);
 
         $form = $this->createForm(UserCreateType::class, $user, $formOptions);
@@ -161,20 +168,24 @@ final class UserController extends AbstractController
             try {
                 $entityManager->persist($user);
                 $entityManager->flush();
-                $this->profileImageFormHandler->handleFromForm($user, $form, false);
-                $entityManager->flush();
-            } catch (UserProfileImageUploadException $exception) {
-                $this->addProfileImageFormError($form, $exception->getMessage());
-
-                return $this->render('@admin/users/new.html.twig', $this->buildFormViewData($user, $form, $formOptions));
             } catch (Throwable) {
-                $this->addProfileImageFormError(
-                    $form,
-                    'No se pudo guardar la imagen de perfil. Inténtelo de nuevo.',
-                );
                 $this->addFlash('error', 'No se pudo crear el usuario. Inténtelo de nuevo.');
 
                 return $this->render('@admin/users/new.html.twig', $this->buildFormViewData($user, $form, $formOptions));
+            }
+
+            try {
+                $this->profileImageFormHandler->handleFromForm($user, $form, false);
+            } catch (Throwable) {
+                $this->addFlash(
+                    'error',
+                    sprintf(
+                        'El usuario "%s" se creó, pero no se pudo guardar la imagen de perfil. Inténtelo de nuevo.',
+                        $user->getNickname(),
+                    ),
+                );
+
+                return $this->redirectToRoute('app_backend_user_edit', ['id' => $user->getId()]);
             }
 
             $this->addFlash('success', sprintf('El usuario "%s" se creó correctamente.', $user->getNickname()));
@@ -183,6 +194,27 @@ final class UserController extends AbstractController
         }
 
         return $this->render('@admin/users/new.html.twig', $this->buildFormViewData($user, $form, $formOptions));
+    }
+
+    #[Route('/users/{id}', name: 'app_backend_user_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function show(
+        User $user,
+        UserManagementPolicy $userManagementPolicy,
+    ): Response {
+        /** @var User $viewer */
+        $viewer = $this->getUser();
+
+        if (!$userManagementPolicy->canView($viewer, $user)) {
+            throw $this->createNotFoundException();
+        }
+
+        return $this->render('@admin/users/show.html.twig', [
+            'user' => $user,
+            'can_edit' => $userManagementPolicy->canEdit($viewer, $user),
+            'active_menu' => 'user_profile',
+            'active_page' => 'user_list',
+        ]);
     }
 
     #[Route('/users/{id}/edit', name: 'app_backend_user_edit', methods: ['GET', 'POST'])]
@@ -450,6 +482,9 @@ final class UserController extends AbstractController
             'role_options' => $roleOptions,
             'status_options' => $statusOptions,
             'country_options' => $countryOptions,
+            'timezone_options' => IanaTimezones::options(),
+            'locale_options' => SupportedLocale::options(),
+            'time_format_options' => TimeFormat::options(),
             'show_is_hidden' => $formOptions['show_is_hidden'],
             'active_menu' => 'user_profile',
             'active_page' => 'user_form',
@@ -476,6 +511,9 @@ final class UserController extends AbstractController
             'info_form' => $infoForm,
             'password_form' => $passwordForm,
             'country_options' => $countryOptions,
+            'timezone_options' => IanaTimezones::options(),
+            'locale_options' => SupportedLocale::options(),
+            'time_format_options' => TimeFormat::options(),
             'open_info_modal' => $openInfoModal,
             'open_password_modal' => $openPasswordModal,
             'active_menu' => 'auth',

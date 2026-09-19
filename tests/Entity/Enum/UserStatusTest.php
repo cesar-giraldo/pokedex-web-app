@@ -19,4 +19,11 @@ final class UserStatusTest extends TestCase
         self::assertSame('Suspendido', UserStatus::Banned->label());
         self::assertSame('Inactivo', UserStatus::Inactive->label());
     }
+
+    public function testListBadgeClassesDistinguishStatusSeverity(): void
+    {
+        self::assertStringContainsString('success', UserStatus::Active->listBadgeClasses());
+        self::assertStringContainsString('warning', UserStatus::UncompleteProfileInfo->listBadgeClasses());
+        self::assertStringContainsString('error', UserStatus::Banned->listBadgeClasses());
+    }
 }

@@ -6,6 +6,7 @@ namespace App\Admin\Form;
 
 use App\Admin\Data\WorldCountryCodes;
 use App\Admin\Form\Concerns\UserProfileImageFormFields;
+use App\Admin\Form\Concerns\UserRegionalFormFields;
 use App\Admin\Form\Type\CountryCodeChoiceType;
 use App\Admin\Validator\Constraints\PasswordStrength;
 use App\Entity\Enum\UserRole;
@@ -36,6 +37,7 @@ use function is_string;
 final class UserEditType extends AbstractType
 {
     use UserProfileImageFormFields;
+    use UserRegionalFormFields;
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -76,7 +78,11 @@ final class UserEditType extends AbstractType
                 'label' => false,
                 'attr' => ['maxlength' => 12],
                 'constraints' => UserFieldConstraints::cellphone(),
-            ])
+            ]);
+
+        $this->addRegionalFields($builder);
+
+        $builder
             ->add('status', EnumType::class, [
                 'class' => UserStatus::class,
                 'label' => false,

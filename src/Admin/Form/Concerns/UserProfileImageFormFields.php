@@ -24,12 +24,23 @@ trait UserProfileImageFormFields
             'constraints' => UserProfileImageConstraints::upload(),
         ]);
 
-        if ($allowRemove) {
+        if ($allowRemove && $this->userHasStoredProfileImage($builder->getData())) {
             $builder->add('removeProfileImage', CheckboxType::class, [
                 'label' => false,
                 'mapped' => false,
                 'required' => false,
             ]);
         }
+    }
+
+    private function userHasStoredProfileImage(mixed $data): bool
+    {
+        if (!$data instanceof User) {
+            return false;
+        }
+
+        $path = $data->getProfileImagePath();
+
+        return null !== $path && '' !== trim($path);
     }
 }

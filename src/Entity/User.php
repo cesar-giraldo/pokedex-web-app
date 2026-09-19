@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\Enum\SupportedLocale;
+use App\Entity\Enum\TimeFormat;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Repository\UserRepository;
@@ -19,7 +21,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 use function in_array;
+use function mb_substr;
 use function sprintf;
+use function trim;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
@@ -87,6 +91,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(enumType: UserStatus::class)]
     private UserStatus $status = UserStatus::UnconfirmedAccount;
 
+    #[ORM\Column(length: 64, options: ['default' => GeneralSettings::DEFAULT_TIMEZONE])]
+    #[Assert\NotBlank]
+    #[Assert\Timezone]
+    private string $timezone = GeneralSettings::DEFAULT_TIMEZONE;
+
+    #[ORM\Column(enumType: SupportedLocale::class, length: 16, options: ['default' => 'es-CO'])]
+    private SupportedLocale $locale = GeneralSettings::DEFAULT_LOCALE;
+
+    #[ORM\Column(enumType: TimeFormat::class, length: 8, options: ['default' => '12h'])]
+    private TimeFormat $timeFormat = GeneralSettings::DEFAULT_TIME_FORMAT;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $createdAt;
 
@@ -101,6 +116,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(options: ['default' => 0])]
     private int $failedLoginAttempts = 0;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $lastLoginAt = null;
+
+    #[ORM\Column(length: 45, nullable: true)]
+    private ?string $lastLoginIp = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $lastFailedLoginAt = null;
 
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['default' => false])]
     private ?bool $isHidden = false;
@@ -258,6 +282,52 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getTimezone(): string
+    {
+        return $this->timezone;
+    }
+
+    public function setTimezone(?string $timezone): static
+    {
+        $this->timezone = $timezone ?? '';
+
+        return $this;
+    }
+
+    public function getLocale(): SupportedLocale
+    {
+        return $this->locale;
+    }
+
+    public function setLocale(SupportedLocale $locale): static
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
+
+    public function getLocaleLabel(): string
+    {
+        return $this->locale->label();
+    }
+
+    public function getTimeFormat(): TimeFormat
+    {
+        return $this->timeFormat;
+    }
+
+    public function setTimeFormat(TimeFormat $timeFormat): static
+    {
+        $this->timeFormat = $timeFormat;
+
+        return $this;
+    }
+
+    public function getTimeFormatLabel(): string
+    {
+        return $this->timeFormat->label();
+    }
+
     public function getCreatedAt(): DateTimeInterface
     {
         return $this->createdAt;
@@ -311,6 +381,50 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->failedLoginAttempts;
     }
 
+    public function getLastLoginAt(): ?DateTimeInterface
+    {
+        return $this->lastLoginAt;
+    }
+
+    public function setLastLoginAt(?DateTimeInterface $lastLoginAt): static
+    {
+        $this->lastLoginAt = $lastLoginAt;
+
+        return $this;
+    }
+
+    public function getLastLoginIp(): ?string
+    {
+        return $this->lastLoginIp;
+    }
+
+    public function setLastLoginIp(?string $lastLoginIp): static
+    {
+        $this->lastLoginIp = $this->normalizeClientIp($lastLoginIp);
+
+        return $this;
+    }
+
+    public function getLastFailedLoginAt(): ?DateTimeInterface
+    {
+        return $this->lastFailedLoginAt;
+    }
+
+    public function setLastFailedLoginAt(?DateTimeInterface $lastFailedLoginAt): static
+    {
+        $this->lastFailedLoginAt = $lastFailedLoginAt;
+
+        return $this;
+    }
+
+    public function recordSuccessfulInteractiveLogin(?string $clientIp): static
+    {
+        $this->lastLoginAt = new DateTime();
+        $this->lastLoginIp = $this->normalizeClientIp($clientIp);
+
+        return $this;
+    }
+
     public function isHidden(): ?bool
     {
         return $this->isHidden;
@@ -351,6 +465,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function recordFailedLoginAttempt(): static
     {
+        $this->lastFailedLoginAt = new DateTime();
         ++$this->failedLoginAttempts;
 
         if ($this->failedLoginAttempts >= self::MAX_FAILED_LOGIN_ATTEMPTS) {
@@ -427,6 +542,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             return false;
         }
 
+        if ('' === trim($this->timezone)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -469,8 +588,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
     }
 
+    private function normalizeClientIp(?string $clientIp): ?string
+    {
+        if (null === $clientIp) {
+            return null;
+        }
+
+        $clientIp = trim($clientIp);
+        if ('' === $clientIp) {
+            return null;
+        }
+
+        return mb_substr($clientIp, 0, 45);
+    }
+
     #[ORM\PrePersist]
-    #[ORM\PreUpdate]
     public function touchTimestamps(): void
     {
         $this->lastUpdatedAt = new DateTime();

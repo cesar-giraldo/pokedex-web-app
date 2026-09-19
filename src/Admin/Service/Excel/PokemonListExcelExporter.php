@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Service\Excel;
 
+use App\Admin\Service\DateTimeFormatter;
 use App\Entity\Pokemon;
 use DateTimeImmutable;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -28,6 +29,7 @@ class PokemonListExcelExporter
 
     public function __construct(
         private PokemonSpriteImageLoader $spriteImageLoader,
+        private DateTimeFormatter $dateTimeFormatter,
     ) {
     }
 
@@ -58,7 +60,7 @@ class PokemonListExcelExporter
         $sheet->setTitle('Pokémon');
 
         $sheet->setCellValue('A1', 'Listado de Pokémon');
-        $sheet->setCellValue('A2', 'Generado: ' . $generatedAt->format('d/m/Y H:i'));
+        $sheet->setCellValue('A2', 'Generado: ' . $this->dateTimeFormatter->format($generatedAt));
         $sheet->setCellValue('A3', 'Total registros: ' . $pagination['total_results']);
         $sheet->setCellValue(
             'A4',

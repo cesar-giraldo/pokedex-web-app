@@ -20,22 +20,28 @@ return [
         'path' => './assets/web/app.js',
         'entrypoint' => true,
     ],
-    '@hotwired/stimulus' => [
-        'version' => '3.2.2',
-    ],
     '@symfony/stimulus-bundle' => [
         'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
-    ],
-    '@hotwired/turbo' => [
-        'version' => '8.0.23',
     ],
     '@symfony/ux-live-component' => [
         'path' => './vendor/symfony/ux-live-component/assets/dist/live_controller.js',
     ],
+    '@hotwired/stimulus' => [
+        'version' => '3.2.2',
+    ],
+    '@hotwired/turbo' => [
+        'version' => '8.0.23',
+    ],
     'stimulus-use' => [
-        'version' => '0.52.3',
+        'version' => '0.53.1',
     ],
     'apexcharts' => [
-        'version' => '5.16.0',
+        'version' => '7.4.0',
+    ],
+    'sortablejs' => [
+        'version' => '1.15.7',
+    ],
+    'apexcharts/core' => [
+        'version' => '7.4.0',
     ],
 ];

@@ -25,7 +25,7 @@ final class LoginFormType extends AbstractType
             ->add('_username', TextType::class, [
                 'label' => 'Nickname',
                 'attr' => [
-                    'maxlength' => 20,
+                    'maxlength' => 40,
                     'autocomplete' => 'username',
                     'placeholder' => 'tu-nickname',
                 ],

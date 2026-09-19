@@ -47,6 +47,9 @@ final class UserCreateTypeTest extends KernelTestCase
             'cellphone' => '3999001001',
             'status' => 'active',
             'applicationRoles' => ['admin'],
+            'timezone' => 'America/Bogota',
+            'locale' => 'es-CO',
+            'timeFormat' => '12h',
             'plainPassword' => 'Secret1',
             'confirmPassword' => 'Secret1',
         ]);

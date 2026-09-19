@@ -17,9 +17,13 @@
 		data-controller="general-settings"
 		data-general-settings-edit-general-value="{{ edit_general ? 'true' : 'false' }}"
 		data-general-settings-edit-language-value="{{ edit_language ? 'true' : 'false' }}"
+		data-general-settings-edit-datetime-value="{{ edit_datetime ? 'true' : 'false' }}"
 		data-general-settings-show-hidden-users-value="{{ settings.showHiddenUsers ? 'true' : 'false' }}"
 		data-general-settings-enabled-languages-value="{{ settings.enabledLanguages|json_encode|e('html_attr') }}"
 		data-general-settings-default-language-value="{{ settings.websiteDefaultLanguage }}"
+		data-general-settings-default-timezone-value="{{ settings.defaultTimezone }}"
+		data-general-settings-default-locale-value="{{ settings.defaultLocale.value }}"
+		data-general-settings-default-time-format-value="{{ settings.defaultTimeFormat.value }}"
 		class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6"
 	>
 		<div class="mb-6 rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
@@ -72,14 +76,12 @@
 								>
 									Cancelar
 								</button>
-								<button
-									type="submit"
+								<twig:component_submit_button
+									label="Guardar Cambios"
 									id="{{ general_form.save.vars.id }}"
 									name="{{ general_form.save.vars.full_name }}"
-									class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
-								>
-									Guardar Cambios
-								</button>
+									layout="responsive"
+								/>
 							</div>
 
 							{{ form_widget(general_form._token) }}
@@ -177,14 +179,12 @@
 								>
 									Cancelar
 								</button>
-								<button
-									type="submit"
+								<twig:component_submit_button
+									label="Guardar Cambios"
 									id="{{ language_form.save.vars.id }}"
 									name="{{ language_form.save.vars.full_name }}"
-									class="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
-								>
-									Guardar Cambios
-								</button>
+									layout="responsive"
+								/>
 							</div>
 
 							{{ form_widget(language_form._token) }}
@@ -208,8 +208,131 @@
 			</div>
 		</div>
 
+		<div class="mb-6 rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
+			<div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+				<div class="w-full">
+					<h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+						Fecha y hora
+					</h4>
+
+					<div data-general-settings-target="dateTimeView" class="{{ edit_datetime ? 'hidden' : '' }}">
+						<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+							<div class="lg:col-span-2">
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Zona horaria por defecto
+								</p>
+								<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+									{{ settings.defaultTimezone|timezone_label }}
+								</p>
+							</div>
+
+							<div>
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Locale por defecto
+								</p>
+								<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+									{{ settings.defaultLocaleLabel }}
+								</p>
+							</div>
+
+							<div>
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Formato de hora por defecto
+								</p>
+								<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+									{{ settings.defaultTimeFormatLabel }}
+								</p>
+							</div>
+						</div>
+					</div>
+
+					<div data-general-settings-target="dateTimeEdit" class="{{ edit_datetime ? '' : 'hidden' }}">
+						{{ form_start(datetime_form, {
+							action: path('app_backend_general_settings'),
+							attr: { class: 'flex flex-col gap-6' },
+							render_rest: false,
+						}) }}
+							<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+								<div class="lg:col-span-2">
+									<twig:component_single_select
+										label="Zona horaria por defecto"
+										name="{{ datetime_form.defaultTimezone.vars.full_name }}"
+										id="general-settings-default-timezone"
+										placeholder="Seleccione una zona horaria"
+										:options="timezone_options"
+										selected="{{ datetime_form.defaultTimezone.vars.data ?? '' }}"
+										:required="true"
+										error="{{ field_error(datetime_form.defaultTimezone) }}"
+										help="Se usa para nuevos usuarios y cuando no hay preferencia de visualización."
+									/>
+								</div>
+
+								<div>
+									<twig:component_single_select
+										label="Locale por defecto"
+										name="{{ datetime_form.defaultLocale.vars.full_name }}"
+										id="general-settings-default-locale"
+										placeholder="Seleccione un locale"
+										:options="locale_options"
+										selected="{{ datetime_form.defaultLocale.vars.data ? datetime_form.defaultLocale.vars.data.value : '' }}"
+										:required="true"
+										error="{{ field_error(datetime_form.defaultLocale) }}"
+									/>
+								</div>
+
+								<div>
+									<twig:component_single_select
+										label="Formato de hora por defecto"
+										name="{{ datetime_form.defaultTimeFormat.vars.full_name }}"
+										id="general-settings-default-time-format"
+										placeholder="Seleccione un formato"
+										:options="time_format_options"
+										selected="{{ datetime_form.defaultTimeFormat.vars.data ? datetime_form.defaultTimeFormat.vars.data.value : '' }}"
+										:required="true"
+										error="{{ field_error(datetime_form.defaultTimeFormat) }}"
+									/>
+								</div>
+							</div>
+
+							<div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+								<button
+									type="button"
+									data-action="click->general-settings#cancelDateTimeEdit"
+									class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
+								>
+									Cancelar
+								</button>
+								<twig:component_submit_button
+									label="Guardar Cambios"
+									id="{{ datetime_form.save.vars.id }}"
+									name="{{ datetime_form.save.vars.full_name }}"
+									layout="responsive"
+								/>
+							</div>
+
+							{{ form_widget(datetime_form._token) }}
+						{{ form_end(datetime_form, { render_rest: false }) }}
+					</div>
+				</div>
+
+				<div
+					data-general-settings-target="dateTimeEditButton"
+					class="{{ edit_datetime ? 'hidden' : '' }}"
+				>
+					<button
+						type="button"
+						data-action="click->general-settings#startDateTimeEdit"
+						class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+					>
+						{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+						Editar
+					</button>
+				</div>
+			</div>
+		</div>
+
 		<p class="text-xs text-gray-500 dark:text-gray-400">
-			Última actualización: {{ settings.lastUpdatedAt|date('d/m/Y H:i') }}
+			Última actualización: {{ settings.lastUpdatedAt|app_datetime }}
 		</p>
 	</div>
 {% endblock %}

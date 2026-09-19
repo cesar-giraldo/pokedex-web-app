@@ -119,6 +119,12 @@ final class CreateInitialDataCommand extends Command
             ->setNickname($initialUserEmail)
             ->setStatus(UserStatus::Active);
 
+        $settings = $this->generalSettingsRepository->getOrCreateSingleton();
+        $user
+            ->setTimezone($settings->getDefaultTimezone())
+            ->setLocale($settings->getDefaultLocale())
+            ->setTimeFormat($settings->getDefaultTimeFormat());
+
         $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
 
         $this->entityManager->persist($user);

@@ -6,6 +6,8 @@ namespace App\Entity;
 
 use App\Repository\PokemonRepository;
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -80,6 +82,18 @@ class Pokemon
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['pokemon:read'])]
     private ?string $description = null;
+
+    /**
+     * @var Collection<int, PokemonImage>
+     */
+    #[ORM\OneToMany(targetEntity: PokemonImage::class, mappedBy: 'pokemon', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['sortOrder' => 'ASC'])]
+    private Collection $images;
+
+    public function __construct()
+    {
+        $this->images = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -262,6 +276,31 @@ class Pokemon
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PokemonImage>
+     */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(PokemonImage $image): static
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->setPokemon($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImage(PokemonImage $image): static
+    {
+        $this->images->removeElement($image);
 
         return $this;
     }
