@@ -103,8 +103,8 @@
 											<div class="flex items-center gap-3">
 												{% include '@admin/partials/_user_profile_avatar.html.twig' with {
 													user: user,
-													size_class: 'h-10 w-10',
-													icon_class: 'h-10 w-10 text-gray-400 dark:text-gray-500',
+													size_class: 'h-18 w-18',
+													icon_class: 'h-full w-full text-gray-400 dark:text-gray-500',
 												} %}
 												<div class="min-w-0">
 													<a href="{{ path('app_backend_user_show', { id: user.id }) }}"
