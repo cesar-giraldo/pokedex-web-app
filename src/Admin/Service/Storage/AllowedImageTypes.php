@@ -43,19 +43,7 @@ final class AllowedImageTypes
 
     public static function resolveExtension(UploadedFile $file): ?string
     {
-        $mimeType = (string) $file->getMimeType();
-        if (isset(self::MIME_TO_EXTENSION[$mimeType])) {
-            return self::MIME_TO_EXTENSION[$mimeType];
-        }
-
-        $clientExtension = strtolower((string) $file->getClientOriginalExtension());
-        if ('jpeg' === $clientExtension) {
-            $clientExtension = 'jpg';
-        }
-
-        return in_array($clientExtension, self::MIME_TO_EXTENSION, true)
-            ? $clientExtension
-            : null;
+        return self::MIME_TO_EXTENSION[(string) $file->getMimeType()] ?? null;
     }
 
     public static function isAllowedExtension(string $extension): bool

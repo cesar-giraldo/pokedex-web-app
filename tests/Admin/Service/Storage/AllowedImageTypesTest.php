@@ -14,23 +14,24 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[Group('unit')]
 final class AllowedImageTypesTest extends TestCase
 {
-    public function testResolveExtensionFromMimeType(): void
+    public function testResolveExtensionFromDetectedMimeType(): void
     {
-        $file = $this->createUploadedFile('avatar.jpg', 'image/jpeg');
+        $file = $this->createUploadedFile('avatar.jpeg', 'application/octet-stream', $this->jpegBytes());
 
+        self::assertSame('image/jpeg', $file->getMimeType());
         self::assertSame('jpg', AllowedImageTypes::resolveExtension($file));
     }
 
-    public function testResolveExtensionNormalizesJpeg(): void
+    public function testResolveExtensionIgnoresClientExtensionWhenMimeIsNotAllowed(): void
     {
-        $file = $this->createUploadedFile('avatar.jpeg', 'application/octet-stream');
+        $file = $this->createUploadedFile('avatar.jpg', 'image/jpeg', 'not-an-image');
 
-        self::assertSame('jpg', AllowedImageTypes::resolveExtension($file));
+        self::assertNull(AllowedImageTypes::resolveExtension($file));
     }
 
     public function testRejectsUnsupportedType(): void
     {
-        $file = $this->createUploadedFile('notes.txt', 'text/plain');
+        $file = $this->createUploadedFile('notes.txt', 'text/plain', 'fake');
 
         self::assertNull(AllowedImageTypes::resolveExtension($file));
     }
@@ -50,12 +51,28 @@ final class AllowedImageTypesTest extends TestCase
         self::assertSame(['image/jpeg', 'image/png', 'image/webp'], AllowedImageTypes::mimeTypes());
     }
 
-    private function createUploadedFile(string $originalName, string $mimeType): UploadedFile
+    private function createUploadedFile(string $originalName, string $mimeType, string $contents): UploadedFile
     {
         $path = tempnam(sys_get_temp_dir(), 'allowed-image-');
         self::assertNotFalse($path);
-        file_put_contents($path, 'fake');
+        file_put_contents($path, $contents);
 
         return new UploadedFile($path, $originalName, $mimeType, test: true);
+    }
+
+    private function jpegBytes(): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'allowed-jpeg-');
+        self::assertNotFalse($path);
+
+        $image = imagecreatetruecolor(16, 16);
+        self::assertNotFalse($image);
+        imagejpeg($image, $path);
+
+        $contents = file_get_contents($path);
+        unlink($path);
+        self::assertNotFalse($contents);
+
+        return $contents;
     }
 }
