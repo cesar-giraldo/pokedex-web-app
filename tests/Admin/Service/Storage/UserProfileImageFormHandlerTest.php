@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Admin\Service\Storage;
 
+use App\Admin\Service\Storage\ObjectStorage;
 use App\Admin\Service\Storage\UserProfileImageFormHandler;
 use App\Admin\Service\Storage\UserProfileImageStorage;
 use App\Entity\User;
@@ -32,7 +33,7 @@ final class UserProfileImageFormHandlerTest extends TestCase
         mkdir($this->tempDirectory, 0o777, true);
 
         $this->profileImageStorage = new UserProfileImageStorage(
-            new Filesystem(new LocalFilesystemAdapter($this->tempDirectory)),
+            new ObjectStorage(new Filesystem(new LocalFilesystemAdapter($this->tempDirectory))),
             'dev',
         );
         $this->handler = new UserProfileImageFormHandler($this->profileImageStorage);

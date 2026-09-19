@@ -1,0 +1,120 @@
+{% from '@admin/macros/form.html.twig' import field_error %}
+
+{% set has_images = pokemon.images|length > 0 %}
+
+<div class="space-y-8 p-5 sm:p-6">
+	{{ form_start(form, {
+		attr: { class: 'space-y-6', enctype: 'multipart/form-data', 'data-turbo': 'false' },
+		render_rest: false,
+	}) }}
+		<div class="flex flex-col gap-4 sm:flex-row sm:items-start">
+			<div class="min-w-0 flex-1">
+				<twig:component_dropzone
+					label="Imagen"
+					name="{{ form.image.vars.full_name }}"
+					id="{{ form.image.vars.id }}"
+					title="Arrastra tu imagen aquí"
+					description="Sube una imagen JPG, PNG o WebP de hasta 6 MB"
+					browseLabel="Seleccionar imagen"
+					accept="{{ image_accept }}"
+					acceptErrorMessage="Solo se permiten imágenes JPG, PNG o WebP."
+					:maxFileSizeKb="image_max_size_kb"
+					maxFileSizeErrorMessage="La imagen no puede superar 6 MB."
+					:required="true"
+					error="{{ field_error(form.image) }}"
+					help="Tamaño máximo: 6 MB."
+				/>
+			</div>
+
+			<div class="shrink-0 sm:pt-7">
+				<twig:component_submit_button
+					label="Subir Imagen"
+				/>
+			</div>
+		</div>
+
+		<twig:component_text_input
+			label="Descripción"
+			name="{{ form.description.vars.full_name }}"
+			id="{{ form.description.vars.id }}"
+			value="{{ form.description.vars.value ?? '' }}"
+			placeholder="Descripción opcional de la imagen"
+			:maxLength="form_field_max_length(form.description)"
+			error="{{ field_error(form.description) }}"
+			help="Opcional luego lo podras editar en la galería de imágenes."
+		/>
+
+		{{ form_widget(form._token) }}
+	{{ form_end(form, { render_rest: false }) }}
+
+	<section
+		class="space-y-4"
+		aria-labelledby="pokemon-image-gallery-heading"
+		data-controller="component-sortable-gallery"
+		data-component-sortable-gallery-reorder-url-value="{{ path('app_backend_pokemon_images_reorder', { id: pokemon.id }) }}"
+		data-component-sortable-gallery-csrf-token-value="{{ csrf_token('pokemon_image') }}"
+		data-component-sortable-gallery-delete-title-value="Eliminar imagen"
+		data-component-sortable-gallery-delete-message-value="¿Seguro que deseas eliminar esta imagen? Esta acción no se puede deshacer."
+		data-component-sortable-gallery-reorder-success-value="El orden de las imágenes fue actualizado correctamente."
+		data-component-sortable-gallery-delete-success-value="La imagen se eliminó correctamente."
+	>
+		<h4 id="pokemon-image-gallery-heading" class="text-sm font-medium text-gray-800 dark:text-white/90">
+			Galería de imágenes
+		</h4>
+
+		<p
+			data-component-sortable-gallery-target="empty"
+			class="text-sm text-gray-500 dark:text-gray-400{% if has_images %} hidden{% endif %}"
+		>
+			Este Pokémon aún no tiene imágenes.
+		</p>
+
+		<div data-component-sortable-gallery-target="feedback" class="hidden space-y-3 mt-4"></div>
+
+		<ul
+			data-component-sortable-gallery-target="list"
+			class="m-0 grid list-none grid-cols-2 gap-4 p-0 sm:grid-cols-4{% if not has_images %} hidden{% endif %}"
+		>
+			{% for image in pokemon.images %}
+				<li
+					data-component-sortable-gallery-target="item"
+					data-image-id="{{ image.id }}"
+					data-delete-url="{{ path('app_backend_pokemon_image_delete', { id: pokemon.id, imageId: image.id }) }}"
+					class="min-w-0 cursor-grab active:cursor-grabbing"
+				>
+					<div class="relative aspect-square w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+						<img
+							src="{{ pokemon_image_url(image) }}"
+							alt="{{ image.description ?: ('Imagen de ' ~ pokemon.name) }}"
+							width="400"
+							height="400"
+							class="pointer-events-none block h-full w-full object-cover"
+							loading="lazy"
+							decoding="async"
+							draggable="false"
+						>
+						<button
+							type="button"
+							class="js-image-delete absolute top-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-error-500 text-white shadow-theme-xs transition hover:bg-error-600"
+							data-action="click->component-sortable-gallery#requestDelete"
+							aria-label="Eliminar imagen"
+						>
+							{{ ux_icon('heroicons:x-mark', { class: 'w-4 h-4' }) }}
+						</button>
+					</div>
+					{% if image.description %}
+						<p class="mt-2 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">{{ image.description }}</p>
+					{% endif %}
+				</li>
+			{% endfor %}
+		</ul>
+
+		<twig:component_confirm_dialog
+			id="pokemon-image-confirm-dialog"
+			title="Eliminar imagen"
+			message="¿Seguro que deseas eliminar esta imagen? Esta acción no se puede deshacer."
+			cancelLabel="Cancelar"
+			confirmLabel="Eliminar"
+		/>
+	</section>
+</div>

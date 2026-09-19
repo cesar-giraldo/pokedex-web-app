@@ -49,10 +49,15 @@ final class PokemonControllerEditTest extends WebTestCase
 
         $client->request('GET', sprintf('/admin/pokemons/%d/edit', $pokemon->getId()));
 
+        self::assertResponseRedirects(sprintf('/admin/pokemons/%d/edit/basic', $pokemon->getId()));
+        $client->followRedirect();
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('.rounded-2xl.border h3', $pokemon->getName());
+        self::assertSelectorTextContains('h2', 'Editar Pokémon');
+        self::assertSelectorTextContains('ol', $pokemon->getName());
+        self::assertInputValueSame('pokemon_name_display', $pokemon->getName());
         self::assertSelectorExists('form');
         self::assertSelectorExists('input[name="pokemon_edit[height]"]');
+        self::assertSelectorExists('a[href="' . sprintf('/admin/pokemons/%d/edit/multimedia', $pokemon->getId()) . '"]');
     }
 
     public function testEditUpdatesPokemonAndRedirectsWithFlash(): void
@@ -63,7 +68,7 @@ final class PokemonControllerEditTest extends WebTestCase
         $type = $pokemon->getType();
         self::assertNotNull($type);
 
-        $crawler = $client->request('GET', sprintf('/admin/pokemons/%d/edit', $pokemon->getId()));
+        $crawler = $client->request('GET', sprintf('/admin/pokemons/%d/edit/basic', $pokemon->getId()));
         self::assertResponseIsSuccessful();
 
         $form = $crawler->selectButton('Guardar Cambios')->form([
@@ -101,7 +106,7 @@ final class PokemonControllerEditTest extends WebTestCase
         $type = $pokemon->getType();
         self::assertNotNull($type);
 
-        $crawler = $client->request('GET', sprintf('/admin/pokemons/%d/edit', $pokemon->getId()));
+        $crawler = $client->request('GET', sprintf('/admin/pokemons/%d/edit/basic', $pokemon->getId()));
 
         $form = $crawler->selectButton('Guardar Cambios')->form([
             'pokemon_edit[height]' => '',

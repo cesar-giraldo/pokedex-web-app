@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Service\Storage;
 
-use App\Entity\User;
+use App\Entity\Pokemon;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -12,7 +12,7 @@ use function bin2hex;
 use function random_bytes;
 use function sprintf;
 
-final class UserProfileImageStorage
+final class PokemonImageStorage
 {
     public function __construct(
         private readonly ObjectStorage $objectStorage,
@@ -20,26 +20,26 @@ final class UserProfileImageStorage
     ) {
     }
 
-    public function upload(User $user, UploadedFile $file): string
+    public function upload(Pokemon $pokemon, UploadedFile $file): string
     {
-        $userId = $user->getId();
-        if (null === $userId) {
-            throw new UserProfileImageUploadException(
-                'El usuario debe persistirse antes de subir una imagen de perfil.'
+        $pokemonId = $pokemon->getId();
+        if (null === $pokemonId) {
+            throw new PokemonImageUploadException(
+                'El Pokémon debe persistirse antes de subir una imagen.'
             );
         }
 
         $extension = AllowedImageTypes::resolveExtension($file);
         if (null === $extension) {
-            throw new UserProfileImageUploadException('Solo se permiten imágenes JPG, PNG o WebP.');
+            throw new PokemonImageUploadException('Solo se permiten imágenes JPG, PNG o WebP.');
         }
 
-        $objectKey = $this->buildObjectKey($userId, $extension);
+        $objectKey = $this->buildObjectKey($pokemonId, $extension);
 
         try {
             $this->objectStorage->writeUploadedFile($objectKey, $file);
         } catch (ObjectStorageException $exception) {
-            throw new UserProfileImageUploadException($exception->getMessage(), previous: $exception);
+            throw new PokemonImageUploadException($exception->getMessage(), previous: $exception);
         }
 
         return $objectKey;
@@ -58,7 +58,7 @@ final class UserProfileImageStorage
         try {
             return $this->objectStorage->readStream($objectKey);
         } catch (ObjectStorageException $exception) {
-            throw new RuntimeException('La imagen de perfil no existe.', previous: $exception);
+            throw new RuntimeException('La imagen del Pokémon no existe.', previous: $exception);
         }
     }
 
@@ -67,16 +67,16 @@ final class UserProfileImageStorage
         return $this->objectStorage->resolveMimeType($objectKey);
     }
 
-    public function buildObjectKey(int $userId, string $extension): string
+    public function buildObjectKey(int $pokemonId, string $extension): string
     {
         if (!AllowedImageTypes::isAllowedExtension($extension)) {
             throw new RuntimeException('Extensión de imagen no permitida.');
         }
 
         return sprintf(
-            '%s/private/user/profile-images/%d/%s.%s',
+            '%s/public/pokemon/images/%d/%s.%s',
             $this->storagePrefix,
-            $userId,
+            $pokemonId,
             bin2hex(random_bytes(16)),
             $extension,
         );

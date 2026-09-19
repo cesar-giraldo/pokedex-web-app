@@ -38,9 +38,16 @@ services:
                     key: '%env(AWS_ACCESS_KEY_ID)%'
                     secret: '%env(AWS_SECRET_ACCESS_KEY)%'
 
-    App\Admin\Service\Storage\UserProfileImageStorage:
+    App\Admin\Service\Storage\ObjectStorage:
         arguments:
             $privateMediaStorage: '@private.media.storage'
+
+    App\Admin\Service\Storage\UserProfileImageStorage:
+        arguments:
+            $storagePrefix: '%env(AWS_S3_STORAGE_PREFIX)%'
+
+    App\Admin\Service\Storage\PokemonImageStorage:
+        arguments:
             $storagePrefix: '%env(AWS_S3_STORAGE_PREFIX)%'
 
     # add more service definitions when explicit configuration is needed

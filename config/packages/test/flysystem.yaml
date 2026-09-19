@@ -1,0 +1,6 @@
+flysystem:
+    storages:
+        test.media.storage:
+            adapter: 'local'
+            options:
+                directory: '%kernel.cache_dir%/media'

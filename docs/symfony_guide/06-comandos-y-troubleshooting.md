@@ -145,6 +145,8 @@ docker compose exec php php bin/console debug:asset-map
 docker compose exec php php bin/console asset-map:compile
 ```
 
+> **Stimulus / AssetMapper en dev:** Si existe `public/assets/` (salida de `asset-map:compile`), Symfony en modo debug **sirve esos JS con hash** y no refleja cambios en `assets/` hasta recompilar. Tras añadir controladores en `assets/controllers/`, ejecuta `asset-map:compile` o borra `public/assets/`. Comprueba en Network que `@symfony/stimulus-bundle/controllers-*.js` incluye tu identificador (p. ej. `component-sortable-gallery`).
+
 ## 6.7 · Calidad de código
 
 ```bash

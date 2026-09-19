@@ -1,0 +1,45 @@
+<div
+	id="{{ id }}"
+	hidden
+	data-controller="component-confirm-dialog"
+	data-component-confirm-dialog-open-value="false"
+	data-action="keydown.esc@window->component-confirm-dialog#cancel"
+	class="fixed inset-0 z-99999 hidden items-center justify-center overflow-y-auto p-5"
+	role="dialog"
+	aria-modal="true"
+	aria-labelledby="{{ id }}-title"
+	aria-describedby="{{ id }}-message"
+	aria-hidden="true"
+	{{ attributes }}
+>
+	<div
+		data-action="click->component-confirm-dialog#cancel"
+		class="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"
+	></div>
+
+	<div class="relative w-full max-w-md rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-8">
+		<h4 id="{{ id }}-title" data-component-confirm-dialog-target="title" class="mb-2 text-xl font-semibold text-gray-800 dark:text-white/90">
+			{{ title }}
+		</h4>
+		<p id="{{ id }}-message" data-component-confirm-dialog-target="message" class="mb-8 text-sm text-gray-500 dark:text-gray-400">
+			{{ message }}
+		</p>
+
+		<div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+			<button
+				type="button"
+				data-action="click->component-confirm-dialog#cancel"
+				class="inline-flex items-center justify-center rounded-lg bg-white px-5 py-3 text-sm font-medium text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03]"
+			>
+				{{ cancelLabel }}
+			</button>
+			<button
+				type="button"
+				data-action="click->component-confirm-dialog#confirm"
+				class="inline-flex items-center justify-center rounded-lg bg-error-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-error-600"
+			>
+				{{ confirmLabel }}
+			</button>
+		</div>
+	</div>
+</div>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Admin\Form;
 
 use App\Admin\Form\PokemonEditType;
+use App\Admin\Form\PokemonImageUploadType;
 use App\Admin\Form\SearchPokemonType;
 use App\Admin\Form\SearchUserType;
 use App\Admin\Form\UserCreateType;
@@ -117,6 +118,17 @@ final class FormMaxLengthAttributesTest extends KernelTestCase
         $this->assertFieldMaxLength($view, 'attack', 3);
         $this->assertFieldMaxLength($view, 'spriteFront', 255);
         $this->assertFieldMaxLength($view, 'description', 5000);
+    }
+
+    public function testPokemonImageUploadTypeExposesMaxlengthAttributes(): void
+    {
+        self::bootKernel();
+
+        /** @var FormFactoryInterface $formFactory */
+        $formFactory = static::getContainer()->get(FormFactoryInterface::class);
+        $view = $formFactory->create(PokemonImageUploadType::class)->createView();
+
+        $this->assertFieldMaxLength($view, 'description', 255);
     }
 
     public function testUserCreateTypeRejectsNicknameAboveMaxLength(): void
