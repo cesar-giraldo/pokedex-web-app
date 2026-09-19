@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Controller;
 
+use App\Admin\Service\Storage\PokemonImageUploadException;
 use App\Admin\Service\Storage\PokemonImageUploadService;
 use App\Entity\Pokemon;
 use App\Entity\PokemonImage;
@@ -72,7 +73,11 @@ final class PokemonImageController extends AbstractController
             throw new NotFoundHttpException();
         }
 
-        $this->pokemonImageUploadService->delete($pokemon, $image);
+        try {
+            $this->pokemonImageUploadService->delete($pokemon, $image);
+        } catch (PokemonImageUploadException $exception) {
+            return $this->json(['error' => $exception->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
 
         return $this->json([
             'success' => true,

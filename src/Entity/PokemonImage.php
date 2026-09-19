@@ -7,13 +7,19 @@ namespace App\Entity;
 use App\Repository\PokemonImageRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
 
 use function trim;
 
 #[ORM\Entity(repositoryClass: PokemonImageRepository::class)]
 #[ORM\Table(name: 'pokemon_image')]
+#[ORM\UniqueConstraint(name: 'uniq_pokemon_image_public_token', fields: ['publicToken'])]
 class PokemonImage
 {
+    public const int PUBLIC_TOKEN_LENGTH = 22;
+
+    public const string PUBLIC_TOKEN_PATTERN = '[1-9A-HJ-NP-Za-km-z]{22}';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -22,6 +28,9 @@ class PokemonImage
     #[ORM\ManyToOne(inversedBy: 'images')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private Pokemon $pokemon;
+
+    #[ORM\Column(length: self::PUBLIC_TOKEN_LENGTH)]
+    private string $publicToken;
 
     #[ORM\Column(length: 512)]
     private string $imagePath;
@@ -32,9 +41,19 @@ class PokemonImage
     #[ORM\Column(name: 'sort_order', type: Types::INTEGER)]
     private int $sortOrder = 1;
 
+    public function __construct()
+    {
+        $this->publicToken = Uuid::v7()->toBase58();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getPublicToken(): string
+    {
+        return $this->publicToken;
     }
 
     public function getPokemon(): Pokemon

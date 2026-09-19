@@ -27,7 +27,7 @@ final class PokemonImageUploadService
 
     public function upload(Pokemon $pokemon, UploadedFile $file, ?string $description): PokemonImage
     {
-        $objectKey = $this->pokemonImageStorage->upload($pokemon, $file);
+        $objectKey = $this->pokemonImageStorage->allocateObjectKey($pokemon, $file);
         $sortOrder = $this->pokemonImageRepository->getNextSortOrder($pokemon);
 
         $image = new PokemonImage()
@@ -39,6 +39,17 @@ final class PokemonImageUploadService
         $this->entityManager->persist($image);
         $this->entityManager->flush();
 
+        try {
+            $this->pokemonImageStorage->write($objectKey, $file);
+        } catch (PokemonImageUploadException $exception) {
+            $pokemon->removeImage($image);
+            $this->entityManager->remove($image);
+            $this->entityManager->flush();
+            $this->pokemonImageStorage->tryDelete($objectKey);
+
+            throw $exception;
+        }
+
         return $image;
     }
 
@@ -49,11 +60,12 @@ final class PokemonImageUploadService
         }
 
         $objectKey = $image->getImagePath();
+        $this->pokemonImageStorage->delete($objectKey);
+
         $pokemon->removeImage($image);
         $this->entityManager->remove($image);
         $this->entityManager->flush();
 
-        $this->pokemonImageStorage->delete($objectKey);
         $this->recompactSortOrder($pokemon);
     }
 

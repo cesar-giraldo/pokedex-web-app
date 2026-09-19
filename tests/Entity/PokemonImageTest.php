@@ -22,6 +22,7 @@ final class PokemonImageTest extends TestCase
 
         self::assertNull($image->getDescription());
         self::assertSame(1, $image->getSortOrder());
+        self::assertMatchesRegularExpression('#^[1-9A-HJ-NP-Za-km-z]{22}$#', $image->getPublicToken());
     }
 
     public function testAddImageKeepsBothSidesInSync(): void
@@ -42,5 +43,15 @@ final class PokemonImageTest extends TestCase
 
         $pokemon->removeImage($image);
         self::assertFalse($pokemon->getImages()->contains($image));
+    }
+
+    public function testPublicTokenIsGeneratedAsBase58Uuid(): void
+    {
+        $first = new PokemonImage()->setImagePath('dev/public/pokemon/images/1/a.jpg');
+        $second = new PokemonImage()->setImagePath('dev/public/pokemon/images/1/b.jpg');
+
+        self::assertMatchesRegularExpression('#^[1-9A-HJ-NP-Za-km-z]{22}$#', $first->getPublicToken());
+        self::assertMatchesRegularExpression('#^[1-9A-HJ-NP-Za-km-z]{22}$#', $second->getPublicToken());
+        self::assertNotSame($first->getPublicToken(), $second->getPublicToken());
     }
 }

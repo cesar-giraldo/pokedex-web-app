@@ -6,6 +6,7 @@ namespace App\Web\Controller;
 
 use App\Admin\Service\Storage\PokemonImageStorage;
 use App\Entity\PokemonImage;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -24,9 +25,11 @@ final class PokemonImageController extends AbstractController
     ) {
     }
 
-    #[Route('/media/pokemon-images/{id}', name: 'app_pokemon_image', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function show(PokemonImage $image): Response
-    {
+    #[Route('/media/pokemon-images/{publicToken}', name: 'app_pokemon_image', methods: ['GET'], requirements: ['publicToken' => PokemonImage::PUBLIC_TOKEN_PATTERN])]
+    public function show(
+        #[MapEntity(mapping: ['publicToken' => 'publicToken'])]
+        PokemonImage $image,
+    ): Response {
         $imagePath = $image->getImagePath();
         if ('' === $imagePath) {
             throw new NotFoundHttpException();

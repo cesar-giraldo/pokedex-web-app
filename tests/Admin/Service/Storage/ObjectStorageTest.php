@@ -7,11 +7,16 @@ namespace App\Tests\Admin\Service\Storage;
 use App\Admin\Service\Storage\ObjectStorage;
 use App\Admin\Service\Storage\ObjectStorageException;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use League\Flysystem\UnableToDeleteFile;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+
+use function is_string;
 
 use const DIRECTORY_SEPARATOR;
 
@@ -73,6 +78,38 @@ final class ObjectStorageTest extends TestCase
         $this->objectStorage->delete(null);
         $this->objectStorage->delete('');
         $this->objectStorage->delete('missing.jpg');
+    }
+
+    public function testDeletePropagatesFilesystemFailures(): void
+    {
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->method('fileExists')->willReturn(true);
+        $filesystem->method('delete')->willThrowException(UnableToDeleteFile::atLocation('file.jpg'));
+
+        $objectStorage = new ObjectStorage($filesystem);
+
+        $this->expectException(ObjectStorageException::class);
+        $objectStorage->delete('file.jpg');
+    }
+
+    public function testTryDeleteLogsFilesystemFailuresWithoutThrowing(): void
+    {
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->method('fileExists')->willReturn(true);
+        $filesystem->method('delete')->willThrowException(UnableToDeleteFile::atLocation('file.jpg'));
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('warning')->with(
+            'Failed to delete object from storage.',
+            self::callback(static function (array $context): bool {
+                return 'file.jpg' === ($context['object_key'] ?? null)
+                    && isset($context['error'])
+                    && is_string($context['error']);
+            }),
+        );
+
+        $objectStorage = new ObjectStorage($filesystem, $logger);
+        $objectStorage->tryDelete('file.jpg');
     }
 
     public function testResolveMimeType(): void

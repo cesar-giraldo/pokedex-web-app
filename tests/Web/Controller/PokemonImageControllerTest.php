@@ -47,7 +47,7 @@ final class PokemonImageControllerTest extends WebTestCase
         $pokemon = $this->createTestPokemon();
         $image = $this->createPokemonImage($pokemon);
 
-        $client->request('GET', sprintf('/media/pokemon-images/%d', $image->getId()));
+        $client->request('GET', sprintf('/media/pokemon-images/%s', $image->getPublicToken()));
 
         self::assertResponseIsSuccessful();
         self::assertResponseHeaderSame('Content-Type', 'image/jpeg');
@@ -57,7 +57,15 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testMissingImageReturnsNotFound(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/media/pokemon-images/999999999');
+        $client->request('GET', '/media/pokemon-images/1111111111111111111111');
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testNumericIdentifierIsNotRouted(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/media/pokemon-images/1');
 
         self::assertResponseStatusCodeSame(404);
     }

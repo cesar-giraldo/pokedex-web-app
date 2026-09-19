@@ -20,7 +20,7 @@ final class UserProfileImageStorage
     ) {
     }
 
-    public function upload(User $user, UploadedFile $file): string
+    public function allocateObjectKey(User $user, UploadedFile $file): string
     {
         $userId = $user->getId();
         if (null === $userId) {
@@ -34,20 +34,38 @@ final class UserProfileImageStorage
             throw new UserProfileImageUploadException('Solo se permiten imágenes JPG, PNG o WebP.');
         }
 
-        $objectKey = $this->buildObjectKey($userId, $extension);
+        return $this->buildObjectKey($userId, $extension);
+    }
 
+    public function write(string $objectKey, UploadedFile $file): void
+    {
         try {
             $this->objectStorage->writeUploadedFile($objectKey, $file);
         } catch (ObjectStorageException $exception) {
             throw new UserProfileImageUploadException($exception->getMessage(), previous: $exception);
         }
+    }
+
+    public function upload(User $user, UploadedFile $file): string
+    {
+        $objectKey = $this->allocateObjectKey($user, $file);
+        $this->write($objectKey, $file);
 
         return $objectKey;
     }
 
     public function delete(?string $objectKey): void
     {
-        $this->objectStorage->delete($objectKey);
+        try {
+            $this->objectStorage->delete($objectKey);
+        } catch (ObjectStorageException $exception) {
+            throw new UserProfileImageUploadException($exception->getMessage(), previous: $exception);
+        }
+    }
+
+    public function tryDelete(?string $objectKey): void
+    {
+        $this->objectStorage->tryDelete($objectKey);
     }
 
     /**

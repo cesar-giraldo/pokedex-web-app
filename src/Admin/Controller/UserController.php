@@ -168,20 +168,24 @@ final class UserController extends AbstractController
             try {
                 $entityManager->persist($user);
                 $entityManager->flush();
-                $this->profileImageFormHandler->handleFromForm($user, $form, false);
-                $entityManager->flush();
-            } catch (UserProfileImageUploadException $exception) {
-                $this->addProfileImageFormError($form, $exception->getMessage());
-
-                return $this->render('@admin/users/new.html.twig', $this->buildFormViewData($user, $form, $formOptions));
             } catch (Throwable) {
-                $this->addProfileImageFormError(
-                    $form,
-                    'No se pudo guardar la imagen de perfil. Inténtelo de nuevo.',
-                );
                 $this->addFlash('error', 'No se pudo crear el usuario. Inténtelo de nuevo.');
 
                 return $this->render('@admin/users/new.html.twig', $this->buildFormViewData($user, $form, $formOptions));
+            }
+
+            try {
+                $this->profileImageFormHandler->handleFromForm($user, $form, false);
+            } catch (Throwable) {
+                $this->addFlash(
+                    'error',
+                    sprintf(
+                        'El usuario "%s" se creó, pero no se pudo guardar la imagen de perfil. Inténtelo de nuevo.',
+                        $user->getNickname(),
+                    ),
+                );
+
+                return $this->redirectToRoute('app_backend_user_edit', ['id' => $user->getId()]);
             }
 
             $this->addFlash('success', sprintf('El usuario "%s" se creó correctamente.', $user->getNickname()));

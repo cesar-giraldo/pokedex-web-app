@@ -38,18 +38,18 @@ final class PokemonImageExtensionTest extends TestCase
 
     public function testResolveUrlGeneratesPublicMediaPath(): void
     {
-        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
-        $urlGenerator->expects(self::once())
-            ->method('generate')
-            ->with('app_pokemon_image', ['id' => 15])
-            ->willReturn('/media/pokemon-images/15');
-
         $image = new PokemonImage()->setImagePath('dev/public/pokemon/images/1/file.jpg');
         $reflection = new ReflectionProperty(PokemonImage::class, 'id');
         $reflection->setValue($image, 15);
 
+        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
+        $urlGenerator->expects(self::once())
+            ->method('generate')
+            ->with('app_pokemon_image', ['publicToken' => $image->getPublicToken()])
+            ->willReturn('/media/pokemon-images/' . $image->getPublicToken());
+
         $extension = new PokemonImageExtension($urlGenerator);
 
-        self::assertSame('/media/pokemon-images/15', $extension->resolveUrl($image));
+        self::assertSame('/media/pokemon-images/' . $image->getPublicToken(), $extension->resolveUrl($image));
     }
 }

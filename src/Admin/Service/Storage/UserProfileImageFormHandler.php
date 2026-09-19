@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Service\Storage;
 
 use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -12,6 +13,7 @@ final class UserProfileImageFormHandler
 {
     public function __construct(
         private readonly UserProfileImageStorage $profileImageStorage,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -48,15 +50,28 @@ final class UserProfileImageFormHandler
     private function replaceProfileImage(User $user, UploadedFile $uploadedFile): void
     {
         $previousPath = $user->getProfileImagePath();
-        $newPath = $this->profileImageStorage->upload($user, $uploadedFile);
+        $newPath = $this->profileImageStorage->allocateObjectKey($user, $uploadedFile);
 
         $user->setProfileImagePath($newPath);
-        $this->profileImageStorage->delete($previousPath);
+        $this->entityManager->flush();
+
+        try {
+            $this->profileImageStorage->write($newPath, $uploadedFile);
+        } catch (UserProfileImageUploadException $exception) {
+            $user->setProfileImagePath($previousPath);
+            $this->entityManager->flush();
+            $this->profileImageStorage->tryDelete($newPath);
+
+            throw $exception;
+        }
+
+        $this->profileImageStorage->tryDelete($previousPath);
     }
 
     private function removeProfileImage(User $user): void
     {
         $this->profileImageStorage->delete($user->getProfileImagePath());
         $user->setProfileImagePath(null);
+        $this->entityManager->flush();
     }
 }

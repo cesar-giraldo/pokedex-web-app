@@ -20,7 +20,7 @@ final class PokemonImageStorage
     ) {
     }
 
-    public function upload(Pokemon $pokemon, UploadedFile $file): string
+    public function allocateObjectKey(Pokemon $pokemon, UploadedFile $file): string
     {
         $pokemonId = $pokemon->getId();
         if (null === $pokemonId) {
@@ -34,20 +34,38 @@ final class PokemonImageStorage
             throw new PokemonImageUploadException('Solo se permiten imágenes JPG, PNG o WebP.');
         }
 
-        $objectKey = $this->buildObjectKey($pokemonId, $extension);
+        return $this->buildObjectKey($pokemonId, $extension);
+    }
 
+    public function write(string $objectKey, UploadedFile $file): void
+    {
         try {
             $this->objectStorage->writeUploadedFile($objectKey, $file);
         } catch (ObjectStorageException $exception) {
             throw new PokemonImageUploadException($exception->getMessage(), previous: $exception);
         }
+    }
+
+    public function upload(Pokemon $pokemon, UploadedFile $file): string
+    {
+        $objectKey = $this->allocateObjectKey($pokemon, $file);
+        $this->write($objectKey, $file);
 
         return $objectKey;
     }
 
     public function delete(?string $objectKey): void
     {
-        $this->objectStorage->delete($objectKey);
+        try {
+            $this->objectStorage->delete($objectKey);
+        } catch (ObjectStorageException $exception) {
+            throw new PokemonImageUploadException($exception->getMessage(), previous: $exception);
+        }
+    }
+
+    public function tryDelete(?string $objectKey): void
+    {
+        $this->objectStorage->tryDelete($objectKey);
     }
 
     /**

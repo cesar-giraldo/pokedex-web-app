@@ -36,7 +36,7 @@ final class PokemonImageExtension extends AbstractExtension
 
         return $this->urlGenerator->generate(
             'app_pokemon_image',
-            ['id' => $image->getId()],
+            ['publicToken' => $image->getPublicToken()],
         );
     }
 }
