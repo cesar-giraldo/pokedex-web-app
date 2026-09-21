@@ -56,7 +56,8 @@ final class PokemonControllerMultimediaTest extends WebTestCase
         self::assertSelectorExists('input[name="pokemon_image_upload[description]"]');
         self::assertSelectorExists('button[data-component-submit-button-label-value="Subir Imagen"]');
         self::assertSelectorTextContains('body', 'Este Pokémon aún no tiene imágenes.');
-        self::assertSelectorExists('section[data-controller="component-sortable-gallery"]');
+        self::assertSelectorExists('section[data-controller*="component-sortable-gallery"]');
+        self::assertSelectorExists('section[data-controller*="component-image-lightbox"]');
         self::assertSelectorExists('#pokemon-image-confirm-dialog[data-controller="component-confirm-dialog"]');
     }
 
@@ -85,6 +86,9 @@ final class PokemonControllerMultimediaTest extends WebTestCase
         self::assertSelectorExists('ul.grid.grid-cols-2[data-component-sortable-gallery-target="list"]');
         self::assertSelectorExists('[data-component-sortable-gallery-target="item"]');
         self::assertSelectorExists('button.js-image-delete[aria-label="Eliminar imagen"]');
+        self::assertSelectorExists('button[data-component-image-lightbox-target="item"]');
+        self::assertSelectorExists('button[aria-label="Ver imagen a tamaño completo"]');
+        self::assertSelectorExists('[data-component-image-lightbox-src-param*="/media/pokemon-images/"]');
 
         $this->entityManager?->clear();
         $updatedPokemon = $this->entityManager?->find(Pokemon::class, $pokemon->getId());

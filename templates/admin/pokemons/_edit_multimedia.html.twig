@@ -50,7 +50,8 @@
 	<section
 		class="space-y-4"
 		aria-labelledby="pokemon-image-gallery-heading"
-		data-controller="component-sortable-gallery"
+		data-controller="component-sortable-gallery component-image-lightbox"
+		data-action="keydown.esc@window->component-image-lightbox#close keydown.left@window->component-image-lightbox#previous keydown.right@window->component-image-lightbox#next"
 		data-component-sortable-gallery-reorder-url-value="{{ path('app_backend_pokemon_images_reorder', { id: pokemon.id }) }}"
 		data-component-sortable-gallery-csrf-token-value="{{ csrf_token('pokemon_image') }}"
 		data-component-sortable-gallery-delete-title-value="Eliminar imagen"
@@ -83,16 +84,41 @@
 					class="min-w-0 cursor-grab active:cursor-grabbing"
 				>
 					<div class="relative aspect-square w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
-						<img
-							src="{{ pokemon_image_url(image, 'thumb') }}"
-							alt="{{ image.description ?: ('Imagen de ' ~ pokemon.name) }}"
-							width="400"
-							height="400"
-							class="pointer-events-none block h-full w-full object-cover"
-							loading="lazy"
-							decoding="async"
-							draggable="false"
-						>
+						{% set originalImageUrl = pokemon_image_url(image, 'original') %}
+						{% set imageCaption = image.description ?: ('Imagen de ' ~ pokemon.name) %}
+						{% if originalImageUrl %}
+							<button
+								type="button"
+								class="block h-full w-full cursor-zoom-in"
+								data-component-image-lightbox-target="item"
+								data-action="pointerdown->component-image-lightbox#markPointer click->component-image-lightbox#open"
+								data-component-image-lightbox-src-param="{{ originalImageUrl }}"
+								data-component-image-lightbox-caption-param="{{ imageCaption }}"
+								aria-label="Ver imagen a tamaño completo"
+							>
+								<img
+									src="{{ pokemon_image_url(image, 'thumb') }}"
+									alt="{{ imageCaption }}"
+									width="400"
+									height="400"
+									class="pointer-events-none block h-full w-full object-cover"
+									loading="lazy"
+									decoding="async"
+									draggable="false"
+								>
+							</button>
+						{% else %}
+							<img
+								src="{{ pokemon_image_url(image, 'thumb') }}"
+								alt="{{ imageCaption }}"
+								width="400"
+								height="400"
+								class="pointer-events-none block h-full w-full object-cover"
+								loading="lazy"
+								decoding="async"
+								draggable="false"
+							>
+						{% endif %}
 						<button
 							type="button"
 							class="js-image-delete absolute top-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-error-500 text-white shadow-theme-xs transition hover:bg-error-600"
@@ -108,6 +134,8 @@
 				</li>
 			{% endfor %}
 		</ul>
+
+		{% include '@admin/partials/_image_lightbox.html.twig' %}
 
 		<twig:component_confirm_dialog
 			id="pokemon-image-confirm-dialog"
