@@ -118,6 +118,21 @@ final class ObjectStorageTest extends TestCase
         self::assertSame('image/png', $this->objectStorage->resolveMimeType('file.png'));
     }
 
+    public function testWriteAndReadGeneratedBytes(): void
+    {
+        $objectKey = 'dev/public/pokemon/images/1/file_thumb.webp';
+        $this->objectStorage->write($objectKey, 'webp-bytes');
+
+        self::assertTrue($this->objectStorage->fileExists($objectKey));
+        self::assertSame('webp-bytes', $this->objectStorage->read($objectKey));
+    }
+
+    public function testReadMissingObjectThrows(): void
+    {
+        $this->expectException(ObjectStorageException::class);
+        $this->objectStorage->read('missing.webp');
+    }
+
     private function createUploadedFile(): UploadedFile
     {
         $path = tempnam(sys_get_temp_dir(), 'object-storage-');

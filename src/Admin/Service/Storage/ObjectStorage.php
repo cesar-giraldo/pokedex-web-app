@@ -47,6 +47,31 @@ final class ObjectStorage
         }
     }
 
+    public function write(string $objectKey, string $contents): void
+    {
+        try {
+            $this->privateMediaStorage->write($objectKey, $contents);
+        } catch (FilesystemException $exception) {
+            throw new ObjectStorageException(
+                $this->buildUploadFailureMessage($exception),
+                previous: $exception,
+            );
+        }
+    }
+
+    public function read(string $objectKey): string
+    {
+        if (!$this->privateMediaStorage->fileExists($objectKey)) {
+            throw new ObjectStorageException('El archivo no existe.');
+        }
+
+        try {
+            return $this->privateMediaStorage->read($objectKey);
+        } catch (FilesystemException $exception) {
+            throw new ObjectStorageException('No se pudo leer el archivo.', previous: $exception);
+        }
+    }
+
     public function delete(?string $objectKey): void
     {
         if (null === $objectKey || '' === $objectKey) {

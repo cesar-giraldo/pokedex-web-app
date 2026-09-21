@@ -36,11 +36,30 @@ final class PokemonImageExtensionTest extends TestCase
         self::assertNull($extension->resolveUrl(new PokemonImage()->setImagePath('path.jpg')));
     }
 
-    public function testResolveUrlGeneratesPublicMediaPath(): void
+    public function testResolveUrlGeneratesThumbPathByDefault(): void
     {
-        $image = new PokemonImage()->setImagePath('dev/public/pokemon/images/1/file.jpg');
-        $reflection = new ReflectionProperty(PokemonImage::class, 'id');
-        $reflection->setValue($image, 15);
+        $image = $this->persistedImage();
+
+        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
+        $urlGenerator->expects(self::once())
+            ->method('generate')
+            ->with('app_pokemon_image', [
+                'publicToken' => $image->getPublicToken(),
+                'variant' => 'thumb',
+            ])
+            ->willReturn('/media/pokemon-images/' . $image->getPublicToken() . '/thumb');
+
+        $extension = new PokemonImageExtension($urlGenerator);
+
+        self::assertSame(
+            '/media/pokemon-images/' . $image->getPublicToken() . '/thumb',
+            $extension->resolveUrl($image),
+        );
+    }
+
+    public function testResolveUrlOmitsVariantForOriginal(): void
+    {
+        $image = $this->persistedImage();
 
         $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
         $urlGenerator->expects(self::once())
@@ -50,6 +69,29 @@ final class PokemonImageExtensionTest extends TestCase
 
         $extension = new PokemonImageExtension($urlGenerator);
 
-        self::assertSame('/media/pokemon-images/' . $image->getPublicToken(), $extension->resolveUrl($image));
+        self::assertSame(
+            '/media/pokemon-images/' . $image->getPublicToken(),
+            $extension->resolveUrl($image, 'original'),
+        );
+    }
+
+    public function testResolveUrlReturnsNullForDisallowedVariant(): void
+    {
+        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
+        $urlGenerator->expects(self::never())->method('generate');
+
+        $extension = new PokemonImageExtension($urlGenerator);
+
+        self::assertNull($extension->resolveUrl($this->persistedImage(), 'avatar'));
+        self::assertNull($extension->resolveUrl($this->persistedImage(), 'unknown'));
+    }
+
+    private function persistedImage(): PokemonImage
+    {
+        $image = new PokemonImage()->setImagePath('dev/public/pokemon/images/1/file.jpg');
+        $reflection = new ReflectionProperty(PokemonImage::class, 'id');
+        $reflection->setValue($image, 15);
+
+        return $image;
     }
 }

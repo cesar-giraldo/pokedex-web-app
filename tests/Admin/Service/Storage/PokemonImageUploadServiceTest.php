@@ -11,6 +11,7 @@ use App\Admin\Service\Storage\PokemonImageUploadService;
 use App\Entity\Pokemon;
 use App\Entity\PokemonImage;
 use App\Repository\PokemonImageRepository;
+use App\Tests\Admin\Support\ImageStorageFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use League\Flysystem\Filesystem;
@@ -41,9 +42,8 @@ final class PokemonImageUploadServiceTest extends TestCase
         $this->tempDirectory = sys_get_temp_dir() . '/pokedex-pokemon-upload-' . bin2hex(random_bytes(8));
         mkdir($this->tempDirectory, 0o777, true);
 
-        $this->pokemonImageStorage = new PokemonImageStorage(
+        $this->pokemonImageStorage = ImageStorageFactory::pokemon(
             new ObjectStorage(new Filesystem(new LocalFilesystemAdapter($this->tempDirectory))),
-            'dev',
         );
     }
 
@@ -237,7 +237,7 @@ final class PokemonImageUploadServiceTest extends TestCase
         $filesystem->method('writeStream')->willThrowException(UnableToWriteFile::atLocation('key'));
         $filesystem->method('fileExists')->willReturn(false);
 
-        return new PokemonImageStorage(new ObjectStorage($filesystem), 'dev');
+        return ImageStorageFactory::pokemon(new ObjectStorage($filesystem));
     }
 
     private function createFailingDeleteStorage(): PokemonImageStorage
@@ -246,7 +246,7 @@ final class PokemonImageUploadServiceTest extends TestCase
         $filesystem->method('fileExists')->willReturn(true);
         $filesystem->method('delete')->willThrowException(UnableToDeleteFile::atLocation('key'));
 
-        return new PokemonImageStorage(new ObjectStorage($filesystem), 'dev');
+        return ImageStorageFactory::pokemon(new ObjectStorage($filesystem));
     }
 
     /**
