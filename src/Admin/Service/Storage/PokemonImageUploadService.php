@@ -53,6 +53,18 @@ final class PokemonImageUploadService
         return $image;
     }
 
+    public function updateDescription(Pokemon $pokemon, PokemonImage $image, ?string $description): PokemonImage
+    {
+        if ($image->getPokemon()->getId() !== $pokemon->getId()) {
+            throw new NotFoundHttpException();
+        }
+
+        $image->setDescription($description);
+        $this->entityManager->flush();
+
+        return $image;
+    }
+
     public function delete(Pokemon $pokemon, PokemonImage $image): void
     {
         if ($image->getPokemon()->getId() !== $pokemon->getId()) {

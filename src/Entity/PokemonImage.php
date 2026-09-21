@@ -20,6 +20,8 @@ class PokemonImage
 
     public const string PUBLIC_TOKEN_PATTERN = '[1-9A-HJ-NP-Za-km-z]{22}';
 
+    public const int DESCRIPTION_MAX_LENGTH = 255;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -35,7 +37,7 @@ class PokemonImage
     #[ORM\Column(length: 512)]
     private string $imagePath;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: self::DESCRIPTION_MAX_LENGTH, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(name: 'sort_order', type: Types::INTEGER)]

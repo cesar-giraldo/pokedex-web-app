@@ -11,12 +11,15 @@ use App\Entity\PokemonType;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+use function array_reverse;
 use function json_decode;
 use function json_encode;
 use function sprintf;
+use function str_repeat;
 
 use const JSON_THROW_ON_ERROR;
 
@@ -27,13 +30,20 @@ final class PokemonImageControllerTest extends WebTestCase
 
     private ?EntityManagerInterface $entityManager = null;
 
-    private ?int $pokemonId = null;
+    /**
+     * @var list<int>
+     */
+    private array $pokemonIds = [];
 
     protected function tearDown(): void
     {
-        if (null !== $this->entityManager && null !== $this->pokemonId) {
-            $pokemon = $this->entityManager->find(Pokemon::class, $this->pokemonId);
-            if (null !== $pokemon) {
+        if (null !== $this->entityManager) {
+            foreach (array_reverse($this->pokemonIds) as $pokemonId) {
+                $pokemon = $this->entityManager->find(Pokemon::class, $pokemonId);
+                if (null === $pokemon) {
+                    continue;
+                }
+
                 $type = $pokemon->getType();
                 $this->entityManager->remove($pokemon);
                 $this->entityManager->flush();
@@ -133,6 +143,151 @@ final class PokemonImageControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
+    public function testUpdateDescriptionPersistsNormalizedValue(): void
+    {
+        $client = static::createClient();
+        $this->loginAsAdmin($client);
+        $pokemon = $this->createTestPokemon();
+        $image = $this->createPokemonImage($pokemon, 1, 'Anterior');
+        $imageId = $image->getId();
+        self::assertNotNull($imageId);
+
+        $csrfToken = $this->getGalleryCsrfToken($client, $pokemon);
+
+        $client->request(
+            'PATCH',
+            sprintf('/admin/pokemons/%d/images/%d', $pokemon->getId(), $imageId),
+            server: [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_X_CSRF_TOKEN' => $csrfToken,
+            ],
+            content: json_encode(['description' => '  Vista frontal  '], JSON_THROW_ON_ERROR),
+        );
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode((string) $client->getResponse()->getContent(), true);
+        self::assertIsArray($payload);
+        self::assertTrue($payload['success'] ?? false);
+        self::assertSame('Vista frontal', $payload['description'] ?? null);
+
+        $this->entityManager?->clear();
+        $reloaded = $this->entityManager?->find(PokemonImage::class, $imageId);
+        self::assertNotNull($reloaded);
+        self::assertSame('Vista frontal', $reloaded->getDescription());
+    }
+
+    public function testUpdateDescriptionCanBeCleared(): void
+    {
+        $client = static::createClient();
+        $this->loginAsAdmin($client);
+        $pokemon = $this->createTestPokemon();
+        $image = $this->createPokemonImage($pokemon, 1, 'Quitar');
+        $imageId = $image->getId();
+        self::assertNotNull($imageId);
+
+        $csrfToken = $this->getGalleryCsrfToken($client, $pokemon);
+
+        $client->request(
+            'PATCH',
+            sprintf('/admin/pokemons/%d/images/%d', $pokemon->getId(), $imageId),
+            server: [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_X_CSRF_TOKEN' => $csrfToken,
+            ],
+            content: json_encode(['description' => '   '], JSON_THROW_ON_ERROR),
+        );
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode((string) $client->getResponse()->getContent(), true);
+        self::assertIsArray($payload);
+        self::assertSame('', $payload['description'] ?? 'missing');
+
+        $this->entityManager?->clear();
+        $reloaded = $this->entityManager?->find(PokemonImage::class, $imageId);
+        self::assertNotNull($reloaded);
+        self::assertNull($reloaded->getDescription());
+    }
+
+    public function testUpdateDescriptionRequiresCsrfToken(): void
+    {
+        $client = static::createClient();
+        $this->loginAsAdmin($client);
+        $pokemon = $this->createTestPokemon();
+        $image = $this->createPokemonImage($pokemon, 1, 'CSRF');
+        $imageId = $image->getId();
+        self::assertNotNull($imageId);
+
+        $client->request(
+            'PATCH',
+            sprintf('/admin/pokemons/%d/images/%d', $pokemon->getId(), $imageId),
+            server: [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_ACCEPT' => 'application/json',
+            ],
+            content: json_encode(['description' => 'Nueva'], JSON_THROW_ON_ERROR),
+        );
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testUpdateDescriptionRejectsImageFromAnotherPokemon(): void
+    {
+        $client = static::createClient();
+        $this->loginAsAdmin($client);
+        $pokemon = $this->createTestPokemon();
+        $other = $this->createTestPokemon();
+        $image = $this->createPokemonImage($other, 1, 'Ajena');
+        $imageId = $image->getId();
+        self::assertNotNull($imageId);
+
+        $csrfToken = $this->getGalleryCsrfToken($client, $pokemon);
+
+        $client->request(
+            'PATCH',
+            sprintf('/admin/pokemons/%d/images/%d', $pokemon->getId(), $imageId),
+            server: [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_X_CSRF_TOKEN' => $csrfToken,
+            ],
+            content: json_encode(['description' => 'Nueva'], JSON_THROW_ON_ERROR),
+        );
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testUpdateDescriptionRejectsValueAboveMaxLength(): void
+    {
+        $client = static::createClient();
+        $this->loginAsAdmin($client);
+        $pokemon = $this->createTestPokemon();
+        $image = $this->createPokemonImage($pokemon, 1, 'Larga');
+        $imageId = $image->getId();
+        self::assertNotNull($imageId);
+
+        $csrfToken = $this->getGalleryCsrfToken($client, $pokemon);
+
+        $client->request(
+            'PATCH',
+            sprintf('/admin/pokemons/%d/images/%d', $pokemon->getId(), $imageId),
+            server: [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_X_CSRF_TOKEN' => $csrfToken,
+            ],
+            content: json_encode([
+                'description' => str_repeat('a', PokemonImage::DESCRIPTION_MAX_LENGTH + 1),
+            ], JSON_THROW_ON_ERROR),
+        );
+
+        self::assertResponseStatusCodeSame(400);
+        $payload = json_decode((string) $client->getResponse()->getContent(), true);
+        self::assertIsArray($payload);
+        self::assertSame('La descripción no puede tener más de 255 caracteres.', $payload['error'] ?? null);
+    }
+
     private function createTestPokemon(): Pokemon
     {
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
@@ -153,9 +308,27 @@ final class PokemonImageControllerTest extends WebTestCase
 
         $this->entityManager->persist($pokemon);
         $this->entityManager->flush();
-        $this->pokemonId = $pokemon->getId();
+        $pokemonId = $pokemon->getId();
+        self::assertNotNull($pokemonId);
+        $this->pokemonIds[] = $pokemonId;
 
         return $pokemon;
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    private function getGalleryCsrfToken(KernelBrowser $client, Pokemon $pokemon): string
+    {
+        $crawler = $client->request('GET', sprintf('/admin/pokemons/%d/edit/multimedia', $pokemon->getId()));
+        self::assertResponseIsSuccessful();
+
+        $csrfToken = $crawler->filter('[data-component-sortable-gallery-csrf-token-value]')->attr('data-component-sortable-gallery-csrf-token-value');
+        if (null === $csrfToken || '' === $csrfToken) {
+            self::fail('No se encontró el token CSRF de la galería.');
+        }
+
+        return $csrfToken;
     }
 
     private function createPokemonImage(Pokemon $pokemon, int $sortOrder, string $description): PokemonImage

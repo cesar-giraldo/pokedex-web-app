@@ -218,6 +218,63 @@ final class PokemonImageUploadServiceTest extends TestCase
         $service->delete($pokemon, $image);
     }
 
+    public function testUpdateDescriptionTrimsAndPersists(): void
+    {
+        $pokemon = $this->createPokemon(3);
+        $image = $this->createImage($pokemon, 31, 1);
+        $image->setDescription('Anterior');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())->method('flush');
+
+        $service = new PokemonImageUploadService(
+            $this->pokemonImageStorage,
+            $this->createMock(PokemonImageRepository::class),
+            $entityManager,
+        );
+
+        $updated = $service->updateDescription($pokemon, $image, '  Vista frontal  ');
+
+        self::assertSame($image, $updated);
+        self::assertSame('Vista frontal', $image->getDescription());
+    }
+
+    public function testUpdateDescriptionClearsBlankValue(): void
+    {
+        $pokemon = $this->createPokemon(3);
+        $image = $this->createImage($pokemon, 32, 1);
+        $image->setDescription('Quitar');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())->method('flush');
+
+        $service = new PokemonImageUploadService(
+            $this->pokemonImageStorage,
+            $this->createMock(PokemonImageRepository::class),
+            $entityManager,
+        );
+
+        $service->updateDescription($pokemon, $image, '   ');
+
+        self::assertNull($image->getDescription());
+    }
+
+    public function testUpdateDescriptionRejectsImageFromAnotherPokemon(): void
+    {
+        $pokemon = $this->createPokemon(1);
+        $other = $this->createPokemon(2);
+        $image = $this->createImage($other, 5, 1);
+
+        $service = new PokemonImageUploadService(
+            $this->pokemonImageStorage,
+            $this->createMock(PokemonImageRepository::class),
+            $this->createMock(EntityManagerInterface::class),
+        );
+
+        $this->expectException(NotFoundHttpException::class);
+        $service->updateDescription($pokemon, $image, 'Nueva');
+    }
+
     private function createPokemon(int $id): Pokemon
     {
         $pokemon = new Pokemon()

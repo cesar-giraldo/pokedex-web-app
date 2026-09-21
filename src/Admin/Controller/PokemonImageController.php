@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Controller;
 
+use App\Admin\Form\PokemonImageEditType;
 use App\Admin\Service\Storage\PokemonImageUploadException;
 use App\Admin\Service\Storage\PokemonImageUploadService;
 use App\Entity\Pokemon;
@@ -11,6 +12,7 @@ use App\Entity\PokemonImage;
 use App\Repository\PokemonImageRepository;
 use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -63,6 +65,47 @@ final class PokemonImageController extends AbstractController
         ]);
     }
 
+    #[Route('/pokemons/{id}/images/{imageId}', name: 'app_backend_pokemon_image_update', methods: ['PATCH'], requirements: ['id' => '\d+', 'imageId' => '\d+'])]
+    public function update(Pokemon $pokemon, int $imageId, Request $request): JsonResponse
+    {
+        $this->assertPokemonImageCsrf($request);
+
+        $image = $this->pokemonImageRepository->find($imageId);
+        if (!$image instanceof PokemonImage || $image->getPokemon()->getId() !== $pokemon->getId()) {
+            throw new NotFoundHttpException();
+        }
+
+        $content = (string) $request->getContent();
+        $payload = '' === $content ? [] : json_decode($content, true);
+        if (!is_array($payload)) {
+            return $this->json(['error' => 'La descripción no es válida.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $rawDescription = $payload['description'] ?? '';
+        if (!is_string($rawDescription)) {
+            return $this->json(['error' => 'La descripción no es válida.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $form = $this->createForm(PokemonImageEditType::class);
+        $form->submit(['description' => $rawDescription]);
+        if (!$form->isValid()) {
+            return $this->json(['error' => $this->getFirstFormError($form)], Response::HTTP_BAD_REQUEST);
+        }
+
+        $description = $form->get('description')->getData();
+        $image = $this->pokemonImageUploadService->updateDescription(
+            $pokemon,
+            $image,
+            is_string($description) ? $description : null,
+        );
+
+        return $this->json([
+            'success' => true,
+            'message' => 'La descripción se actualizó correctamente.',
+            'description' => $image->getDescription() ?? '',
+        ]);
+    }
+
     #[Route('/pokemons/{id}/images/{imageId}', name: 'app_backend_pokemon_image_delete', methods: ['DELETE'], requirements: ['id' => '\d+', 'imageId' => '\d+'])]
     public function delete(Pokemon $pokemon, int $imageId, Request $request): JsonResponse
     {
@@ -91,5 +134,17 @@ final class PokemonImageController extends AbstractController
         if (!is_string($token) || !$this->isCsrfTokenValid('pokemon_image', $token)) {
             throw new AccessDeniedHttpException('Token CSRF inválido.');
         }
+    }
+
+    /**
+     * @param FormInterface<mixed> $form
+     */
+    private function getFirstFormError(FormInterface $form): string
+    {
+        foreach ($form->getErrors(true) as $error) {
+            return $error->getMessage();
+        }
+
+        return 'La descripción no es válida.';
     }
 }

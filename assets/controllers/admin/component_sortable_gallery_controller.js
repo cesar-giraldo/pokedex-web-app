@@ -17,19 +17,23 @@ async function loadSortable() {
 }
 
 export default class extends Controller {
-    static targets = ['list', 'item', 'empty', 'feedback'];
+    static targets = ['list', 'item', 'empty', 'feedback', 'editModal', 'editDescriptionField', 'editError', 'editSubmit'];
 
     static values = {
         reorderUrl: String,
         csrfToken: String,
+        fallbackCaption: { type: String, default: 'Imagen' },
         deleteTitle: { type: String, default: 'Eliminar imagen' },
         deleteMessage: { type: String, default: '¿Seguro que deseas eliminar esta imagen?' },
         reorderSuccess: { type: String, default: 'El orden de las imágenes fue actualizado correctamente.' },
         deleteSuccess: { type: String, default: 'La imagen se eliminó correctamente.' },
+        updateSuccess: { type: String, default: 'La descripción se actualizó correctamente.' },
     };
 
     connect() {
         this.pendingDeleteItem = null;
+        this.pendingEditItem = null;
+        this.editModalOpen = false;
         this.bindConfirmDialog();
         void this.initializeSortable();
     }
@@ -37,6 +41,10 @@ export default class extends Controller {
     disconnect() {
         this.destroySortable();
         this.unbindConfirmDialog();
+        this.setEditModalOpen(false);
+        this.pendingDeleteItem = null;
+        this.pendingEditItem = null;
+        this.lastEditTrigger = null;
     }
 
     requestDelete(event) {
@@ -54,6 +62,98 @@ export default class extends Controller {
             title: this.deleteTitleValue,
             message: this.deleteMessageValue,
         });
+    }
+
+    requestEdit(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        this.pendingEditItem = event.currentTarget.closest('[data-component-sortable-gallery-target="item"]');
+        if (!this.pendingEditItem) {
+            return;
+        }
+
+        this.lastEditTrigger = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+
+        const descriptionInput = this.getEditDescriptionInput();
+        if (descriptionInput) {
+            descriptionInput.value = this.pendingEditItem.dataset.description ?? '';
+        }
+
+        this.clearEditError();
+        this.setEditSubmitBusy(false);
+        this.setEditModalOpen(true);
+        descriptionInput?.focus();
+        descriptionInput?.select();
+    }
+
+    closeEditModal(event) {
+        event?.preventDefault();
+
+        if (!this.editModalOpen) {
+            return;
+        }
+
+        this.pendingEditItem = null;
+        this.clearEditError();
+        this.setEditSubmitBusy(false);
+        this.setEditModalOpen(false);
+
+        if (this.lastEditTrigger instanceof HTMLElement) {
+            this.lastEditTrigger.focus();
+        }
+
+        this.lastEditTrigger = null;
+    }
+
+    async submitEdit(event) {
+        event.preventDefault();
+
+        const item = this.pendingEditItem;
+        const updateUrl = item?.dataset.updateUrl;
+        const descriptionInput = this.getEditDescriptionInput();
+
+        if (!item || !updateUrl || !descriptionInput) {
+            return;
+        }
+
+        this.clearEditError();
+        this.setEditSubmitBusy(true);
+
+        try {
+            const response = await fetch(updateUrl, {
+                method: 'PATCH',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': this.csrfTokenValue,
+                },
+                body: JSON.stringify({ description: descriptionInput.value }),
+            });
+
+            const payload = await this.parseJsonResponse(response);
+
+            if (this.pendingEditItem !== item) {
+                return;
+            }
+
+            if (!response.ok) {
+                this.showEditError(payload.error || 'No se pudo actualizar la descripción. Inténtalo de nuevo.');
+                this.setEditSubmitBusy(false);
+                return;
+            }
+
+            this.applyDescription(item, payload.description);
+            this.closeEditModal();
+            this.showFeedback(payload.message || this.updateSuccessValue, 'success');
+        } catch {
+            if (this.pendingEditItem !== item) {
+                return;
+            }
+
+            this.showEditError('No se pudo actualizar la descripción. Inténtalo de nuevo.');
+            this.setEditSubmitBusy(false);
+        }
     }
 
     getConfirmDialogController() {
@@ -115,7 +215,7 @@ export default class extends Controller {
             this.sortable = Sortable.create(this.listTarget, {
                 animation: 150,
                 draggable: '[data-component-sortable-gallery-target="item"]',
-                filter: '.js-image-delete',
+                filter: '.js-image-action, .js-image-delete, .js-image-edit',
                 preventOnFilter: true,
                 ghostClass: 'opacity-50',
                 onEnd: (sortEvent) => {
@@ -228,6 +328,89 @@ export default class extends Controller {
         div.textContent = value;
 
         return div.innerHTML;
+    }
+
+    getEditDescriptionInput() {
+        if (!this.hasEditDescriptionFieldTarget) {
+            return null;
+        }
+
+        return this.editDescriptionFieldTarget.querySelector('input');
+    }
+
+    setEditModalOpen(isOpen) {
+        this.editModalOpen = isOpen;
+
+        if (!this.hasEditModalTarget) {
+            return;
+        }
+
+        this.editModalTarget.hidden = !isOpen;
+        this.editModalTarget.classList.toggle('hidden', !isOpen);
+        this.editModalTarget.classList.toggle('flex', isOpen);
+        this.editModalTarget.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        document.documentElement.classList.toggle('overflow-hidden', isOpen);
+    }
+
+    setEditSubmitBusy(isBusy) {
+        if (!this.hasEditSubmitTarget) {
+            return;
+        }
+
+        this.editSubmitTarget.disabled = isBusy;
+        this.editSubmitTarget.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+        this.editSubmitTarget.textContent = isBusy ? 'Guardando...' : 'Guardar cambios';
+    }
+
+    clearEditError() {
+        if (!this.hasEditErrorTarget) {
+            return;
+        }
+
+        this.editErrorTarget.textContent = '';
+        this.editErrorTarget.classList.add('hidden');
+    }
+
+    showEditError(message) {
+        if (!this.hasEditErrorTarget) {
+            this.showFeedback(message, 'error');
+            return;
+        }
+
+        this.editErrorTarget.textContent = message;
+        this.editErrorTarget.classList.remove('hidden');
+    }
+
+    applyDescription(item, description) {
+        const nextDescription = 'string' === typeof description ? description : '';
+        item.dataset.description = nextDescription;
+
+        const caption = nextDescription || this.fallbackCaptionValue;
+        const image = item.querySelector('img');
+        if (image) {
+            image.alt = caption;
+        }
+
+        const lightboxTrigger = item.querySelector('[data-component-image-lightbox-target="item"]');
+        if (lightboxTrigger) {
+            lightboxTrigger.dataset.componentImageLightboxCaptionParam = caption;
+        }
+
+        const captionElement = item.querySelector('[data-image-caption]');
+        if (!captionElement) {
+            return;
+        }
+
+        captionElement.textContent = nextDescription;
+        captionElement.classList.toggle('hidden', '' === nextDescription);
+    }
+
+    async parseJsonResponse(response) {
+        try {
+            return await response.json();
+        } catch {
+            return {};
+        }
     }
 
     bindConfirmDialog() {

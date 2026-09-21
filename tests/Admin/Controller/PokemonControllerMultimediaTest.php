@@ -59,6 +59,8 @@ final class PokemonControllerMultimediaTest extends WebTestCase
         self::assertSelectorExists('section[data-controller*="component-sortable-gallery"]');
         self::assertSelectorExists('section[data-controller*="component-image-lightbox"]');
         self::assertSelectorExists('#pokemon-image-confirm-dialog[data-controller="component-confirm-dialog"]');
+        self::assertSelectorExists('#pokemon-image-edit-modal');
+        self::assertSelectorExists('input#pokemon-image-edit-description');
     }
 
     public function testMultimediaUploadCreatesImageAndReloadsTab(): void
@@ -86,6 +88,7 @@ final class PokemonControllerMultimediaTest extends WebTestCase
         self::assertSelectorExists('ul.grid.grid-cols-2[data-component-sortable-gallery-target="list"]');
         self::assertSelectorExists('[data-component-sortable-gallery-target="item"]');
         self::assertSelectorExists('button.js-image-delete[aria-label="Eliminar imagen"]');
+        self::assertSelectorExists('button.js-image-edit[aria-label="Editar descripción"]');
         self::assertSelectorExists('button[data-component-image-lightbox-target="item"]');
         self::assertSelectorExists('button[aria-label="Ver imagen a tamaño completo"]');
         self::assertSelectorExists('[data-component-image-lightbox-src-param*="/media/pokemon-images/"]');
