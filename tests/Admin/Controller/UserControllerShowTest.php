@@ -114,7 +114,7 @@ final class UserControllerShowTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-controller*="component-image-lightbox"]');
         self::assertSelectorExists(sprintf(
-            'button[data-component-image-lightbox-target="item"][data-component-image-lightbox-src-param="/admin/media/user-profile/%d/original"]',
+            'button[data-component-image-lightbox-target="item"][data-component-image-lightbox-src-param="/admin/media/user-profile/%d/display"]',
             $user->getId(),
         ));
         self::assertSelectorExists('button[aria-label="Cerrar imagen"]');

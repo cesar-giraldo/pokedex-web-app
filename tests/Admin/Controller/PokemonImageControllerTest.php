@@ -288,6 +288,69 @@ final class PokemonImageControllerTest extends WebTestCase
         self::assertSame('La descripción no puede tener más de 255 caracteres.', $payload['error'] ?? null);
     }
 
+    public function testDownloadReturnsOriginalAsAttachment(): void
+    {
+        $client = static::createClient();
+        $this->loginAsAdmin($client);
+        $pokemon = $this->createTestPokemon();
+        $pokemon->setName('Bulbasaur Demo');
+        $this->entityManager?->flush();
+
+        $image = $this->createPokemonImage($pokemon, 1, 'Descargar');
+        $imageId = $image->getId();
+        self::assertNotNull($imageId);
+
+        $client->request(
+            'GET',
+            sprintf('/admin/pokemons/%d/images/%d/download', $pokemon->getId(), $imageId),
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('Content-Type', 'image/jpeg');
+
+        $disposition = (string) $client->getResponse()->headers->get('Content-Disposition');
+        self::assertStringContainsString('attachment', $disposition);
+        self::assertStringContainsString(
+            sprintf('bulbasaur-demo-%d.jpg', $imageId),
+            $disposition,
+        );
+        self::assertNotSame('', $client->getResponse()->getContent());
+    }
+
+    public function testDownloadRejectsImageFromAnotherPokemon(): void
+    {
+        $client = static::createClient();
+        $this->loginAsAdmin($client);
+        $pokemon = $this->createTestPokemon();
+        $other = $this->createTestPokemon();
+        $image = $this->createPokemonImage($other, 1, 'Ajena');
+        $imageId = $image->getId();
+        self::assertNotNull($imageId);
+
+        $client->request(
+            'GET',
+            sprintf('/admin/pokemons/%d/images/%d/download', $pokemon->getId(), $imageId),
+        );
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testDownloadRequiresAuthentication(): void
+    {
+        $client = static::createClient();
+        $pokemon = $this->createTestPokemon();
+        $image = $this->createPokemonImage($pokemon, 1, 'Privada');
+        $imageId = $image->getId();
+        self::assertNotNull($imageId);
+
+        $client->request(
+            'GET',
+            sprintf('/admin/pokemons/%d/images/%d/download', $pokemon->getId(), $imageId),
+        );
+
+        self::assertResponseRedirects();
+    }
+
     private function createTestPokemon(): Pokemon
     {
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);

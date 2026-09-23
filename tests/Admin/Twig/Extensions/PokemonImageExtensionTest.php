@@ -75,6 +75,27 @@ final class PokemonImageExtensionTest extends TestCase
         );
     }
 
+    public function testResolveUrlIncludesDisplayVariant(): void
+    {
+        $image = $this->persistedImage();
+
+        $urlGenerator = $this->createMock(UrlGeneratorInterface::class);
+        $urlGenerator->expects(self::once())
+            ->method('generate')
+            ->with('app_pokemon_image', [
+                'publicToken' => $image->getPublicToken(),
+                'variant' => 'display',
+            ])
+            ->willReturn('/media/pokemon-images/' . $image->getPublicToken() . '/display');
+
+        $extension = new PokemonImageExtension($urlGenerator);
+
+        self::assertSame(
+            '/media/pokemon-images/' . $image->getPublicToken() . '/display',
+            $extension->resolveUrl($image, 'display'),
+        );
+    }
+
     public function testResolveUrlReturnsNullForDisallowedVariant(): void
     {
         $urlGenerator = $this->createMock(UrlGeneratorInterface::class);

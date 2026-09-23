@@ -93,7 +93,7 @@ final class UserControllerIndexTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-controller*="component-image-lightbox"]');
         self::assertSelectorExists(sprintf(
-            'tbody button[data-component-image-lightbox-target="item"][data-component-image-lightbox-src-param="/admin/media/user-profile/%d/original"]',
+            'tbody button[data-component-image-lightbox-target="item"][data-component-image-lightbox-src-param="/admin/media/user-profile/%d/display"]',
             $user->getId(),
         ));
         self::assertSelectorNotExists('header button[data-component-image-lightbox-target="item"]');

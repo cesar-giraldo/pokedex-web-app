@@ -89,9 +89,10 @@ final class PokemonControllerMultimediaTest extends WebTestCase
         self::assertSelectorExists('[data-component-sortable-gallery-target="item"]');
         self::assertSelectorExists('button.js-image-delete[aria-label="Eliminar imagen"]');
         self::assertSelectorExists('button.js-image-edit[aria-label="Editar descripción"]');
+        self::assertSelectorExists('a.js-image-download[aria-label="Descargar imagen original"]');
         self::assertSelectorExists('button[data-component-image-lightbox-target="item"]');
         self::assertSelectorExists('button[aria-label="Ver imagen a tamaño completo"]');
-        self::assertSelectorExists('[data-component-image-lightbox-src-param*="/media/pokemon-images/"]');
+        self::assertSelectorExists('[data-component-image-lightbox-src-param*="/media/pokemon-images/"][data-component-image-lightbox-src-param$="/display"]');
 
         $this->entityManager?->clear();
         $updatedPokemon = $this->entityManager?->find(Pokemon::class, $pokemon->getId());

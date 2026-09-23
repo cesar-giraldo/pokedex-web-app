@@ -215,7 +215,7 @@ export default class extends Controller {
             this.sortable = Sortable.create(this.listTarget, {
                 animation: 150,
                 draggable: '[data-component-sortable-gallery-target="item"]',
-                filter: '.js-image-action, .js-image-delete, .js-image-edit',
+                filter: '.js-image-action, .js-image-delete, .js-image-edit, .js-image-download',
                 preventOnFilter: true,
                 ghostClass: 'opacity-50',
                 onEnd: (sortEvent) => {

@@ -5,22 +5,22 @@
 	- user: User entity
 	- size_class: Tailwind size classes (default h-20 w-20)
 	- icon_class: Tailwind classes for placeholder icon
-	- lightbox: when true and the user has a photo, clicking opens the original in the parent lightbox
+	- lightbox: when true and the user has a photo, clicking opens the display (1200px) variant in the parent lightbox
 #}
 {% set avatarSizeClass = size_class|default('h-20 w-20') %}
 {% set avatarIconClass = icon_class|default('h-full w-full text-gray-400 dark:text-gray-500') %}
 {% set enableLightbox = lightbox|default(false) %}
 {% set profileImageUrl = user_profile_image_url(user) %}
-{% set originalImageUrl = enableLightbox ? user_profile_image_url(user, 'original') : null %}
+{% set displayImageUrl = enableLightbox ? user_profile_image_url(user, 'display') : null %}
 {% set avatarCaption = user.name ~ ' ' ~ user.lastname %}
 
-{% if profileImageUrl and originalImageUrl %}
+{% if profileImageUrl and displayImageUrl %}
 	<button
 		type="button"
 		class="{{ avatarSizeClass }} flex shrink-0 cursor-zoom-in items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-800"
 		data-component-image-lightbox-target="item"
 		data-action="click->component-image-lightbox#open"
-		data-component-image-lightbox-src-param="{{ originalImageUrl }}"
+		data-component-image-lightbox-src-param="{{ displayImageUrl }}"
 		data-component-image-lightbox-caption-param="{{ avatarCaption }}"
 		aria-label="Ver foto de perfil de {{ avatarCaption }}"
 	>

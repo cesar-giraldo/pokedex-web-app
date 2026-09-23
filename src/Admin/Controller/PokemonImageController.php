@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Admin\Controller;
 
 use App\Admin\Form\PokemonImageEditType;
+use App\Admin\Service\Storage\AllowedImageTypes;
+use App\Admin\Service\Storage\ImageVariant;
+use App\Admin\Service\Storage\PokemonImageStorage;
 use App\Admin\Service\Storage\PokemonImageUploadException;
 use App\Admin\Service\Storage\PokemonImageUploadService;
 use App\Entity\Pokemon;
@@ -13,17 +16,29 @@ use App\Repository\PokemonImageRepository;
 use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\AsciiSlugger;
+use Throwable;
 
+use function fclose;
+use function fopen;
 use function is_array;
 use function is_numeric;
 use function is_string;
 use function json_decode;
+use function pathinfo;
+use function sprintf;
+use function stream_copy_to_stream;
+use function strtolower;
+
+use const PATHINFO_EXTENSION;
 
 #[Route('/admin')]
 final class PokemonImageController extends AbstractController
@@ -31,6 +46,7 @@ final class PokemonImageController extends AbstractController
     public function __construct(
         private readonly PokemonImageUploadService $pokemonImageUploadService,
         private readonly PokemonImageRepository $pokemonImageRepository,
+        private readonly PokemonImageStorage $pokemonImageStorage,
     ) {
     }
 
@@ -63,6 +79,50 @@ final class PokemonImageController extends AbstractController
             'success' => true,
             'message' => 'El orden de las imágenes fue actualizado correctamente.',
         ]);
+    }
+
+    #[Route('/pokemons/{id}/images/{imageId}/download', name: 'app_backend_pokemon_image_download', methods: ['GET'], requirements: ['id' => '\d+', 'imageId' => '\d+'])]
+    public function download(Pokemon $pokemon, int $imageId): Response
+    {
+        $image = $this->pokemonImageRepository->find($imageId);
+        if (!$image instanceof PokemonImage || $image->getPokemon()->getId() !== $pokemon->getId()) {
+            throw new NotFoundHttpException();
+        }
+
+        $imagePath = $image->getImagePath();
+        if ('' === $imagePath) {
+            throw new NotFoundHttpException();
+        }
+
+        try {
+            $stream = $this->pokemonImageStorage->readStream($imagePath, ImageVariant::Original);
+        } catch (Throwable) {
+            throw new NotFoundHttpException();
+        }
+
+        $mimeType = $this->pokemonImageStorage->resolveMimeType($imagePath, ImageVariant::Original);
+        $filename = $this->buildDownloadFilename($pokemon, $image, $imagePath);
+
+        $response = new StreamedResponse(static function () use ($stream): void {
+            $output = fopen('php://output', 'w');
+
+            if (false === $output) {
+                return;
+            }
+
+            stream_copy_to_stream($stream, $output);
+            fclose($stream);
+            fclose($output);
+        });
+
+        $response->headers->set('Content-Type', $mimeType);
+        $response->headers->set(
+            'Content-Disposition',
+            HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $filename),
+        );
+        $response->headers->set('Cache-Control', 'private, no-store');
+
+        return $response;
     }
 
     #[Route('/pokemons/{id}/images/{imageId}', name: 'app_backend_pokemon_image_update', methods: ['PATCH'], requirements: ['id' => '\d+', 'imageId' => '\d+'])]
@@ -146,5 +206,22 @@ final class PokemonImageController extends AbstractController
         }
 
         return 'La descripción no es válida.';
+    }
+
+    private function buildDownloadFilename(Pokemon $pokemon, PokemonImage $image, string $imagePath): string
+    {
+        $slug = strtolower(new AsciiSlugger()->slug($pokemon->getName())->toString());
+        if ('' === $slug) {
+            $slug = 'pokemon';
+        }
+
+        $extension = strtolower((string) pathinfo($imagePath, PATHINFO_EXTENSION));
+        if (!AllowedImageTypes::isAllowedExtension($extension)) {
+            $extension = AllowedImageTypes::MIME_TO_EXTENSION[
+                $this->pokemonImageStorage->resolveMimeType($imagePath, ImageVariant::Original)
+            ] ?? 'bin';
+        }
+
+        return sprintf('%s-%d.%s', $slug, $image->getId() ?? 0, $extension);
     }
 }
