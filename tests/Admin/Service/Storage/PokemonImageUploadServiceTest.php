@@ -11,6 +11,7 @@ use App\Admin\Service\Storage\PokemonImageUploadService;
 use App\Entity\Pokemon;
 use App\Entity\PokemonImage;
 use App\Repository\PokemonImageRepository;
+use App\Tests\Admin\Support\ImageStorageFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use League\Flysystem\Filesystem;
@@ -41,9 +42,8 @@ final class PokemonImageUploadServiceTest extends TestCase
         $this->tempDirectory = sys_get_temp_dir() . '/pokedex-pokemon-upload-' . bin2hex(random_bytes(8));
         mkdir($this->tempDirectory, 0o777, true);
 
-        $this->pokemonImageStorage = new PokemonImageStorage(
+        $this->pokemonImageStorage = ImageStorageFactory::pokemon(
             new ObjectStorage(new Filesystem(new LocalFilesystemAdapter($this->tempDirectory))),
-            'dev',
         );
     }
 
@@ -218,6 +218,63 @@ final class PokemonImageUploadServiceTest extends TestCase
         $service->delete($pokemon, $image);
     }
 
+    public function testUpdateDescriptionTrimsAndPersists(): void
+    {
+        $pokemon = $this->createPokemon(3);
+        $image = $this->createImage($pokemon, 31, 1);
+        $image->setDescription('Anterior');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())->method('flush');
+
+        $service = new PokemonImageUploadService(
+            $this->pokemonImageStorage,
+            $this->createMock(PokemonImageRepository::class),
+            $entityManager,
+        );
+
+        $updated = $service->updateDescription($pokemon, $image, '  Vista frontal  ');
+
+        self::assertSame($image, $updated);
+        self::assertSame('Vista frontal', $image->getDescription());
+    }
+
+    public function testUpdateDescriptionClearsBlankValue(): void
+    {
+        $pokemon = $this->createPokemon(3);
+        $image = $this->createImage($pokemon, 32, 1);
+        $image->setDescription('Quitar');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())->method('flush');
+
+        $service = new PokemonImageUploadService(
+            $this->pokemonImageStorage,
+            $this->createMock(PokemonImageRepository::class),
+            $entityManager,
+        );
+
+        $service->updateDescription($pokemon, $image, '   ');
+
+        self::assertNull($image->getDescription());
+    }
+
+    public function testUpdateDescriptionRejectsImageFromAnotherPokemon(): void
+    {
+        $pokemon = $this->createPokemon(1);
+        $other = $this->createPokemon(2);
+        $image = $this->createImage($other, 5, 1);
+
+        $service = new PokemonImageUploadService(
+            $this->pokemonImageStorage,
+            $this->createMock(PokemonImageRepository::class),
+            $this->createMock(EntityManagerInterface::class),
+        );
+
+        $this->expectException(NotFoundHttpException::class);
+        $service->updateDescription($pokemon, $image, 'Nueva');
+    }
+
     private function createPokemon(int $id): Pokemon
     {
         $pokemon = new Pokemon()
@@ -237,7 +294,7 @@ final class PokemonImageUploadServiceTest extends TestCase
         $filesystem->method('writeStream')->willThrowException(UnableToWriteFile::atLocation('key'));
         $filesystem->method('fileExists')->willReturn(false);
 
-        return new PokemonImageStorage(new ObjectStorage($filesystem), 'dev');
+        return ImageStorageFactory::pokemon(new ObjectStorage($filesystem));
     }
 
     private function createFailingDeleteStorage(): PokemonImageStorage
@@ -246,7 +303,7 @@ final class PokemonImageUploadServiceTest extends TestCase
         $filesystem->method('fileExists')->willReturn(true);
         $filesystem->method('delete')->willThrowException(UnableToDeleteFile::atLocation('key'));
 
-        return new PokemonImageStorage(new ObjectStorage($filesystem), 'dev');
+        return ImageStorageFactory::pokemon(new ObjectStorage($filesystem));
     }
 
     /**
@@ -297,10 +354,10 @@ final class PokemonImageUploadServiceTest extends TestCase
     {
         $path = tempnam(sys_get_temp_dir(), 'pokemon-upload-');
         self::assertNotFalse($path);
-        file_put_contents(
-            $path,
-            base64_decode('/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQP/AABEIAAEAAQMBIgACEQEDEQH/xABTAAEBAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAGfAP/AABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEBAD8Af//Z'),
-        );
+
+        $image = imagecreatetruecolor(32, 32);
+        self::assertNotFalse($image);
+        imagejpeg($image, $path, 90);
 
         return new UploadedFile($path, 'photo.jpg', 'image/jpeg', test: true);
     }

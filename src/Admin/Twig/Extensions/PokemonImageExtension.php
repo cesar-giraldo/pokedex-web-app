@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Twig\Extensions;
 
+use App\Admin\Service\Storage\ImageVariant;
 use App\Entity\PokemonImage;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Extension\AbstractExtension;
@@ -23,7 +24,7 @@ final class PokemonImageExtension extends AbstractExtension
         ];
     }
 
-    public function resolveUrl(?PokemonImage $image): ?string
+    public function resolveUrl(?PokemonImage $image, string $variant = 'thumb'): ?string
     {
         if (!$image instanceof PokemonImage || null === $image->getId()) {
             return null;
@@ -34,9 +35,16 @@ final class PokemonImageExtension extends AbstractExtension
             return null;
         }
 
-        return $this->urlGenerator->generate(
-            'app_pokemon_image',
-            ['publicToken' => $image->getPublicToken()],
-        );
+        $imageVariant = ImageVariant::tryFrom($variant);
+        if (!$imageVariant instanceof ImageVariant || !$imageVariant->isAllowedForPokemon()) {
+            return null;
+        }
+
+        $parameters = ['publicToken' => $image->getPublicToken()];
+        if (!$imageVariant->isOriginal()) {
+            $parameters['variant'] = $imageVariant->value;
+        }
+
+        return $this->urlGenerator->generate('app_pokemon_image', $parameters);
     }
 }

@@ -50,13 +50,16 @@
 	<section
 		class="space-y-4"
 		aria-labelledby="pokemon-image-gallery-heading"
-		data-controller="component-sortable-gallery"
+		data-controller="component-sortable-gallery component-image-lightbox"
+		data-action="keydown.esc@window->component-image-lightbox#close keydown.left@window->component-image-lightbox#previous keydown.right@window->component-image-lightbox#next"
 		data-component-sortable-gallery-reorder-url-value="{{ path('app_backend_pokemon_images_reorder', { id: pokemon.id }) }}"
 		data-component-sortable-gallery-csrf-token-value="{{ csrf_token('pokemon_image') }}"
+		data-component-sortable-gallery-fallback-caption-value="Imagen de {{ pokemon.name }}"
 		data-component-sortable-gallery-delete-title-value="Eliminar imagen"
 		data-component-sortable-gallery-delete-message-value="¿Seguro que deseas eliminar esta imagen? Esta acción no se puede deshacer."
 		data-component-sortable-gallery-reorder-success-value="El orden de las imágenes fue actualizado correctamente."
 		data-component-sortable-gallery-delete-success-value="La imagen se eliminó correctamente."
+		data-component-sortable-gallery-update-success-value="La descripción se actualizó correctamente."
 	>
 		<h4 id="pokemon-image-gallery-heading" class="text-sm font-medium text-gray-800 dark:text-white/90">
 			Galería de imágenes
@@ -79,35 +82,85 @@
 				<li
 					data-component-sortable-gallery-target="item"
 					data-image-id="{{ image.id }}"
+					data-description="{{ image.description ?? '' }}"
 					data-delete-url="{{ path('app_backend_pokemon_image_delete', { id: pokemon.id, imageId: image.id }) }}"
+					data-update-url="{{ path('app_backend_pokemon_image_update', { id: pokemon.id, imageId: image.id }) }}"
 					class="min-w-0 cursor-grab active:cursor-grabbing"
 				>
 					<div class="relative aspect-square w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
-						<img
-							src="{{ pokemon_image_url(image) }}"
-							alt="{{ image.description ?: ('Imagen de ' ~ pokemon.name) }}"
-							width="400"
-							height="400"
-							class="pointer-events-none block h-full w-full object-cover"
-							loading="lazy"
-							decoding="async"
-							draggable="false"
-						>
-						<button
-							type="button"
-							class="js-image-delete absolute top-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-error-500 text-white shadow-theme-xs transition hover:bg-error-600"
-							data-action="click->component-sortable-gallery#requestDelete"
-							aria-label="Eliminar imagen"
-						>
-							{{ ux_icon('heroicons:x-mark', { class: 'w-4 h-4' }) }}
-						</button>
+						{% set displayImageUrl = pokemon_image_url(image, 'display') %}
+						{% set imageCaption = image.description ?: ('Imagen de ' ~ pokemon.name) %}
+						{% if displayImageUrl %}
+							<button
+								type="button"
+								class="block h-full w-full cursor-zoom-in"
+								data-component-image-lightbox-target="item"
+								data-action="pointerdown->component-image-lightbox#markPointer click->component-image-lightbox#open"
+								data-component-image-lightbox-src-param="{{ displayImageUrl }}"
+								data-component-image-lightbox-caption-param="{{ imageCaption }}"
+								aria-label="Ver imagen a tamaño completo"
+							>
+								<img
+									src="{{ pokemon_image_url(image, 'thumb') }}"
+									alt="{{ imageCaption }}"
+									width="400"
+									height="400"
+									class="pointer-events-none block h-full w-full object-cover"
+									loading="lazy"
+									decoding="async"
+									draggable="false"
+								>
+							</button>
+						{% else %}
+							<img
+								src="{{ pokemon_image_url(image, 'thumb') }}"
+								alt="{{ imageCaption }}"
+								width="400"
+								height="400"
+								class="pointer-events-none block h-full w-full object-cover"
+								loading="lazy"
+								decoding="async"
+								draggable="false"
+							>
+						{% endif %}
+						<div class="js-image-action absolute top-2 right-2 z-10 flex items-center gap-2">
+							<button
+								type="button"
+								class="js-image-edit inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white text-gray-700 shadow-theme-xs ring-1 ring-inset ring-gray-300 transition hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700 dark:hover:bg-white/[0.03]"
+								data-action="click->component-sortable-gallery#requestEdit"
+								aria-label="Editar descripción"
+							>
+								{{ ux_icon('heroicons:pencil-square', { class: 'w-4 h-4' }) }}
+							</button>
+							<a
+								href="{{ path('app_backend_pokemon_image_download', { id: pokemon.id, imageId: image.id }) }}"
+								class="js-image-download inline-flex h-8 w-8 items-center justify-center rounded-lg bg-success-500 text-white shadow-theme-xs transition hover:bg-success-600"
+								data-turbo="false"
+								aria-label="Descargar imagen original"
+								title="Descargar imagen original"
+							>
+								{{ ux_icon('heroicons:arrow-down-tray', { class: 'w-4 h-4' }) }}
+							</a>
+							<button
+								type="button"
+								class="js-image-delete inline-flex h-8 w-8 items-center justify-center rounded-lg bg-error-500 text-white shadow-theme-xs transition hover:bg-error-600"
+								data-action="click->component-sortable-gallery#requestDelete"
+								aria-label="Eliminar imagen"
+							>
+								{{ ux_icon('heroicons:x-mark', { class: 'w-4 h-4' }) }}
+							</button>
+						</div>
 					</div>
-					{% if image.description %}
-						<p class="mt-2 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">{{ image.description }}</p>
-					{% endif %}
+					<p
+						data-image-caption
+						class="mt-2 line-clamp-2 text-xs text-gray-500 dark:text-gray-400{% if not image.description %} hidden{% endif %}"
+					>{{ image.description }}</p>
 				</li>
 			{% endfor %}
 		</ul>
+
+		{% include '@admin/pokemons/_image_edit_modal.html.twig' %}
+		{% include '@admin/partials/_image_lightbox.html.twig' %}
 
 		<twig:component_confirm_dialog
 			id="pokemon-image-confirm-dialog"

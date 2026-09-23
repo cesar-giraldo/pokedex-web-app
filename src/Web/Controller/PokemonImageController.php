@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Controller;
 
+use App\Admin\Service\Storage\ImageVariant;
 use App\Admin\Service\Storage\PokemonImageStorage;
 use App\Entity\PokemonImage;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -25,18 +26,33 @@ final class PokemonImageController extends AbstractController
     ) {
     }
 
-    #[Route('/media/pokemon-images/{publicToken}', name: 'app_pokemon_image', methods: ['GET'], requirements: ['publicToken' => PokemonImage::PUBLIC_TOKEN_PATTERN])]
+    #[Route(
+        '/media/pokemon-images/{publicToken}/{variant}',
+        name: 'app_pokemon_image',
+        requirements: [
+            'publicToken' => PokemonImage::PUBLIC_TOKEN_PATTERN,
+            'variant' => 'thumb|display|original',
+        ],
+        defaults: ['variant' => 'original'],
+        methods: ['GET'],
+    )]
     public function show(
         #[MapEntity(mapping: ['publicToken' => 'publicToken'])]
         PokemonImage $image,
+        string $variant,
     ): Response {
+        $imageVariant = ImageVariant::tryFrom($variant);
+        if (!$imageVariant instanceof ImageVariant || !$imageVariant->isAllowedForPokemon()) {
+            throw new NotFoundHttpException();
+        }
+
         $imagePath = $image->getImagePath();
         if ('' === $imagePath) {
             throw new NotFoundHttpException();
         }
 
         try {
-            $stream = $this->pokemonImageStorage->readStream($imagePath);
+            $stream = $this->pokemonImageStorage->readStream($imagePath, $imageVariant);
         } catch (Throwable) {
             throw new NotFoundHttpException();
         }
@@ -53,7 +69,7 @@ final class PokemonImageController extends AbstractController
             fclose($output);
         });
 
-        $response->headers->set('Content-Type', $this->pokemonImageStorage->resolveMimeType($imagePath));
+        $response->headers->set('Content-Type', $this->pokemonImageStorage->resolveMimeType($imagePath, $imageVariant));
         $response->headers->set('Cache-Control', 'public, max-age=3600');
 
         return $response;

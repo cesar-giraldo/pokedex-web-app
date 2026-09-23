@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Twig\Extensions;
 
+use App\Admin\Service\Storage\ImageVariant;
 use App\Entity\User;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Extension\AbstractExtension;
@@ -23,7 +24,7 @@ final class UserProfileImageExtension extends AbstractExtension
         ];
     }
 
-    public function resolveUrl(?User $user): ?string
+    public function resolveUrl(?User $user, string $variant = 'avatar'): ?string
     {
         if (!$user instanceof User || null === $user->getId()) {
             return null;
@@ -34,9 +35,16 @@ final class UserProfileImageExtension extends AbstractExtension
             return null;
         }
 
-        return $this->urlGenerator->generate(
-            'app_backend_user_profile_image',
-            ['id' => $user->getId()],
-        );
+        $imageVariant = ImageVariant::tryFrom($variant);
+        if (!$imageVariant instanceof ImageVariant || !$imageVariant->isAllowedForProfile()) {
+            return null;
+        }
+
+        $parameters = ['id' => $user->getId()];
+        if (ImageVariant::Avatar !== $imageVariant) {
+            $parameters['variant'] = $imageVariant->value;
+        }
+
+        return $this->urlGenerator->generate('app_backend_user_profile_image', $parameters);
     }
 }

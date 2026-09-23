@@ -38,6 +38,9 @@ services:
                     key: '%env(AWS_ACCESS_KEY_ID)%'
                     secret: '%env(AWS_SECRET_ACCESS_KEY)%'
 
+    Intervention\Image\ImageManager:
+        factory: ['App\Admin\Service\Storage\GdImageManagerFactory', 'create']
+
     App\Admin\Service\Storage\ObjectStorage:
         arguments:
             $privateMediaStorage: '@private.media.storage'

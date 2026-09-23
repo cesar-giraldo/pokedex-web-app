@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Admin\Controller;
 
+use App\Admin\Service\Storage\UserProfileImageStorage;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
@@ -11,6 +12,7 @@ use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 use function sprintf;
@@ -100,6 +102,24 @@ final class UserControllerShowTest extends WebTestCase
         self::assertSelectorTextContains('body', 'Usuario oculto');
     }
 
+    public function testUserPhotoOpensLightboxToOriginalImage(): void
+    {
+        $client = static::createClient();
+        $this->loginAsAdmin($client);
+        $user = $this->createListedUser('ushimg', UserRole::Operator, isHidden: false);
+        $this->attachProfileImage($user);
+
+        $client->request('GET', sprintf('/admin/users/%d', $user->getId()));
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-controller*="component-image-lightbox"]');
+        self::assertSelectorExists(sprintf(
+            'button[data-component-image-lightbox-target="item"][data-component-image-lightbox-src-param="/admin/media/user-profile/%d/display"]',
+            $user->getId(),
+        ));
+        self::assertSelectorExists('button[aria-label="Cerrar imagen"]');
+    }
+
     private function createListedUser(string $nicknamePrefix, UserRole $role, bool $isHidden): User
     {
         $container = static::getContainer();
@@ -134,5 +154,26 @@ final class UserControllerShowTest extends WebTestCase
         $this->createdUserIds[] = $userId;
 
         return $user;
+    }
+
+    private function attachProfileImage(User $user): void
+    {
+        /** @var UserProfileImageStorage $storage */
+        $storage = static::getContainer()->get(UserProfileImageStorage::class);
+        $objectKey = $storage->upload($user, $this->createUploadedFile());
+        $user->setProfileImagePath($objectKey);
+        $this->entityManager?->flush();
+    }
+
+    private function createUploadedFile(): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'user-show-avatar-');
+        self::assertNotFalse($path);
+
+        $image = imagecreatetruecolor(32, 32);
+        self::assertNotFalse($image);
+        imagejpeg($image, $path, 90);
+
+        return new UploadedFile($path, 'avatar.jpg', 'image/jpeg', test: true);
     }
 }

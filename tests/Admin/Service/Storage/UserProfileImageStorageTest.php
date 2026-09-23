@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Tests\Admin\Service\Storage;
 
+use App\Admin\Service\Storage\ImageVariant;
 use App\Admin\Service\Storage\ObjectStorage;
 use App\Admin\Service\Storage\UserProfileImageStorage;
+use App\Admin\Service\Storage\UserProfileImageUploadException;
 use App\Entity\User;
+use App\Tests\Admin\Support\ImageStorageFactory;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use League\Flysystem\UnableToWriteFile;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
@@ -17,10 +23,13 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use const DIRECTORY_SEPARATOR;
 
+#[CoversClass(UserProfileImageStorage::class)]
 #[Group('unit')]
 final class UserProfileImageStorageTest extends TestCase
 {
     private string $tempDirectory = '';
+
+    private ObjectStorage $objectStorage;
 
     private UserProfileImageStorage $profileImageStorage;
 
@@ -29,10 +38,8 @@ final class UserProfileImageStorageTest extends TestCase
         $this->tempDirectory = sys_get_temp_dir() . '/pokedex-profile-image-' . bin2hex(random_bytes(8));
         mkdir($this->tempDirectory, 0o777, true);
 
-        $this->profileImageStorage = new UserProfileImageStorage(
-            new ObjectStorage(new Filesystem(new LocalFilesystemAdapter($this->tempDirectory))),
-            'dev',
-        );
+        $this->objectStorage = new ObjectStorage(new Filesystem(new LocalFilesystemAdapter($this->tempDirectory)));
+        $this->profileImageStorage = ImageStorageFactory::profile($this->objectStorage);
     }
 
     protected function tearDown(): void
@@ -42,14 +49,15 @@ final class UserProfileImageStorageTest extends TestCase
         }
     }
 
-    public function testUploadStoresFileAndReturnsObjectKey(): void
+    public function testUploadStoresOriginalAndGeneratedVariants(): void
     {
         $user = $this->createUser(42);
-        $file = $this->createUploadedFile();
-
-        $objectKey = $this->profileImageStorage->upload($user, $file);
+        $objectKey = $this->profileImageStorage->upload($user, $this->createUploadedFile());
 
         self::assertMatchesRegularExpression('#^dev/private/user/profile-images/42/[a-f0-9]{32}\.jpg$#', $objectKey);
+        self::assertTrue($this->objectStorage->fileExists($objectKey));
+        self::assertTrue($this->objectStorage->fileExists(ImageVariant::Avatar->objectKey($objectKey)));
+        self::assertTrue($this->objectStorage->fileExists(ImageVariant::Display->objectKey($objectKey)));
 
         $stream = $this->profileImageStorage->readStream($objectKey);
         try {
@@ -66,6 +74,38 @@ final class UserProfileImageStorageTest extends TestCase
         $this->profileImageStorage->upload(new User(), $this->createUploadedFile());
     }
 
+    public function testWriteRollsBackWhenVariantGenerationFails(): void
+    {
+        $written = [];
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->method('writeStream')->willReturnCallback(static function (string $path) use (&$written): void {
+            $written[$path] = true;
+        });
+        $filesystem->method('write')->willReturnCallback(static function (string $path): void {
+            throw UnableToWriteFile::atLocation($path);
+        });
+        $filesystem->method('fileExists')->willReturnCallback(static function (string $path) use (&$written): bool {
+            return isset($written[$path]);
+        });
+        $filesystem->method('delete')->willReturnCallback(static function (string $path) use (&$written): void {
+            unset($written[$path]);
+        });
+
+        $storage = ImageStorageFactory::profile(new ObjectStorage($filesystem));
+
+        try {
+            $storage->upload($this->createUser(42), $this->createUploadedFile());
+            self::fail('Expected UserProfileImageUploadException.');
+        } catch (UserProfileImageUploadException $exception) {
+            self::assertSame(
+                'No se pudieron generar las versiones de la imagen. Inténtalo de nuevo.',
+                $exception->getMessage(),
+            );
+        }
+
+        self::assertSame([], $written);
+    }
+
     public function testDeleteIgnoresMissingPath(): void
     {
         $this->expectNotToPerformAssertions();
@@ -74,22 +114,35 @@ final class UserProfileImageStorageTest extends TestCase
         $this->profileImageStorage->delete('');
     }
 
-    public function testDeleteRemovesExistingObject(): void
+    public function testDeleteRemovesOriginalAndVariants(): void
     {
         $user = $this->createUser(1);
         $objectKey = $this->profileImageStorage->upload($user, $this->createUploadedFile());
+        $avatarKey = ImageVariant::Avatar->objectKey($objectKey);
 
         $this->profileImageStorage->delete($objectKey);
+
+        self::assertFalse($this->objectStorage->fileExists($objectKey));
+        self::assertFalse($this->objectStorage->fileExists($avatarKey));
 
         $this->expectException(RuntimeException::class);
         $this->profileImageStorage->readStream($objectKey);
     }
 
-    public function testResolveMimeTypeFromExtension(): void
+    public function testResolveMimeTypeFromExtensionAndVariant(): void
     {
-        self::assertSame('image/jpeg', $this->profileImageStorage->resolveMimeType('dev/private/user/profile-images/1/file.jpg'));
-        self::assertSame('image/png', $this->profileImageStorage->resolveMimeType('dev/private/user/profile-images/1/file.png'));
-        self::assertSame('image/webp', $this->profileImageStorage->resolveMimeType('dev/private/user/profile-images/1/file.webp'));
+        self::assertSame(
+            'image/jpeg',
+            $this->profileImageStorage->resolveMimeType('dev/private/user/profile-images/1/file.jpg'),
+        );
+        self::assertSame(
+            'image/png',
+            $this->profileImageStorage->resolveMimeType('dev/private/user/profile-images/1/file.png'),
+        );
+        self::assertSame(
+            'image/webp',
+            $this->profileImageStorage->resolveMimeType('dev/private/user/profile-images/1/file.jpg', ImageVariant::Avatar),
+        );
     }
 
     private function removeDirectory(string $directory): void
@@ -134,10 +187,9 @@ final class UserProfileImageStorageTest extends TestCase
         $path = tempnam(sys_get_temp_dir(), 'profile-image-');
         self::assertNotFalse($path);
 
-        file_put_contents(
-            $path,
-            base64_decode('/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQP/AABEIAAEAAQMBIgACEQEDEQH/xABTAAEBAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAGfAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEBAD8Af//Z'),
-        );
+        $image = imagecreatetruecolor(32, 32);
+        self::assertNotFalse($image);
+        imagejpeg($image, $path, 90);
 
         return new UploadedFile($path, 'avatar.jpg', 'image/jpeg', test: true);
     }

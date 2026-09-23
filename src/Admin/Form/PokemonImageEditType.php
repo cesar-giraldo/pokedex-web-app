@@ -6,34 +6,24 @@ namespace App\Admin\Form;
 
 use App\Entity\PokemonImage;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
- * @extends AbstractType<array{image?: mixed, description?: string|null}>
+ * @extends AbstractType<array{description?: string|null}>
  */
-final class PokemonImageUploadType extends AbstractType
+final class PokemonImageEditType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('image', FileType::class, [
-                'label' => false,
-                'mapped' => false,
-                'required' => true,
-                'constraints' => [
-                    new NotBlank(message: 'Debes seleccionar una imagen.'),
-                    ...ImageUploadConstraints::upload(),
-                ],
-            ])
             ->add('description', TextType::class, [
                 'label' => false,
                 'mapped' => false,
                 'required' => false,
+                'empty_data' => '',
                 'attr' => ['maxlength' => PokemonImage::DESCRIPTION_MAX_LENGTH],
                 'constraints' => [
                     new Length(
@@ -46,6 +36,8 @@ final class PokemonImageUploadType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults([]);
+        $resolver->setDefaults([
+            'csrf_protection' => false,
+        ]);
     }
 }

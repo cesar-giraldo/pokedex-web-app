@@ -23,9 +23,13 @@
 		</h3>
 
 		<div class="mb-6 rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
-			<div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+			<div
+				class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between"
+				data-controller="component-image-lightbox"
+				data-action="keydown.esc@window->component-image-lightbox#close keydown.left@window->component-image-lightbox#previous keydown.right@window->component-image-lightbox#next"
+			>
 				<div class="flex w-full flex-col items-center gap-6 xl:flex-row">
-					{% include '@admin/partials/_user_profile_avatar.html.twig' with { user: user } %}
+					{% include '@admin/partials/_user_profile_avatar.html.twig' with { user: user, lightbox: true } %}
 					<div class="order-3 xl:order-2">
 						<h4 class="mb-2 text-center text-lg font-semibold text-gray-800 dark:text-white/90 xl:text-left">
 							{{ user.name }} {{ user.lastname }}
@@ -40,6 +44,7 @@
 						</div>
 					</div>
 				</div>
+				{% include '@admin/partials/_image_lightbox.html.twig' %}
 			</div>
 		</div>
 

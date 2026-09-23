@@ -18,7 +18,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use function sprintf;
 
 #[Group('functional')]
-final class UserControllerIndexTest extends WebTestCase
+final class UserProfileImageControllerTest extends WebTestCase
 {
     use AdminAuthenticatedClientTrait;
 
@@ -43,65 +43,54 @@ final class UserControllerIndexTest extends WebTestCase
         parent::tearDown();
     }
 
-    public function testAdminSeesNonHiddenDeveloperInUserList(): void
+    public function testAuthenticatedViewerReceivesAvatarWebp(): void
     {
         $client = static::createClient();
         $this->loginAsAdmin($client);
-        $developer = $this->createListedUser('ulvd', UserRole::Developer, isHidden: false);
+        $user = $this->createUserWithProfileImage(isHidden: false);
 
-        $client->request('GET', '/admin/users', ['limit' => 'all']);
+        $client->request('GET', sprintf('/admin/media/user-profile/%d', $user->getId()));
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('tbody', $developer->getNickname());
+        self::assertResponseHeaderSame('Content-Type', 'image/webp');
+        self::assertStringContainsString('private', (string) $client->getResponse()->headers->get('Cache-Control'));
     }
 
-    public function testAdminDoesNotSeeHiddenUserInUserList(): void
+    public function testOriginalVariantKeepsJpeg(): void
     {
         $client = static::createClient();
         $this->loginAsAdmin($client);
-        $hiddenUser = $this->createListedUser('ulhd', UserRole::Operator, isHidden: true);
+        $user = $this->createUserWithProfileImage(isHidden: false);
 
-        $client->request('GET', '/admin/users', ['limit' => 'all']);
+        $client->request('GET', sprintf('/admin/media/user-profile/%d/original', $user->getId()));
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextNotContains('tbody', $hiddenUser->getNickname());
+        self::assertResponseHeaderSame('Content-Type', 'image/jpeg');
     }
 
-    public function testAdminCannotEditDeveloper(): void
+    public function testAdminCannotViewHiddenUserAvatar(): void
     {
         $client = static::createClient();
         $this->loginAsAdmin($client);
-        $developer = $this->createListedUser('uled', UserRole::Developer, isHidden: false);
-        $editUrl = sprintf('/admin/users/%d/edit', $developer->getId());
+        $user = $this->createUserWithProfileImage(isHidden: true);
 
-        $client->request('GET', $editUrl);
-        self::assertResponseStatusCodeSame(403);
+        $client->request('GET', sprintf('/admin/media/user-profile/%d', $user->getId()));
 
-        $client->request('POST', $editUrl);
-        self::assertResponseStatusCodeSame(403);
+        self::assertResponseStatusCodeSame(404);
     }
 
-    public function testUserPhotoOpensLightboxToOriginalImage(): void
+    public function testInvalidVariantIsNotRouted(): void
     {
         $client = static::createClient();
         $this->loginAsAdmin($client);
-        $user = $this->createListedUser('ulimg', UserRole::Operator, isHidden: false);
-        $this->attachProfileImage($user);
+        $user = $this->createUserWithProfileImage(isHidden: false);
 
-        $client->request('GET', '/admin/users', ['limit' => 'all']);
+        $client->request('GET', sprintf('/admin/media/user-profile/%d/thumb', $user->getId()));
 
-        self::assertResponseIsSuccessful();
-        self::assertSelectorExists('[data-controller*="component-image-lightbox"]');
-        self::assertSelectorExists(sprintf(
-            'tbody button[data-component-image-lightbox-target="item"][data-component-image-lightbox-src-param="/admin/media/user-profile/%d/display"]',
-            $user->getId(),
-        ));
-        self::assertSelectorNotExists('header button[data-component-image-lightbox-target="item"]');
-        self::assertSelectorExists('[data-component-image-lightbox-target="dialog"][aria-label="Imagen a tamaño completo"]');
-        self::assertSelectorExists('button[aria-label="Cerrar imagen"]');
+        self::assertResponseStatusCodeSame(404);
     }
 
-    private function createListedUser(string $nicknamePrefix, UserRole $role, bool $isHidden): User
+    private function createUserWithProfileImage(bool $isHidden): User
     {
         $container = static::getContainer();
 
@@ -113,16 +102,16 @@ final class UserControllerIndexTest extends WebTestCase
         $hasher = $container->get(UserPasswordHasherInterface::class);
 
         $suffix = bin2hex(random_bytes(4));
-        $nickname = $nicknamePrefix . $suffix;
+        $nickname = 'upimg' . $suffix;
 
         $user = new User()
-            ->setName('Listed')
+            ->setName('Avatar')
             ->setLastname('User')
             ->setEmail($nickname . '@example.com')
             ->setNickname($nickname)
             ->setCountryCode(57)
             ->setCellphone('3018' . sprintf('%06d', random_int(0, 999999)))
-            ->setApplicationRoles([$role])
+            ->setApplicationRoles([UserRole::Operator])
             ->setStatus(UserStatus::Active)
             ->setIsHidden($isHidden);
         $user->setPassword($hasher->hashPassword($user, 'Secret123'));
@@ -134,24 +123,21 @@ final class UserControllerIndexTest extends WebTestCase
         self::assertNotNull($userId);
         $this->createdUserIds[] = $userId;
 
-        return $user;
-    }
-
-    private function attachProfileImage(User $user): void
-    {
         /** @var UserProfileImageStorage $storage */
-        $storage = static::getContainer()->get(UserProfileImageStorage::class);
+        $storage = $container->get(UserProfileImageStorage::class);
         $objectKey = $storage->upload($user, $this->createUploadedFile());
         $user->setProfileImagePath($objectKey);
-        $this->entityManager?->flush();
+        $entityManager->flush();
+
+        return $user;
     }
 
     private function createUploadedFile(): UploadedFile
     {
-        $path = tempnam(sys_get_temp_dir(), 'user-list-avatar-');
+        $path = tempnam(sys_get_temp_dir(), 'profile-public-');
         self::assertNotFalse($path);
 
-        $image = imagecreatetruecolor(32, 32);
+        $image = imagecreatetruecolor(64, 64);
         self::assertNotFalse($image);
         imagejpeg($image, $path, 90);
 

@@ -1,0 +1,58 @@
+<div
+	data-component-image-lightbox-target="dialog"
+	hidden
+	class="fixed inset-0 z-[100000] hidden items-center justify-center p-4 sm:p-8"
+	role="dialog"
+	aria-modal="true"
+	aria-label="Imagen a tamaño completo"
+	aria-hidden="true"
+>
+	<div
+		data-action="click->component-image-lightbox#close"
+		class="fixed inset-0 h-full w-full bg-gray-900/70 backdrop-blur-[32px]"
+	></div>
+
+	<button
+		type="button"
+		data-component-image-lightbox-target="closeButton"
+		data-action="click->component-image-lightbox#close"
+		class="absolute top-4 right-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-800 shadow-theme-lg transition hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:hover:bg-white/10"
+		aria-label="Cerrar imagen"
+	>
+		{{ ux_icon('heroicons:x-mark', { class: 'w-6 h-6' }) }}
+	</button>
+
+	<button
+		type="button"
+		hidden
+		data-component-image-lightbox-target="previousButton"
+		data-action="click->component-image-lightbox#previous"
+		class="absolute top-1/2 left-4 z-10 hidden inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-800 shadow-theme-lg transition hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:hover:bg-white/10"
+		aria-label="Imagen anterior"
+	>
+		{{ ux_icon('heroicons:chevron-left', { class: 'w-6 h-6' }) }}
+	</button>
+
+	<button
+		type="button"
+		hidden
+		data-component-image-lightbox-target="nextButton"
+		data-action="click->component-image-lightbox#next"
+		class="absolute top-1/2 right-4 z-10 hidden inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-800 shadow-theme-lg transition hover:bg-gray-100 dark:bg-gray-800 dark:text-white dark:hover:bg-white/10"
+		aria-label="Imagen siguiente"
+	>
+		{{ ux_icon('heroicons:chevron-right', { class: 'w-6 h-6' }) }}
+	</button>
+
+	<figure class="relative z-10 flex max-h-full max-w-full flex-col items-center gap-3">
+		<img
+			data-component-image-lightbox-target="image"
+			alt=""
+			class="max-h-[min(85vh,900px)] max-w-[min(90vw,1200px)] rounded-xl object-contain shadow-theme-lg"
+		>
+		<figcaption
+			data-component-image-lightbox-target="caption"
+			class="max-w-[min(90vw,1200px)] text-center text-sm font-medium text-white"
+		></figcaption>
+	</figure>
+</div>

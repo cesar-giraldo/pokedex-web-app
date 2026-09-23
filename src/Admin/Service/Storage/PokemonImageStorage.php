@@ -16,6 +16,7 @@ final class PokemonImageStorage
 {
     public function __construct(
         private readonly ObjectStorage $objectStorage,
+        private readonly ImageVariantStore $variantStore,
         private readonly string $storagePrefix,
     ) {
     }
@@ -44,6 +45,17 @@ final class PokemonImageStorage
         } catch (ObjectStorageException $exception) {
             throw new PokemonImageUploadException($exception->getMessage(), previous: $exception);
         }
+
+        try {
+            $this->variantStore->generate($objectKey, $file->getContent(), ImageVariant::pokemonGenerated());
+        } catch (ImageVariantGenerationException $exception) {
+            $this->variantStore->tryDeleteAll($objectKey);
+
+            throw new PokemonImageUploadException(
+                'No se pudieron generar las versiones de la imagen. Inténtalo de nuevo.',
+                previous: $exception,
+            );
+        }
     }
 
     public function upload(Pokemon $pokemon, UploadedFile $file): string
@@ -57,7 +69,7 @@ final class PokemonImageStorage
     public function delete(?string $objectKey): void
     {
         try {
-            $this->objectStorage->delete($objectKey);
+            $this->variantStore->deleteAll($objectKey);
         } catch (ObjectStorageException $exception) {
             throw new PokemonImageUploadException($exception->getMessage(), previous: $exception);
         }
@@ -65,24 +77,24 @@ final class PokemonImageStorage
 
     public function tryDelete(?string $objectKey): void
     {
-        $this->objectStorage->tryDelete($objectKey);
+        $this->variantStore->tryDeleteAll($objectKey);
     }
 
     /**
      * @return resource
      */
-    public function readStream(string $objectKey)
+    public function readStream(string $objectKey, ImageVariant $variant = ImageVariant::Original)
     {
         try {
-            return $this->objectStorage->readStream($objectKey);
-        } catch (ObjectStorageException $exception) {
+            return $this->variantStore->readStream($objectKey, $variant);
+        } catch (ObjectStorageException|ImageVariantGenerationException $exception) {
             throw new RuntimeException('La imagen del Pokémon no existe.', previous: $exception);
         }
     }
 
-    public function resolveMimeType(string $objectKey): string
+    public function resolveMimeType(string $objectKey, ImageVariant $variant = ImageVariant::Original): string
     {
-        return $this->objectStorage->resolveMimeType($objectKey);
+        return $this->variantStore->resolveMimeType($objectKey, $variant);
     }
 
     public function buildObjectKey(int $pokemonId, string $extension): string

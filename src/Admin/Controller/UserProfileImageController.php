@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Controller;
 
+use App\Admin\Service\Storage\ImageVariant;
 use App\Admin\Service\Storage\UserProfileImageAccessPolicy;
 use App\Admin\Service\Storage\UserProfileImageStorage;
 use App\Entity\User;
@@ -15,6 +16,10 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Throwable;
 
+use function fclose;
+use function fopen;
+use function stream_copy_to_stream;
+
 #[Route('/admin')]
 final class UserProfileImageController extends AbstractController
 {
@@ -24,14 +29,28 @@ final class UserProfileImageController extends AbstractController
     ) {
     }
 
-    #[Route('/media/user-profile/{id}', name: 'app_backend_user_profile_image', methods: ['GET'])]
+    #[Route(
+        '/media/user-profile/{id}/{variant}',
+        name: 'app_backend_user_profile_image',
+        requirements: [
+            'id' => '\d+',
+            'variant' => 'avatar|display|original',
+        ],
+        defaults: ['variant' => 'avatar'],
+        methods: ['GET'],
+    )]
     #[IsGranted('ROLE_OPERATOR')]
-    public function show(User $user): Response
+    public function show(User $user, string $variant): Response
     {
         /** @var User $viewer */
         $viewer = $this->getUser();
 
         if (!$this->profileImageAccessPolicy->canView($viewer, $user)) {
+            throw new NotFoundHttpException();
+        }
+
+        $imageVariant = ImageVariant::tryFrom($variant);
+        if (!$imageVariant instanceof ImageVariant || !$imageVariant->isAllowedForProfile()) {
             throw new NotFoundHttpException();
         }
 
@@ -41,7 +60,7 @@ final class UserProfileImageController extends AbstractController
         }
 
         try {
-            $stream = $this->profileImageStorage->readStream($profileImagePath);
+            $stream = $this->profileImageStorage->readStream($profileImagePath, $imageVariant);
         } catch (Throwable) {
             throw new NotFoundHttpException();
         }
@@ -58,7 +77,10 @@ final class UserProfileImageController extends AbstractController
             fclose($output);
         });
 
-        $response->headers->set('Content-Type', $this->profileImageStorage->resolveMimeType($profileImagePath));
+        $response->headers->set(
+            'Content-Type',
+            $this->profileImageStorage->resolveMimeType($profileImagePath, $imageVariant),
+        );
         $response->headers->set('Cache-Control', 'private, max-age=3600');
 
         return $response;

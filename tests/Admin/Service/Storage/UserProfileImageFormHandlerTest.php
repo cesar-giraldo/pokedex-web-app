@@ -9,6 +9,7 @@ use App\Admin\Service\Storage\UserProfileImageFormHandler;
 use App\Admin\Service\Storage\UserProfileImageStorage;
 use App\Admin\Service\Storage\UserProfileImageUploadException;
 use App\Entity\User;
+use App\Tests\Admin\Support\ImageStorageFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemOperator;
@@ -43,9 +44,8 @@ final class UserProfileImageFormHandlerTest extends TestCase
         $this->tempDirectory = sys_get_temp_dir() . '/pokedex-profile-image-' . bin2hex(random_bytes(8));
         mkdir($this->tempDirectory, 0o777, true);
 
-        $this->profileImageStorage = new UserProfileImageStorage(
+        $this->profileImageStorage = ImageStorageFactory::profile(
             new ObjectStorage(new Filesystem(new LocalFilesystemAdapter($this->tempDirectory))),
-            'dev',
         );
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->handler = new UserProfileImageFormHandler($this->profileImageStorage, $this->entityManager);
@@ -184,7 +184,7 @@ final class UserProfileImageFormHandlerTest extends TestCase
         $filesystem->method('writeStream')->willThrowException(UnableToWriteFile::atLocation('key'));
         $filesystem->method('fileExists')->willReturn(false);
 
-        return new UserProfileImageStorage(new ObjectStorage($filesystem), 'dev');
+        return ImageStorageFactory::profile(new ObjectStorage($filesystem));
     }
 
     private function createFailingDeleteStorage(): UserProfileImageStorage
@@ -193,7 +193,7 @@ final class UserProfileImageFormHandlerTest extends TestCase
         $filesystem->method('fileExists')->willReturn(true);
         $filesystem->method('delete')->willThrowException(UnableToDeleteFile::atLocation('key'));
 
-        return new UserProfileImageStorage(new ObjectStorage($filesystem), 'dev');
+        return ImageStorageFactory::profile(new ObjectStorage($filesystem));
     }
 
     private function createUploadedFile(): UploadedFile
@@ -201,10 +201,9 @@ final class UserProfileImageFormHandlerTest extends TestCase
         $path = tempnam(sys_get_temp_dir(), 'profile-image-');
         self::assertNotFalse($path);
 
-        file_put_contents(
-            $path,
-            base64_decode('/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQP/AABEIAAEAAQMBIgACEQEDEQH/xABTAAEBAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAGfAP/AABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEBAD8Af//Z'),
-        );
+        $image = imagecreatetruecolor(32, 32);
+        self::assertNotFalse($image);
+        imagejpeg($image, $path, 90);
 
         return new UploadedFile($path, 'avatar.jpg', 'image/jpeg', test: true);
     }

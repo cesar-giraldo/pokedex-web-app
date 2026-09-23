@@ -69,9 +69,13 @@
 				</div>
 			</div>
 			<div class="p-5 border-t border-gray-100 dark:border-gray-800 sm:p-6">
-				<div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-					<div class="max-w-full overflow-x-auto">
-						<table class="min-w-full">
+				<div
+					data-controller="component-image-lightbox"
+					data-action="keydown.esc@window->component-image-lightbox#close keydown.left@window->component-image-lightbox#previous keydown.right@window->component-image-lightbox#next"
+				>
+					<div class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+						<div class="max-w-full overflow-x-auto">
+							<table class="min-w-full">
 							<thead>
 								<tr class="border-b border-gray-100 dark:border-gray-800">
 									<th class="px-5 py-3 sm:px-6">
@@ -105,6 +109,7 @@
 													user: user,
 													size_class: 'h-18 w-18',
 													icon_class: 'h-full w-full text-gray-400 dark:text-gray-500',
+													lightbox: true,
 												} %}
 												<div class="min-w-0">
 													<a href="{{ path('app_backend_user_show', { id: user.id }) }}"
@@ -175,6 +180,8 @@
 							</tbody>
 						</table>
 					</div>
+					</div>
+					{% include '@admin/partials/_image_lightbox.html.twig' %}
 				</div>
 
 				{% include('@admin/partials/paginator/_paginator.html.twig') %}

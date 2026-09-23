@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Web\Controller;
 
+use App\Admin\Service\Storage\ImageVariant;
 use App\Admin\Service\Storage\PokemonImageStorage;
 use App\Entity\Pokemon;
 use App\Entity\PokemonImage;
@@ -13,7 +14,9 @@ use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+use function fclose;
 use function sprintf;
+use function strlen;
 
 #[Group('functional')]
 final class PokemonImageControllerTest extends WebTestCase
@@ -52,6 +55,45 @@ final class PokemonImageControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertResponseHeaderSame('Content-Type', 'image/jpeg');
         self::assertStringContainsString('public', (string) $client->getResponse()->headers->get('Cache-Control'));
+    }
+
+    public function testThumbVariantIsWebpAndSmallerThanOriginal(): void
+    {
+        $client = static::createClient();
+        $pokemon = $this->createTestPokemon();
+        $image = $this->createPokemonImage($pokemon, 800);
+
+        $client->request('GET', sprintf('/media/pokemon-images/%s/thumb', $image->getPublicToken()));
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('Content-Type', 'image/webp');
+
+        /** @var PokemonImageStorage $storage */
+        $storage = static::getContainer()->get(PokemonImageStorage::class);
+        $originalStream = $storage->readStream($image->getImagePath());
+        $thumbStream = $storage->readStream($image->getImagePath(), ImageVariant::Thumb);
+
+        try {
+            $originalSize = strlen((string) stream_get_contents($originalStream));
+            $thumbSize = strlen((string) stream_get_contents($thumbStream));
+        } finally {
+            fclose($originalStream);
+            fclose($thumbStream);
+        }
+
+        self::assertGreaterThan(0, $originalSize);
+        self::assertGreaterThan(0, $thumbSize);
+        self::assertLessThan($originalSize, $thumbSize);
+    }
+
+    public function testInvalidVariantIsNotRouted(): void
+    {
+        $client = static::createClient();
+        $pokemon = $this->createTestPokemon();
+        $image = $this->createPokemonImage($pokemon);
+
+        $client->request('GET', sprintf('/media/pokemon-images/%s/avatar', $image->getPublicToken()));
+
+        self::assertResponseStatusCodeSame(404);
     }
 
     public function testMissingImageReturnsNotFound(): void
@@ -95,11 +137,14 @@ final class PokemonImageControllerTest extends WebTestCase
         return $pokemon;
     }
 
-    private function createPokemonImage(Pokemon $pokemon): PokemonImage
+    /**
+     * @param int<1, max> $size
+     */
+    private function createPokemonImage(Pokemon $pokemon, int $size = 16): PokemonImage
     {
         /** @var PokemonImageStorage $storage */
         $storage = static::getContainer()->get(PokemonImageStorage::class);
-        $objectKey = $storage->upload($pokemon, $this->createUploadedFile());
+        $objectKey = $storage->upload($pokemon, $this->createUploadedFile($size));
         $image = new PokemonImage()
             ->setImagePath($objectKey)
             ->setSortOrder(1);
@@ -111,14 +156,17 @@ final class PokemonImageControllerTest extends WebTestCase
         return $image;
     }
 
-    private function createUploadedFile(): UploadedFile
+    /**
+     * @param int<1, max> $size
+     */
+    private function createUploadedFile(int $size = 16): UploadedFile
     {
         $path = tempnam(sys_get_temp_dir(), 'pokemon-public-');
         self::assertNotFalse($path);
 
-        $image = imagecreatetruecolor(16, 16);
+        $image = imagecreatetruecolor($size, $size);
         self::assertNotFalse($image);
-        imagejpeg($image, $path);
+        imagejpeg($image, $path, 90);
 
         return new UploadedFile($path, 'photo.jpg', 'image/jpeg', test: true);
     }
