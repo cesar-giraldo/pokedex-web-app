@@ -142,6 +142,9 @@ docker compose exec php php bin/console list
 # Populate Pokémon (dry-run unless --write=true)
 docker compose exec php php bin/console search-store-pokemons [limit] [--write=true]
 
+# Generate a SQL database backup and upload it to private S3
+docker compose exec php php bin/console generate-database-backup
+
 # Tailwind
 docker compose exec php php bin/console tailwind:build
 docker compose exec php php bin/console tailwind:build --watch
@@ -181,6 +184,17 @@ docker compose exec php composer test:functional
 ```
 
 CI (GitHub Actions) currently runs only static quality checks and unit tests — see `.github/workflows/ci.yml`.
+
+Database backups
+----------------
+
+The console command `generate-database-backup` dumps the active engine (`DATABASE_ENGINE=postgresql|mysql`) to a `.sql` file named `backup-YYYYMMDDTHHMMSSZ.sql` and uploads it to `{AWS_S3_STORAGE_PREFIX}/private/database-backups/` in the configured S3 bucket. Schedule it with cron or an equivalent runner; the image includes `postgresql-client` and `mariadb-client`.
+
+```bash
+docker compose exec php php bin/console generate-database-backup
+```
+
+Developers can review and download the latest backup from **Admin → Configuración General**. Admins can download the same file at `/admin/database-backup/download` (no listing UI).
 
 Frontend / assets
 -----------------

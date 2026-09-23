@@ -14,6 +14,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 use function in_array;
+use function trim;
 
 /**
  * Singleton de configuración general de la plataforma.
@@ -67,6 +68,12 @@ class GeneralSettings
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $lastUpdatedAt;
+
+    #[ORM\Column(length: 512, nullable: true)]
+    private ?string $lastBackupFilePath = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $lastBackupGeneratedAt = null;
 
     public function __construct()
     {
@@ -211,6 +218,43 @@ class GeneralSettings
     public function getDefaultTimeFormatLabel(): string
     {
         return $this->defaultTimeFormat->label();
+    }
+
+    public function getLastBackupFilePath(): ?string
+    {
+        return $this->lastBackupFilePath;
+    }
+
+    public function setLastBackupFilePath(?string $lastBackupFilePath): static
+    {
+        if (null === $lastBackupFilePath || '' === trim($lastBackupFilePath)) {
+            $this->lastBackupFilePath = null;
+
+            return $this;
+        }
+
+        $this->lastBackupFilePath = $lastBackupFilePath;
+
+        return $this;
+    }
+
+    public function getLastBackupGeneratedAt(): ?DateTimeInterface
+    {
+        return $this->lastBackupGeneratedAt;
+    }
+
+    public function setLastBackupGeneratedAt(?DateTimeInterface $lastBackupGeneratedAt): static
+    {
+        $this->lastBackupGeneratedAt = $lastBackupGeneratedAt;
+
+        return $this;
+    }
+
+    public function hasLastDatabaseBackup(): bool
+    {
+        return null !== $this->lastBackupFilePath
+            && '' !== $this->lastBackupFilePath
+            && $this->lastBackupGeneratedAt instanceof DateTimeInterface;
     }
 
     #[ORM\PrePersist]

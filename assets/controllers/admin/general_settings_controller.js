@@ -12,6 +12,7 @@ export default class extends Controller {
         defaultTimezone: String,
         defaultLocale: String,
         defaultTimeFormat: String,
+        downloadUrl: String,
     };
 
     static targets = [
@@ -30,6 +31,57 @@ export default class extends Controller {
         this.syncGeneralSection();
         this.syncLanguageSection();
         this.syncDateTimeSection();
+        this.boundBackupDownloadConfirmed = this.onBackupDownloadConfirmed.bind(this);
+        this.confirmDialogElement = this.element.querySelector('[data-controller~="component-confirm-dialog"]');
+
+        if (this.confirmDialogElement) {
+            this.confirmDialogElement.addEventListener(
+                'component-confirm-dialog:confirmed',
+                this.boundBackupDownloadConfirmed,
+            );
+        }
+    }
+
+    disconnect() {
+        if (this.confirmDialogElement) {
+            this.confirmDialogElement.removeEventListener(
+                'component-confirm-dialog:confirmed',
+                this.boundBackupDownloadConfirmed,
+            );
+        }
+    }
+
+    requestBackupDownload(event) {
+        event.preventDefault();
+
+        const dialog = this.getConfirmDialogController();
+        if (!dialog) {
+            return;
+        }
+
+        dialog.open({
+            title: 'Descargar backup',
+            message: 'Confirma que deseas descargar el archivo de backup',
+        });
+    }
+
+    onBackupDownloadConfirmed() {
+        if (!this.downloadUrlValue) {
+            return;
+        }
+
+        window.location.assign(this.downloadUrlValue);
+    }
+
+    getConfirmDialogController() {
+        if (!this.confirmDialogElement) {
+            return null;
+        }
+
+        return this.application.getControllerForElementAndIdentifier(
+            this.confirmDialogElement,
+            'component-confirm-dialog',
+        );
     }
 
     startGeneralEdit(event) {

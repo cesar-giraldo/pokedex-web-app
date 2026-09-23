@@ -23,9 +23,10 @@
 		data-general-settings-default-language-value="{{ settings.websiteDefaultLanguage }}"
 		data-general-settings-default-timezone-value="{{ settings.defaultTimezone }}"
 		data-general-settings-default-locale-value="{{ settings.defaultLocale.value }}"
-		data-general-settings-default-time-format-value="{{ settings.defaultTimeFormat.value }}"
-		class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6"
-	>
+			data-general-settings-default-time-format-value="{{ settings.defaultTimeFormat.value }}"
+			data-general-settings-download-url-value="{{ path('app_backend_database_backup_download') }}"
+			class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6"
+		>
 		<div class="mb-6 rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
 			<div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
 				<div class="w-full">
@@ -331,8 +332,49 @@
 			</div>
 		</div>
 
+		<div id="last-database-backup" class="mb-6 rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
+			<h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+				Último backup
+			</h4>
+
+			{% if settings.hasLastDatabaseBackup %}
+				<div class="flex items-start justify-between gap-4">
+					<div>
+						<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+							Fecha de generación
+						</p>
+						<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+							{{ settings.lastBackupGeneratedAt|app_datetime }}
+						</p>
+					</div>
+					<button
+						type="button"
+						data-action="click->general-settings#requestBackupDownload"
+						class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-success-500 text-white shadow-theme-xs transition hover:bg-success-600"
+						aria-label="Descargar archivo de backup"
+						title="Descargar archivo de backup"
+					>
+						{{ ux_icon('heroicons:arrow-down-tray', { class: 'w-5 h-5' }) }}
+					</button>
+				</div>
+			{% else %}
+				<p class="text-sm text-gray-500 dark:text-gray-400">
+					No se ha generado ningún backup de la base de datos.
+				</p>
+			{% endif %}
+		</div>
+
 		<p class="text-xs text-gray-500 dark:text-gray-400">
 			Última actualización: {{ settings.lastUpdatedAt|app_datetime }}
 		</p>
+
+		<twig:component_confirm_dialog
+			id="database-backup-confirm-dialog"
+			title="Descargar backup"
+			message="Confirma que deseas descargar el archivo de backup"
+			cancelLabel="Cancelar"
+			confirmLabel="Descargar"
+			confirmTone="brand"
+		/>
 	</div>
 {% endblock %}

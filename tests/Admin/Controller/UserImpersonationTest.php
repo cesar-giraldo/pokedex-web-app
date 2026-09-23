@@ -19,8 +19,6 @@ final class UserImpersonationTest extends WebTestCase
 {
     use AdminAuthenticatedClientTrait;
 
-    private const string FUNCTIONAL_OPERATOR_NICKNAME = 'tst-oper';
-
     public function testDeveloperCanImpersonateOperatorAndExit(): void
     {
         $client = static::createClient();
@@ -59,7 +57,7 @@ final class UserImpersonationTest extends WebTestCase
 
         /** @var UserRepository $userRepository */
         $userRepository = $container->get(UserRepository::class);
-        $reloadedOperator = $userRepository->findOneByNickname(self::FUNCTIONAL_OPERATOR_NICKNAME);
+        $reloadedOperator = $userRepository->findOneByNickname($operator->getNickname());
         self::assertInstanceOf(User::class, $reloadedOperator);
         self::assertNull($reloadedOperator->getLastLoginAt());
         self::assertNull($reloadedOperator->getLastLoginIp());
@@ -87,41 +85,6 @@ final class UserImpersonationTest extends WebTestCase
 
         $client->request('GET', '/admin/home?_switch_user=' . $operator->getNickname());
         self::assertResponseStatusCodeSame(403);
-    }
-
-    private function ensureFunctionalOperatorUser(): User
-    {
-        $container = static::getContainer();
-
-        /** @var UserRepository $userRepository */
-        $userRepository = $container->get(UserRepository::class);
-
-        $existingUser = $userRepository->findOneByNickname(self::FUNCTIONAL_OPERATOR_NICKNAME);
-        if ($existingUser instanceof User) {
-            return $existingUser;
-        }
-
-        /** @var UserPasswordHasherInterface $hasher */
-        $hasher = $container->get(UserPasswordHasherInterface::class);
-
-        $user = new User()
-            ->setName('Functional')
-            ->setLastname('Operator')
-            ->setEmail('tst-oper@example.com')
-            ->setNickname(self::FUNCTIONAL_OPERATOR_NICKNAME)
-            ->setCountryCode(57)
-            ->setCellphone('3018001003')
-            ->setApplicationRoles([UserRole::Operator])
-            ->setStatus(UserStatus::Active)
-            ->setIsHidden(true);
-        $user->setPassword($hasher->hashPassword($user, 'Secret123'));
-
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $container->get(EntityManagerInterface::class);
-        $entityManager->persist($user);
-        $entityManager->flush();
-
-        return $user;
     }
 
     private function createHiddenDeveloper(string $nickname): User

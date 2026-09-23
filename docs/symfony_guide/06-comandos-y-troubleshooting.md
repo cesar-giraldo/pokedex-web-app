@@ -69,6 +69,9 @@ docker compose exec php php bin/console search-store-pokemons 5
 # Persistir en base de datos
 docker compose exec php php bin/console search-store-pokemons 10 --write=true
 
+# Backup SQL de la base de datos (sube a S3)
+docker compose exec php php bin/console generate-database-backup
+
 # Búsqueda JSON en BD (también usada por el controlador Stimulus)
 curl -k https://localhost/internal-pokemon-search/pikachu
 ```

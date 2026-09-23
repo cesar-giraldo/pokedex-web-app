@@ -78,6 +78,22 @@ Comportamiento:
 
 Implementación: `src/Admin/Command/SearchStorePokemonsCommand.php`.
 
+### Comando de consola: `generate-database-backup`
+
+Exporta la estructura y el contenido de la base de datos (`pg_dump` o `mysqldump` según `DATABASE_ENGINE`) y sube el `.sql` al prefijo privado de S3: `{AWS_S3_STORAGE_PREFIX}/private/database-backups/backup-YYYYMMDDTHHMMSSZ.sql`.
+
+La imagen Docker incluye `postgresql-client` y `mariadb-client`. El cron o Kubernetes CronJob queda fuera de la aplicación; el comando está pensado para invocarse periódicamente:
+
+```bash
+docker compose exec php php bin/console generate-database-backup
+```
+
+Tras un upload correcto, actualiza `general_settings.last_backup_file_path` y `last_backup_generated_at` sin cambiar `last_updated_at`.
+
+Descarga autenticada: `GET /admin/database-backup/download` (roles Developer y Admin). La sección «Último backup» en Configuración General es solo para Developer.
+
+Implementación: `src/Admin/Command/CronJobs/GenerateDatabaseBackupCommand.php`.
+
 ---
 
 ## 7.3 · Controladores y rutas (por contexto)
