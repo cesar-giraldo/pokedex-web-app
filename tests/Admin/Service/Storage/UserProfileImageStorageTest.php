@@ -7,10 +7,13 @@ namespace App\Tests\Admin\Service\Storage;
 use App\Admin\Service\Storage\ImageVariant;
 use App\Admin\Service\Storage\ObjectStorage;
 use App\Admin\Service\Storage\UserProfileImageStorage;
+use App\Admin\Service\Storage\UserProfileImageUploadException;
 use App\Entity\User;
 use App\Tests\Admin\Support\ImageStorageFactory;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use League\Flysystem\UnableToWriteFile;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -69,6 +72,38 @@ final class UserProfileImageStorageTest extends TestCase
         $this->expectException(RuntimeException::class);
 
         $this->profileImageStorage->upload(new User(), $this->createUploadedFile());
+    }
+
+    public function testWriteRollsBackWhenVariantGenerationFails(): void
+    {
+        $written = [];
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->method('writeStream')->willReturnCallback(static function (string $path) use (&$written): void {
+            $written[$path] = true;
+        });
+        $filesystem->method('write')->willReturnCallback(static function (string $path): void {
+            throw UnableToWriteFile::atLocation($path);
+        });
+        $filesystem->method('fileExists')->willReturnCallback(static function (string $path) use (&$written): bool {
+            return isset($written[$path]);
+        });
+        $filesystem->method('delete')->willReturnCallback(static function (string $path) use (&$written): void {
+            unset($written[$path]);
+        });
+
+        $storage = ImageStorageFactory::profile(new ObjectStorage($filesystem));
+
+        try {
+            $storage->upload($this->createUser(42), $this->createUploadedFile());
+            self::fail('Expected UserProfileImageUploadException.');
+        } catch (UserProfileImageUploadException $exception) {
+            self::assertSame(
+                'No se pudieron generar las versiones de la imagen. Inténtalo de nuevo.',
+                $exception->getMessage(),
+            );
+        }
+
+        self::assertSame([], $written);
     }
 
     public function testDeleteIgnoresMissingPath(): void

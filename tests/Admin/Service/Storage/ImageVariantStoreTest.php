@@ -6,6 +6,7 @@ namespace App\Tests\Admin\Service\Storage;
 
 use App\Admin\Service\Storage\GdImageManagerFactory;
 use App\Admin\Service\Storage\ImageVariant;
+use App\Admin\Service\Storage\ImageVariantGenerationException;
 use App\Admin\Service\Storage\ImageVariantProcessor;
 use App\Admin\Service\Storage\ImageVariantStore;
 use App\Admin\Service\Storage\ObjectStorage;
@@ -58,7 +59,7 @@ final class ImageVariantStoreTest extends TestCase
         self::assertSame('image/webp', $this->variantStore->resolveMimeType($originalKey, ImageVariant::Thumb));
     }
 
-    public function testGenerateDoesNotFailOriginalWhenProcessorThrows(): void
+    public function testGenerateThrowsWhenProcessorFails(): void
     {
         $originalKey = 'dev/public/pokemon/images/1/photo.jpg';
         $binary = $this->jpegBinary(32, 32);
@@ -78,10 +79,25 @@ final class ImageVariantStoreTest extends TestCase
             new ImageVariantProcessor(GdImageManagerFactory::create()),
             $logger,
         );
-        $store->generate($originalKey, 'not-an-image', [ImageVariant::Thumb]);
+
+        try {
+            $store->generate($originalKey, 'not-an-image', [ImageVariant::Thumb]);
+            self::fail('Expected ImageVariantGenerationException.');
+        } catch (ImageVariantGenerationException $exception) {
+            self::assertSame('No se pudo generar la variante "thumb".', $exception->getMessage());
+        }
 
         self::assertTrue($this->objectStorage->fileExists($originalKey));
         self::assertFalse($this->objectStorage->fileExists(ImageVariant::Thumb->objectKey($originalKey)));
+    }
+
+    public function testReadStreamThrowsWhenMissingVariantCannotBeGenerated(): void
+    {
+        $originalKey = 'dev/public/pokemon/images/1/photo.jpg';
+        $this->objectStorage->write($originalKey, 'not-an-image');
+
+        $this->expectException(ImageVariantGenerationException::class);
+        $this->variantStore->readStream($originalKey, ImageVariant::Thumb);
     }
 
     public function testReadStreamGeneratesMissingVariant(): void

@@ -46,7 +46,16 @@ final class PokemonImageStorage
             throw new PokemonImageUploadException($exception->getMessage(), previous: $exception);
         }
 
-        $this->variantStore->generate($objectKey, $file->getContent(), ImageVariant::pokemonGenerated());
+        try {
+            $this->variantStore->generate($objectKey, $file->getContent(), ImageVariant::pokemonGenerated());
+        } catch (ImageVariantGenerationException $exception) {
+            $this->variantStore->tryDeleteAll($objectKey);
+
+            throw new PokemonImageUploadException(
+                'No se pudieron generar las versiones de la imagen. Inténtalo de nuevo.',
+                previous: $exception,
+            );
+        }
     }
 
     public function upload(Pokemon $pokemon, UploadedFile $file): string
@@ -78,7 +87,7 @@ final class PokemonImageStorage
     {
         try {
             return $this->variantStore->readStream($objectKey, $variant);
-        } catch (ObjectStorageException $exception) {
+        } catch (ObjectStorageException|ImageVariantGenerationException $exception) {
             throw new RuntimeException('La imagen del Pokémon no existe.', previous: $exception);
         }
     }

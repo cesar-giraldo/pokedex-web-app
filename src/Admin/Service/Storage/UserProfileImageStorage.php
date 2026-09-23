@@ -46,7 +46,16 @@ final class UserProfileImageStorage
             throw new UserProfileImageUploadException($exception->getMessage(), previous: $exception);
         }
 
-        $this->variantStore->generate($objectKey, $file->getContent(), ImageVariant::profileGenerated());
+        try {
+            $this->variantStore->generate($objectKey, $file->getContent(), ImageVariant::profileGenerated());
+        } catch (ImageVariantGenerationException $exception) {
+            $this->variantStore->tryDeleteAll($objectKey);
+
+            throw new UserProfileImageUploadException(
+                'No se pudieron generar las versiones de la imagen. Inténtalo de nuevo.',
+                previous: $exception,
+            );
+        }
     }
 
     public function upload(User $user, UploadedFile $file): string
@@ -78,7 +87,7 @@ final class UserProfileImageStorage
     {
         try {
             return $this->variantStore->readStream($objectKey, $variant);
-        } catch (ObjectStorageException $exception) {
+        } catch (ObjectStorageException|ImageVariantGenerationException $exception) {
             throw new RuntimeException('La imagen de perfil no existe.', previous: $exception);
         }
     }

@@ -11,7 +11,9 @@ use App\Admin\Service\Storage\PokemonImageUploadException;
 use App\Entity\Pokemon;
 use App\Tests\Admin\Support\ImageStorageFactory;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemOperator;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use League\Flysystem\UnableToWriteFile;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -87,6 +89,38 @@ final class PokemonImageStorageTest extends TestCase
         $this->expectException(PokemonImageUploadException::class);
 
         $this->pokemonImageStorage->upload(new Pokemon(), $this->createUploadedFile());
+    }
+
+    public function testWriteRollsBackWhenVariantGenerationFails(): void
+    {
+        $written = [];
+        $filesystem = $this->createMock(FilesystemOperator::class);
+        $filesystem->method('writeStream')->willReturnCallback(static function (string $path) use (&$written): void {
+            $written[$path] = true;
+        });
+        $filesystem->method('write')->willReturnCallback(static function (string $path): void {
+            throw UnableToWriteFile::atLocation($path);
+        });
+        $filesystem->method('fileExists')->willReturnCallback(static function (string $path) use (&$written): bool {
+            return isset($written[$path]);
+        });
+        $filesystem->method('delete')->willReturnCallback(static function (string $path) use (&$written): void {
+            unset($written[$path]);
+        });
+
+        $storage = ImageStorageFactory::pokemon(new ObjectStorage($filesystem));
+
+        try {
+            $storage->upload($this->createPokemon(12), $this->createUploadedFile());
+            self::fail('Expected PokemonImageUploadException.');
+        } catch (PokemonImageUploadException $exception) {
+            self::assertSame(
+                'No se pudieron generar las versiones de la imagen. Inténtalo de nuevo.',
+                $exception->getMessage(),
+            );
+        }
+
+        self::assertSame([], $written);
     }
 
     public function testDeleteRemovesOriginalAndVariants(): void

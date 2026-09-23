@@ -8,6 +8,8 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Throwable;
 
+use function sprintf;
+
 final class ImageVariantStore
 {
     public function __construct(
@@ -34,6 +36,11 @@ final class ImageVariantStore
                     'variant' => $variant->value,
                     'error' => $exception->getMessage(),
                 ]);
+
+                throw new ImageVariantGenerationException(
+                    sprintf('No se pudo generar la variante "%s".', $variant->value),
+                    previous: $exception,
+                );
             }
         }
     }

@@ -201,10 +201,9 @@ final class UserProfileImageFormHandlerTest extends TestCase
         $path = tempnam(sys_get_temp_dir(), 'profile-image-');
         self::assertNotFalse($path);
 
-        file_put_contents(
-            $path,
-            base64_decode('/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQP/AABEIAAEAAQMBIgACEQEDEQH/xABTAAEBAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAGfAP/AABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEBAD8Af//Z'),
-        );
+        $image = imagecreatetruecolor(32, 32);
+        self::assertNotFalse($image);
+        imagejpeg($image, $path, 90);
 
         return new UploadedFile($path, 'avatar.jpg', 'image/jpeg', test: true);
     }
