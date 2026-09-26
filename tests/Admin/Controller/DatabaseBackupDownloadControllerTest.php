@@ -123,7 +123,7 @@ final class DatabaseBackupDownloadControllerTest extends WebTestCase
         $client->request('GET', '/admin/settings/general');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('#last-database-backup h4', 'Último backup');
+        self::assertSelectorTextContains('#last-database-backup h4', 'Último Backup');
         self::assertSelectorTextContains(
             '#last-database-backup',
             'No se ha generado ningún backup de la base de datos.',
