@@ -18,6 +18,8 @@ trait AdminAuthenticatedClientTrait
 
     private const string FUNCTIONAL_DEVELOPER_NICKNAME = 'tst-devel';
 
+    private const string FUNCTIONAL_OPERATOR_NICKNAME = 'tst-oper';
+
     private function loginAsAdmin(KernelBrowser $client): User
     {
         $user = $this->ensureFunctionalAdminUser();
@@ -29,6 +31,14 @@ trait AdminAuthenticatedClientTrait
     private function loginAsDeveloper(KernelBrowser $client): User
     {
         $user = $this->ensureFunctionalDeveloperUser();
+        $client->loginUser($user, 'main');
+
+        return $user;
+    }
+
+    private function loginAsOperator(KernelBrowser $client): User
+    {
+        $user = $this->ensureFunctionalOperatorUser();
         $client->loginUser($user, 'main');
 
         return $user;
@@ -92,6 +102,41 @@ trait AdminAuthenticatedClientTrait
             ->setCountryCode(57)
             ->setCellphone('3018001002')
             ->setApplicationRoles([UserRole::Developer])
+            ->setStatus(UserStatus::Active)
+            ->setIsHidden(true);
+        $user->setPassword($hasher->hashPassword($user, 'Secret123'));
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(EntityManagerInterface::class);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $user;
+    }
+
+    private function ensureFunctionalOperatorUser(): User
+    {
+        $container = static::getContainer();
+
+        /** @var UserRepository $userRepository */
+        $userRepository = $container->get(UserRepository::class);
+
+        $existingUser = $userRepository->findOneByNickname(self::FUNCTIONAL_OPERATOR_NICKNAME);
+        if ($existingUser instanceof User) {
+            return $existingUser;
+        }
+
+        /** @var UserPasswordHasherInterface $hasher */
+        $hasher = $container->get(UserPasswordHasherInterface::class);
+
+        $user = new User()
+            ->setName('Functional')
+            ->setLastname('Operator')
+            ->setEmail('tst-oper@example.com')
+            ->setNickname(self::FUNCTIONAL_OPERATOR_NICKNAME)
+            ->setCountryCode(57)
+            ->setCellphone('3018001003')
+            ->setApplicationRoles([UserRole::Operator])
             ->setStatus(UserStatus::Active)
             ->setIsHidden(true);
         $user->setPassword($hasher->hashPassword($user, 'Secret123'));

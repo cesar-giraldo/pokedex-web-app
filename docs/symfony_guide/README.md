@@ -32,7 +32,7 @@ cd <tu-repositorio>
 docker compose up -d
 docker compose exec php composer install
 docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
-docker compose exec php php bin/console search-store-pokemons 10 --write=true   # opcional
+docker compose exec php php bin/console app:search-store-pokemons 10 --write=true   # opcional
 ```
 
 Y abrir <https://localhost> (Pokédex) o <https://localhost/design> (UI kit) en el navegador.

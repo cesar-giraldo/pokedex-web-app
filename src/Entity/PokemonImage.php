@@ -13,6 +13,7 @@ use function trim;
 
 #[ORM\Entity(repositoryClass: PokemonImageRepository::class)]
 #[ORM\Table(name: 'pokemon_image')]
+#[ORM\Index(name: 'IDX_POKEMON_IMAGE_POKEMON', columns: ['pokemon_id'])]
 #[ORM\UniqueConstraint(name: 'uniq_pokemon_image_public_token', fields: ['publicToken'])]
 class PokemonImage
 {

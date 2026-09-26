@@ -59,6 +59,26 @@ final class ObjectStorage
         }
     }
 
+    public function writeFromPath(string $objectKey, string $path): void
+    {
+        $stream = fopen($path, 'r');
+
+        if (false === $stream) {
+            throw new ObjectStorageException('No se pudo leer el archivo local.');
+        }
+
+        try {
+            $this->privateMediaStorage->writeStream($objectKey, $stream);
+        } catch (FilesystemException $exception) {
+            throw new ObjectStorageException(
+                $this->buildUploadFailureMessage($exception),
+                previous: $exception,
+            );
+        } finally {
+            fclose($stream);
+        }
+    }
+
     public function read(string $objectKey): string
     {
         if (!$this->privateMediaStorage->fileExists($objectKey)) {

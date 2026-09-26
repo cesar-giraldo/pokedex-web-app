@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\GeneralSettings;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
+use RuntimeException;
 
 /**
  * @extends ServiceEntityRepository<GeneralSettings>
@@ -41,5 +45,35 @@ class GeneralSettingsRepository extends ServiceEntityRepository
         $this->getEntityManager()->persist($settings);
 
         return $settings;
+    }
+
+    public function recordLastDatabaseBackup(string $objectKey, DateTimeInterface $generatedAt): void
+    {
+        $entityManager = $this->getEntityManager();
+        $settings = $this->getOrCreateSingleton();
+
+        if (null === $settings->getId()) {
+            $entityManager->flush();
+        }
+
+        $settingsId = $settings->getId();
+        if (null === $settingsId) {
+            throw new RuntimeException('No se pudo persistir la configuración general.');
+        }
+
+        $entityManager->getConnection()->update(
+            'general_settings',
+            [
+                'last_backup_file_path' => $objectKey,
+                'last_backup_generated_at' => DateTime::createFromInterface($generatedAt),
+            ],
+            ['id' => $settingsId],
+            [
+                'last_backup_file_path' => Types::STRING,
+                'last_backup_generated_at' => Types::DATETIME_MUTABLE,
+            ],
+        );
+
+        $entityManager->refresh($settings);
     }
 }

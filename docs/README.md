@@ -41,7 +41,7 @@ Los pasos **01–06** son un **tutorial genérico**: enseñan el stack usando un
 
 - Entidades `Pokemon` y `PokemonType`
 - Cliente HTTP `App\Service\PokeAPI\PokeAPIClient`
-- Comando `search-store-pokemons`
+- Comando `app:search-store-pokemons`
 - Live Components y kit de diseño en `/design`
 
 El paso **07** documenta esa capa de aplicación y cómo se relaciona con lo aprendido en los pasos anteriores.

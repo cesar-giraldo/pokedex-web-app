@@ -22,6 +22,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg-dev \
     libfreetype6-dev \
     libwebp-dev \
+    ca-certificates \
+    curl \
+    gnupg \
+    postgresql-common \
+    mariadb-client \
+    && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y \
+    && apt-get install -y --no-install-recommends postgresql-client-18 \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Extensiones PHP requeridas por Symfony + PostgreSQL + MySQL

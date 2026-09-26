@@ -41,6 +41,8 @@ final class ConfirmDialogComponent
 
     public string $confirmLabel = 'Eliminar';
 
+    public string $confirmTone = 'danger';
+
     public string $id = '';
 
     public function mount(): void

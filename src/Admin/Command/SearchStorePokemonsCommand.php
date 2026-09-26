@@ -23,7 +23,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use function sprintf;
 
 #[AsCommand(
-    name: 'search-store-pokemons',
+    name: 'app:search-store-pokemons',
     description: 'Allows you to fetch a list of pokemons from the Poke API and store them in the database',
 )]
 class SearchStorePokemonsCommand extends Command

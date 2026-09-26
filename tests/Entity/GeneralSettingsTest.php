@@ -24,6 +24,9 @@ final class GeneralSettingsTest extends TestCase
         self::assertSame(GeneralSettings::DEFAULT_LOCALE, $settings->getDefaultLocale());
         self::assertSame(GeneralSettings::DEFAULT_TIME_FORMAT, $settings->getDefaultTimeFormat());
         self::assertInstanceOf(DateTime::class, $settings->getLastUpdatedAt());
+        self::assertNull($settings->getLastBackupFilePath());
+        self::assertNull($settings->getLastBackupGeneratedAt());
+        self::assertFalse($settings->hasLastDatabaseBackup());
     }
 
     public function testUpdatesLastUpdatedAtOnTouch(): void
@@ -63,5 +66,25 @@ final class GeneralSettingsTest extends TestCase
             ],
             $settings->getEnabledLanguageLabels(),
         );
+    }
+
+    public function testTracksLastDatabaseBackup(): void
+    {
+        $generatedAt = new DateTime('2026-09-23 03:30:45');
+        $settings = GeneralSettings::createWithDefaults()
+            ->setLastBackupFilePath('dev/private/database-backups/backup-20260923T033045Z.sql')
+            ->setLastBackupGeneratedAt($generatedAt);
+
+        self::assertTrue($settings->hasLastDatabaseBackup());
+        self::assertSame(
+            'dev/private/database-backups/backup-20260923T033045Z.sql',
+            $settings->getLastBackupFilePath(),
+        );
+        self::assertSame($generatedAt, $settings->getLastBackupGeneratedAt());
+
+        $settings->setLastBackupFilePath('  ');
+
+        self::assertNull($settings->getLastBackupFilePath());
+        self::assertFalse($settings->hasLastDatabaseBackup());
     }
 }

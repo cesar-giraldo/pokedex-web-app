@@ -83,6 +83,19 @@ docker compose exec php php bin/phpunit --testsuite=integration
 docker compose exec php php bin/phpunit --testsuite=functional
 ```
 
+### Base de datos de test al cambiar de motor
+
+Las suites `integration` y `functional` usan `APP_ENV=test` y la base `{DATABASE_NAME}_test` (`dbname_suffix` en `config/packages/doctrine.yaml`). Las **unitarias no tocan la BD**.
+
+Si cambias `DATABASE_ENGINE` (MySQL ↔ PostgreSQL), esa base de test queda desfasada. El síntoma típico es `Undefined column` / `Unknown column` (por ejemplo `users.timezone`) al ejecutar `composer test` o `test:functional`. Actualiza el esquema:
+
+```bash
+docker compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
+docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction --env=test
+```
+
+Haz lo mismo en el entorno `dev` (`php bin/console doctrine:migrations:migrate --no-interaction`) para que la app coincida con las entidades.
+
 ### Filtrar por grupo
 
 ```bash

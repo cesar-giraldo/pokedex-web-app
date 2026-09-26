@@ -118,6 +118,19 @@ final class ObjectStorageTest extends TestCase
         self::assertSame('image/png', $this->objectStorage->resolveMimeType('file.png'));
     }
 
+    public function testWriteFromPathStoresFileContents(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'object-storage-backup-');
+        self::assertNotFalse($path);
+        file_put_contents($path, '-- sql dump');
+
+        $objectKey = 'test/private/database-backups/backup.sql';
+        $this->objectStorage->writeFromPath($objectKey, $path);
+
+        self::assertSame('-- sql dump', $this->objectStorage->read($objectKey));
+        unlink($path);
+    }
+
     public function testWriteAndReadGeneratedBytes(): void
     {
         $objectKey = 'dev/public/pokemon/images/1/file_thumb.webp';

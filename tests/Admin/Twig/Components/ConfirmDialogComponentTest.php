@@ -29,5 +29,6 @@ final class ConfirmDialogComponentTest extends TestCase
         self::assertSame('Confirmar', $component->title);
         self::assertSame('Cancelar', $component->cancelLabel);
         self::assertSame('Eliminar', $component->confirmLabel);
+        self::assertSame('danger', $component->confirmTone);
     }
 }

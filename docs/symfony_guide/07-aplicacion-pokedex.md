@@ -53,16 +53,16 @@ Para MySQL u otros motores, ver [`08-database-engines.md`](./08-database-engines
 
 DTOs en `src/Admin/Service/PokeAPI/PokemonDetails.php` y `PokemonTypeDetails.php`.
 
-### Comando de consola: `search-store-pokemons`
+### Comando de consola: `app:search-store-pokemons`
 
 Sincroniza Pokémon desde la API hacia la base de datos.
 
 ```bash
 # Dry-run (por defecto): muestra qué haría sin escribir en BD
-docker compose exec php php bin/console search-store-pokemons 5
+docker compose exec php php bin/console app:search-store-pokemons 5
 
 # Persistir en base de datos
-docker compose exec php php bin/console search-store-pokemons 10 --write=true
+docker compose exec php php bin/console app:search-store-pokemons 10 --write=true
 ```
 
 | Argumento / opción | Default | Descripción |
@@ -77,6 +77,22 @@ Comportamiento:
 3. Omite duplicados por nombre.
 
 Implementación: `src/Admin/Command/SearchStorePokemonsCommand.php`.
+
+### Comando de consola: `app:generate-database-backup`
+
+Exporta la estructura y el contenido de la base de datos (`pg_dump` o `mysqldump` según `DATABASE_ENGINE`) y sube el `.sql` al prefijo privado de S3: `{AWS_S3_STORAGE_PREFIX}/private/database-backups/backup-YYYYMMDDTHHMMSSZ.sql`.
+
+La imagen Docker incluye `postgresql-client-18` (compatible con PostgreSQL 18) y `mariadb-client`. El cron o Kubernetes CronJob queda fuera de la aplicación; el comando está pensado para invocarse periódicamente:
+
+```bash
+docker compose exec php php bin/console app:generate-database-backup
+```
+
+Tras un upload correcto, actualiza `general_settings.last_backup_file_path` y `last_backup_generated_at` sin cambiar `last_updated_at`.
+
+Descarga autenticada: `GET /admin/database-backup/download` (roles Developer y Admin). La sección «Último backup» en Configuración General es solo para Developer.
+
+Implementación: `src/Admin/Command/CronJobs/GenerateDatabaseBackupCommand.php`.
 
 ---
 
@@ -237,7 +253,7 @@ docker compose up -d
 docker compose ps                                    # php + database (healthy)
 docker compose exec php composer install
 docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
-docker compose exec php php bin/console search-store-pokemons 10 --write=true   # opcional
+docker compose exec php php bin/console app:search-store-pokemons 10 --write=true   # opcional
 docker compose exec php php bin/console tailwind:build --watch                  # terminal aparte
 ```
 

@@ -32,6 +32,7 @@
 - Match the template location to the context: use templates/admin for admin screens and templates/web for public pages.
 - Keep shared UI fragments in reusable template components rather than duplicating markup across contexts.
 - Use Heroicons for all icons in the project. Prefer the Heroicons library and the available outline set from Heroicons, using it consistently across admin and web interfaces.
+- After creating or modifying Stimulus/JavaScript controllers (files under `assets/controllers/` or other JS entrypoints), run `docker compose exec php composer assets:compile` so AssetMapper picks up the changes. Do not skip this step.
 
 ## Testing & Quality
 - Add or update PHPUnit tests when changing behavior.
