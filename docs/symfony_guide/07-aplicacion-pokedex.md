@@ -82,7 +82,7 @@ Implementación: `src/Admin/Command/SearchStorePokemonsCommand.php`.
 
 Exporta la estructura y el contenido de la base de datos (`pg_dump` o `mysqldump` según `DATABASE_ENGINE`) y sube el `.sql` al prefijo privado de S3: `{AWS_S3_STORAGE_PREFIX}/private/database-backups/backup-YYYYMMDDTHHMMSSZ.sql`.
 
-La imagen Docker incluye `postgresql-client` y `mariadb-client`. El cron o Kubernetes CronJob queda fuera de la aplicación; el comando está pensado para invocarse periódicamente:
+La imagen Docker incluye `postgresql-client-18` (compatible con PostgreSQL 18) y `mariadb-client`. El cron o Kubernetes CronJob queda fuera de la aplicación; el comando está pensado para invocarse periódicamente:
 
 ```bash
 docker compose exec php php bin/console generate-database-backup

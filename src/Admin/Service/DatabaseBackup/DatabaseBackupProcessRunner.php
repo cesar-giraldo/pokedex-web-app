@@ -8,6 +8,8 @@ use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
+use function trim;
+
 #[AsAlias(DatabaseBackupProcessRunnerInterface::class)]
 final class DatabaseBackupProcessRunner implements DatabaseBackupProcessRunnerInterface
 {
@@ -24,8 +26,18 @@ final class DatabaseBackupProcessRunner implements DatabaseBackupProcessRunnerIn
             return;
         }
 
+        $detail = trim($process->getErrorOutput());
+        if ('' === $detail) {
+            $detail = trim($process->getOutput());
+        }
+
+        $message = 'No se pudo exportar la base de datos. Verifica que pg_dump o mysqldump estén instalados y que la conexión sea válida.';
+        if ('' !== $detail) {
+            $message .= ' Detalle: ' . $detail;
+        }
+
         throw new DatabaseBackupExportException(
-            'No se pudo exportar la base de datos. Verifica que pg_dump o mysqldump estén instalados y que la conexión sea válida.',
+            $message,
             previous: new ProcessFailedException($process),
         );
     }
