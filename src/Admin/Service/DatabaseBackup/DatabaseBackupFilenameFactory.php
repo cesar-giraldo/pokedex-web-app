@@ -12,6 +12,8 @@ use function sprintf;
 
 final class DatabaseBackupFilenameFactory
 {
+    public const string FILENAME_PATTERN = '/^backup-\d{8}T\d{6}Z\.sql$/';
+
     public function create(DateTimeInterface $generatedAt): string
     {
         $utc = DateTimeImmutable::createFromInterface($generatedAt)

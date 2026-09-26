@@ -110,6 +110,31 @@ final class GenerateDatabaseBackupCommandTest extends TestCase
         self::assertStringContainsString('se subió a S3', $tester->getDisplay());
     }
 
+    public function testReturnsFailureWhenLockDirectoryCannotBeCreated(): void
+    {
+        $cacheFile = sys_get_temp_dir() . '/pokedex-backup-not-a-dir-' . bin2hex(random_bytes(6));
+        file_put_contents($cacheFile, 'not a directory');
+
+        $exporter = $this->createMock(DatabaseBackupExporterInterface::class);
+        $exporter->expects(self::never())->method('exportToFile');
+
+        $uploader = $this->createMock(DatabaseBackupUploaderInterface::class);
+        $uploader->expects(self::never())->method('upload');
+
+        $repository = $this->createMock(GeneralSettingsRepository::class);
+        $repository->expects(self::never())->method('recordLastDatabaseBackup');
+
+        $tester = new CommandTester($this->createCommand(
+            $exporter,
+            $uploader,
+            $repository,
+            $cacheFile,
+        ));
+
+        self::assertSame(Command::FAILURE, $tester->execute([]));
+        self::assertStringContainsString('directorio de bloqueo', $tester->getDisplay());
+    }
+
     private function createCommand(
         DatabaseBackupExporterInterface $exporter,
         DatabaseBackupUploaderInterface $uploader,

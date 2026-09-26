@@ -60,7 +60,14 @@ final class GenerateDatabaseBackupCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $lockHandle = $this->acquireLock();
+
+        try {
+            $lockHandle = $this->acquireLock();
+        } catch (DatabaseBackupExportException $exception) {
+            $io->error($exception->getMessage());
+
+            return Command::FAILURE;
+        }
 
         if (false === $lockHandle) {
             $io->error('Ya hay una generación de backup en curso.');
@@ -123,6 +130,10 @@ final class GenerateDatabaseBackupCommand extends Command
      */
     private function acquireLock()
     {
+        if (!is_dir($this->cacheDir)) {
+            throw new DatabaseBackupExportException('No se pudo crear el directorio de bloqueo del backup.');
+        }
+
         $lockDirectory = $this->cacheDir . '/locks';
 
         if (!is_dir($lockDirectory) && !mkdir($lockDirectory, 0o777, true) && !is_dir($lockDirectory)) {

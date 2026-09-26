@@ -22,11 +22,15 @@ final class DatabaseBackupDownloadControllerTest extends WebTestCase
 
     private const string OBJECT_KEY = 'test/private/database-backups/backup-20260923T033045Z.sql';
 
+    private const string POISONED_OBJECT_KEY = 'test/private/user/profile-images/1/secret.txt';
+
     private ?string $previousBackupPath = null;
 
     private ?DateTimeInterface $previousBackupGeneratedAt = null;
 
     private bool $wroteBackupObject = false;
+
+    private bool $wrotePoisonedObject = false;
 
     protected function tearDown(): void
     {
@@ -54,10 +58,17 @@ final class DatabaseBackupDownloadControllerTest extends WebTestCase
                 );
             }
 
-            if ($this->wroteBackupObject) {
+            if ($this->wroteBackupObject || $this->wrotePoisonedObject) {
                 /** @var ObjectStorage $objectStorage */
                 $objectStorage = $container->get(ObjectStorage::class);
-                $objectStorage->tryDelete(self::OBJECT_KEY);
+
+                if ($this->wroteBackupObject) {
+                    $objectStorage->tryDelete(self::OBJECT_KEY);
+                }
+
+                if ($this->wrotePoisonedObject) {
+                    $objectStorage->tryDelete(self::POISONED_OBJECT_KEY);
+                }
             }
         }
 
@@ -145,6 +156,17 @@ final class DatabaseBackupDownloadControllerTest extends WebTestCase
         self::assertSelectorTextContains('#database-backup-confirm-dialog', 'Confirma que deseas descargar el archivo de backup');
     }
 
+    public function testDownloadRejectsPoisonedObjectKeyOutsideBackupPrefix(): void
+    {
+        $client = static::createClient();
+        $this->loginAsDeveloper($client);
+        $this->seedPoisonedBackupPointer();
+
+        $client->request('GET', '/admin/database-backup/download');
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
     private function seedBackupFile(): void
     {
         $this->capturePreviousBackupPointer();
@@ -158,6 +180,23 @@ final class DatabaseBackupDownloadControllerTest extends WebTestCase
         $repository = static::getContainer()->get(GeneralSettingsRepository::class);
         $repository->recordLastDatabaseBackup(
             self::OBJECT_KEY,
+            new DateTimeImmutable('2026-09-23 03:30:45', new DateTimeZone('UTC')),
+        );
+    }
+
+    private function seedPoisonedBackupPointer(): void
+    {
+        $this->capturePreviousBackupPointer();
+
+        /** @var ObjectStorage $objectStorage */
+        $objectStorage = static::getContainer()->get(ObjectStorage::class);
+        $objectStorage->write(self::POISONED_OBJECT_KEY, 'should-not-be-streamed');
+        $this->wrotePoisonedObject = true;
+
+        /** @var GeneralSettingsRepository $repository */
+        $repository = static::getContainer()->get(GeneralSettingsRepository::class);
+        $repository->recordLastDatabaseBackup(
+            self::POISONED_OBJECT_KEY,
             new DateTimeImmutable('2026-09-23 03:30:45', new DateTimeZone('UTC')),
         );
     }

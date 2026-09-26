@@ -23,6 +23,10 @@ final class DatabaseBackupFilenameFactoryTest extends TestCase
             'backup-20260923T033045Z.sql',
             new DatabaseBackupFilenameFactory()->create($generatedAt),
         );
+        self::assertMatchesRegularExpression(
+            DatabaseBackupFilenameFactory::FILENAME_PATTERN,
+            'backup-20260923T033045Z.sql',
+        );
     }
 
     public function testConvertsNonUtcInstantToUtc(): void

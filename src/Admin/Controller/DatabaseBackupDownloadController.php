@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Controller;
 
+use App\Admin\Service\DatabaseBackup\DatabaseBackupObjectKeyBuilder;
 use App\Admin\Service\Storage\ObjectStorage;
 use App\Repository\GeneralSettingsRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,6 +28,7 @@ final class DatabaseBackupDownloadController extends AbstractController
     public function __construct(
         private readonly GeneralSettingsRepository $generalSettingsRepository,
         private readonly ObjectStorage $objectStorage,
+        private readonly DatabaseBackupObjectKeyBuilder $objectKeyBuilder,
     ) {
     }
 
@@ -37,6 +39,10 @@ final class DatabaseBackupDownloadController extends AbstractController
         $objectKey = $settings?->getLastBackupFilePath();
 
         if (null === $settings || !$settings->hasLastDatabaseBackup() || null === $objectKey || '' === $objectKey) {
+            throw new NotFoundHttpException();
+        }
+
+        if (!$this->objectKeyBuilder->isAllowedKey($objectKey)) {
             throw new NotFoundHttpException();
         }
 
