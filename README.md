@@ -32,10 +32,10 @@ docker compose exec php composer install
 docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
 
 # 5. (Optional) Seed Pokémon from PokeAPI — dry-run by default
-docker compose exec php php bin/console search-store-pokemons 10
+docker compose exec php php bin/console app:search-store-pokemons 10
 
 # 6. (Optional) Persist to database
-docker compose exec php php bin/console search-store-pokemons 10 --write=true
+docker compose exec php php bin/console app:search-store-pokemons 10 --write=true
 
 # 7. (Optional) Rebuild Tailwind in watch mode (separate terminal)
 docker compose exec php php bin/console tailwind:build --watch
@@ -140,10 +140,10 @@ All commands below assume Docker. Prefix with `docker compose exec php` or use t
 docker compose exec php php bin/console list
 
 # Populate Pokémon (dry-run unless --write=true)
-docker compose exec php php bin/console search-store-pokemons [limit] [--write=true]
+docker compose exec php php bin/console app:search-store-pokemons [limit] [--write=true]
 
 # Generate a SQL database backup and upload it to private S3
-docker compose exec php php bin/console generate-database-backup
+docker compose exec php php bin/console app:generate-database-backup
 
 # Tailwind
 docker compose exec php php bin/console tailwind:build
@@ -188,10 +188,10 @@ CI (GitHub Actions) currently runs only static quality checks and unit tests —
 Database backups
 ----------------
 
-The console command `generate-database-backup` dumps the active engine (`DATABASE_ENGINE=postgresql|mysql`) to a `.sql` file named `backup-YYYYMMDDTHHMMSSZ.sql` and uploads it to `{AWS_S3_STORAGE_PREFIX}/private/database-backups/` in the configured S3 bucket. Schedule it with cron or an equivalent runner; the image includes `postgresql-client-18` (matching PostgreSQL 18) and `mariadb-client`.
+The console command `app:generate-database-backup` dumps the active engine (`DATABASE_ENGINE=postgresql|mysql`) to a `.sql` file named `backup-YYYYMMDDTHHMMSSZ.sql` and uploads it to `{AWS_S3_STORAGE_PREFIX}/private/database-backups/` in the configured S3 bucket. Schedule it with cron or an equivalent runner; the image includes `postgresql-client-18` (matching PostgreSQL 18) and `mariadb-client`.
 
 ```bash
-docker compose exec php php bin/console generate-database-backup
+docker compose exec php php bin/console app:generate-database-backup
 ```
 
 Developers can review and download the latest backup from **Admin → Configuración General**. Admins can download the same file at `/admin/database-backup/download` (no listing UI).
@@ -219,7 +219,7 @@ pokedex-web-app/
 │   └── mysql/               # Migraciones MySQL (por portal)
 ├── public/                  # Front controller (index.php), static assets
 ├── src/
-│   ├── Command/             # search-store-pokemons
+│   ├── Command/             # app:search-store-pokemons
 │   ├── Controller/          # HomeController, DesignController
 │   ├── Entity/              # Pokemon, PokemonType
 │   ├── Repository/

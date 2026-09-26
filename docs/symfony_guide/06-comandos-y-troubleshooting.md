@@ -64,13 +64,13 @@ docker compose exec php composer show
 
 ```bash
 # Sincronizar Pokémon desde PokeAPI (dry-run por defecto)
-docker compose exec php php bin/console search-store-pokemons 5
+docker compose exec php php bin/console app:search-store-pokemons 5
 
 # Persistir en base de datos
-docker compose exec php php bin/console search-store-pokemons 10 --write=true
+docker compose exec php php bin/console app:search-store-pokemons 10 --write=true
 
 # Backup SQL de la base de datos (sube a S3)
-docker compose exec php php bin/console generate-database-backup
+docker compose exec php php bin/console app:generate-database-backup
 
 # Búsqueda JSON en BD (también usada por el controlador Stimulus)
 curl -k https://localhost/internal-pokemon-search/pikachu
@@ -606,7 +606,7 @@ cd <tu-repo>
 docker compose up -d
 docker compose exec php composer install
 docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
-docker compose exec php php bin/console search-store-pokemons 10 --write=true   # opcional
+docker compose exec php php bin/console app:search-store-pokemons 10 --write=true   # opcional
 ```
 
 Y ya está funcionando. Consulta [`07-aplicacion-pokedex.md`](./07-aplicacion-pokedex.md) para las rutas y funcionalidades de la app. 🚀

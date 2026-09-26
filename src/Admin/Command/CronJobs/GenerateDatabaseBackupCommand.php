@@ -39,7 +39,7 @@ use const LOCK_NB;
 use const LOCK_UN;
 
 #[AsCommand(
-    name: 'generate-database-backup',
+    name: 'app:generate-database-backup',
     description: 'Exporta la base de datos a un archivo SQL y lo almacena en S3.',
 )]
 final class GenerateDatabaseBackupCommand extends Command
