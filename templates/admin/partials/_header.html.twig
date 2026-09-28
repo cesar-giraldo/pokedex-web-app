@@ -27,8 +27,9 @@
 			<!-- Hamburger Toggle BTN -->
 
 			<a href="{{ path('app_backend_home')}}" class="lg:hidden">
-				<img class="dark:hidden" src="{{ asset('images/logo/logo.svg', 'admin') }}" alt="Logo"/>
-				<img class="hidden dark:block" src="{{ asset('images/logo/logo-dark.svg', 'admin') }}" alt="Logo"/>
+				{% set header_logo_title = platform_name() ?? 'Home' %}
+				<img class="dark:hidden" src="{{ platform_branding_url('platform-logo') ?? asset('images/logo/logo.svg', 'admin') }}" alt="{{ header_logo_title }}" title="{{ header_logo_title }}"/>
+				<img class="hidden dark:block" src="{{ platform_branding_url('platform-logo-dark') ?? asset('images/logo/logo-dark.svg', 'admin') }}" alt="{{ header_logo_title }}" title="{{ header_logo_title }}"/>
 			</a>
 
 			<!-- Application nav menu button -->

@@ -1,0 +1,30 @@
+{% if object_key %}
+	{% set logo %}
+		<img
+			src="{{ path('app_backend_general_settings_branding_asset', { asset: asset }) }}?v={{ version }}"
+			alt="{{ alt }}"
+			class="h-10 w-auto max-w-full object-contain"
+			width="120"
+			height="40"
+		>
+	{% endset %}
+	{% if asset == 'platform-logo' %}
+		<span class="inline-flex items-center rounded-lg bg-gray-50 px-3 py-2">
+			{{ logo }}
+		</span>
+	{% elseif asset == 'platform-logo-dark' %}
+		<span class="inline-flex items-center rounded-lg bg-gray-900 px-3 py-2">
+			{{ logo }}
+		</span>
+	{% elseif asset == 'platform-auth-logo' %}
+		<span class="inline-flex items-center rounded-lg bg-brand-950 px-3 py-2">
+			{{ logo }}
+		</span>
+	{% else %}
+		{{ logo }}
+	{% endif %}
+{% else %}
+	<span class="inline-flex text-gray-400 dark:text-gray-500" role="img" aria-label="No configurado">
+		{{ ux_icon('heroicons:photo', { class: 'w-10 h-10' }) }}
+	</span>
+{% endif %}

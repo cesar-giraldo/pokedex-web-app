@@ -120,6 +120,24 @@ final class UserControllerShowTest extends WebTestCase
         self::assertSelectorExists('button[aria-label="Cerrar imagen"]');
     }
 
+    public function testEditFormPhotoOpensLightboxToDisplayImage(): void
+    {
+        $client = static::createClient();
+        $this->loginAsAdmin($client);
+        $user = $this->createListedUser('useditimg', UserRole::Operator, isHidden: false);
+        $this->attachProfileImage($user);
+
+        $client->request('GET', sprintf('/admin/users/%d/edit', $user->getId()));
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(sprintf(
+            'button.h-28.w-28[data-component-image-lightbox-target="item"][data-component-image-lightbox-src-param="/admin/media/user-profile/%d/display"]',
+            $user->getId(),
+        ));
+        self::assertSelectorExists('button[aria-label="Cerrar imagen"]');
+        self::assertSelectorNotExists('header button[data-component-image-lightbox-target="item"]');
+    }
+
     private function createListedUser(string $nicknamePrefix, UserRole $role, bool $isHidden): User
     {
         $container = static::getContainer();

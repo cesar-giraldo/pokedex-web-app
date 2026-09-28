@@ -10,7 +10,7 @@
     <title>{% block title %}Welcome {% endblock %} | Pokedex</title>
     
     <!-- ===== Title Icon ===== -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo/logo-icon.svg', 'admin') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ platform_branding_url('platform-icon') ?? asset('images/logo/logo-icon.svg', 'admin') }}">
 
     {% block stylesheets %}
     {% endblock %}

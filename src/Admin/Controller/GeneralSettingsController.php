@@ -9,6 +9,7 @@ use App\Admin\Data\IanaTimezones;
 use App\Admin\Form\GeneralSettingsDateTimeType;
 use App\Admin\Form\GeneralSettingsGeneralType;
 use App\Admin\Form\GeneralSettingsLanguageType;
+use App\Admin\Service\Storage\PlatformBrandingFormHandler;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\SupportedLocale;
 use App\Entity\Enum\TimeFormat;
@@ -30,18 +31,36 @@ final class GeneralSettingsController extends AbstractController
 {
     use FlashesFormValidationErrorsTrait;
 
+    /**
+     * Valores persistidos antes de que el formulario mapee datos no guardados.
+     *
+     * @var array{platformName: string, platformSlogan: string, contactSupportEmail: string}
+     */
+    private array $persistedBranding = [
+        'platformName' => '',
+        'platformSlogan' => '',
+        'contactSupportEmail' => '',
+    ];
+
     #[Route('/settings/general', name: 'app_backend_general_settings', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
         GeneralSettingsRepository $generalSettingsRepository,
         EntityManagerInterface $entityManager,
         FormFactoryInterface $formFactory,
+        PlatformBrandingFormHandler $platformBrandingFormHandler,
     ): Response {
         $settings = $generalSettingsRepository->getOrCreateSingleton();
 
         if (null === $settings->getId()) {
             $entityManager->flush();
         }
+
+        $this->persistedBranding = [
+            'platformName' => $settings->getPlatformName() ?? '',
+            'platformSlogan' => $settings->getPlatformSlogan() ?? '',
+            'contactSupportEmail' => $settings->getContactSupportEmail() ?? '',
+        ];
 
         $generalForm = $formFactory->create(GeneralSettingsGeneralType::class, $settings);
         $languageForm = $formFactory->create(GeneralSettingsLanguageType::class, $settings);
@@ -52,7 +71,13 @@ final class GeneralSettingsController extends AbstractController
         $dateTimeForm->handleRequest($request);
 
         if ($generalForm->isSubmitted()) {
-            return $this->handleGeneralFormSubmission($generalForm, $settings, $entityManager, $formFactory);
+            return $this->handleGeneralFormSubmission(
+                $generalForm,
+                $settings,
+                $entityManager,
+                $formFactory,
+                $platformBrandingFormHandler,
+            );
         }
 
         if ($languageForm->isSubmitted()) {
@@ -82,6 +107,7 @@ final class GeneralSettingsController extends AbstractController
         GeneralSettings $settings,
         EntityManagerInterface $entityManager,
         FormFactoryInterface $formFactory,
+        PlatformBrandingFormHandler $platformBrandingFormHandler,
     ): Response {
         $languageForm = $formFactory->create(GeneralSettingsLanguageType::class, $settings);
         $dateTimeForm = $formFactory->create(GeneralSettingsDateTimeType::class, $settings);
@@ -101,7 +127,17 @@ final class GeneralSettingsController extends AbstractController
         }
 
         try {
-            $entityManager->flush();
+            $uploadBatch = $platformBrandingFormHandler->handleFromForm($settings, $generalForm);
+
+            try {
+                $entityManager->flush();
+            } catch (Throwable $exception) {
+                $uploadBatch->abort();
+
+                throw $exception;
+            }
+
+            $uploadBatch->deleteReplaced();
         } catch (Throwable) {
             $this->addFlash('error', 'No se pudo actualizar la configuración general. Inténtelo de nuevo.');
 
@@ -243,6 +279,7 @@ final class GeneralSettingsController extends AbstractController
             'edit_general' => $editGeneral,
             'edit_language' => $editLanguage,
             'edit_datetime' => $editDateTime,
+            'persisted_branding' => $this->persistedBranding,
             'active_menu' => 'auth',
             'active_page' => 'general_settings',
         ];

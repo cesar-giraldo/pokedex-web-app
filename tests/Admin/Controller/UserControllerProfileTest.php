@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Admin\Controller;
 
+use App\Admin\Service\Storage\UserProfileImageStorage;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
@@ -13,7 +14,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
+use function sprintf;
 
 #[Group('functional')]
 final class UserControllerProfileTest extends WebTestCase
@@ -32,6 +36,41 @@ final class UserControllerProfileTest extends WebTestCase
         self::assertSelectorTextContains('body', $user->getNickname());
         self::assertSelectorTextContains('body', 'Información personal');
         self::assertSelectorTextContains('body', 'Seguridad');
+        self::assertSelectorExists('.grid-cols-4 .col-span-1');
+        self::assertSelectorExists('.grid-cols-4 .col-span-3 h4');
+    }
+
+    public function testProfilePhotoOpensLightboxToDisplayImage(): void
+    {
+        $client = static::createClient();
+        $nickname = 'profimg01';
+        $this->createProfileUser(
+            $nickname,
+            UserStatus::Active,
+            'profile-img-' . bin2hex(random_bytes(4)) . '@example.com',
+            57,
+            '3018041005',
+            UserRole::Operator,
+        );
+
+        $container = static::getContainer();
+        /** @var UserRepository $userRepository */
+        $userRepository = $container->get(UserRepository::class);
+        $user = $userRepository->findOneByNickname($nickname);
+        self::assertInstanceOf(User::class, $user);
+        $this->attachProfileImage($user);
+
+        $client->loginUser($user, 'main');
+        $client->request('GET', '/admin/profile');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-controller*="component-image-lightbox"]');
+        self::assertSelectorExists(sprintf(
+            'button[data-component-image-lightbox-target="item"][data-component-image-lightbox-src-param="/admin/media/user-profile/%d/display"]',
+            $user->getId(),
+        ));
+        self::assertSelectorExists('button[aria-label="Cerrar imagen"]');
+        self::assertSelectorNotExists('header button[data-component-image-lightbox-target="item"]');
     }
 
     public function testProfileInfoUpdateRedirectsToHomeWithFlash(): void
@@ -246,6 +285,32 @@ final class UserControllerProfileTest extends WebTestCase
         $entityManager->persist($user);
         $entityManager->flush();
         $entityManager->clear();
+    }
+
+    private function attachProfileImage(User $user): void
+    {
+        $container = static::getContainer();
+
+        /** @var UserProfileImageStorage $storage */
+        $storage = $container->get(UserProfileImageStorage::class);
+        $objectKey = $storage->upload($user, $this->createUploadedFile());
+        $user->setProfileImagePath($objectKey);
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(EntityManagerInterface::class);
+        $entityManager->flush();
+    }
+
+    private function createUploadedFile(): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'user-profile-avatar-');
+        self::assertNotFalse($path);
+
+        $image = imagecreatetruecolor(32, 32);
+        self::assertNotFalse($image);
+        imagejpeg($image, $path, 90);
+
+        return new UploadedFile($path, 'avatar.jpg', 'image/jpeg', test: true);
     }
 
     private function getPasswordFormToken(KernelBrowser $client): string

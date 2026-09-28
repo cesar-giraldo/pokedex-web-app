@@ -9,7 +9,7 @@
 			| Pokedex</title>
 
 		<!-- ===== Title Icon ===== -->
-		<link rel="icon" type="image/svg+xml" href="{{ asset('images/logo/logo-icon.svg', 'admin') }}">
+		<link rel="icon" type="image/svg+xml" href="{{ platform_branding_url('platform-icon') ?? asset('images/logo/logo-icon.svg', 'admin') }}">
 
 		{% block stylesheets %}{% endblock %}
 
@@ -51,10 +51,10 @@
 
 					<div class="flex flex-col items-center max-w-xs">
 						<a href="{{ path('app_backend_home') }}" class="block mb-4">
-						<img src="{{ asset('images/logo/auth-logo.svg', 'admin') }}" alt="Logo" />
+						<img src="{{ platform_branding_url('platform-auth-logo') ?? asset('images/logo/auth-logo.svg', 'admin') }}" alt="{{ platform_name() ?? 'Home' }}" title="{{ platform_name() ?? 'Home' }}" />
 						</a>
 						<p class="text-center text-gray-400 dark:text-white/60">
-						La guia online más completa de Pokemones
+						{{ platform_slogan() ?? 'La guia online más completa de Pokemones' }}
 						</p>
 					</div>
 					</div>
