@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Throwable;
 
 use function fclose;
@@ -20,7 +19,6 @@ use function fopen;
 use function stream_copy_to_stream;
 
 #[Route('/admin')]
-#[IsGranted('ROLE_DEVELOPER')]
 final class PlatformBrandingAssetController extends AbstractController
 {
     public function __construct(

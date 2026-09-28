@@ -59,6 +59,8 @@ security:
         - { path: ^/admin/login, roles: PUBLIC_ACCESS }
         - { path: ^/admin/logout, roles: PUBLIC_ACCESS }
         - { path: ^/media, roles: PUBLIC_ACCESS }
+        - { path: ^/admin/settings/general/branding/platform-icon$, roles: PUBLIC_ACCESS }
+        - { path: ^/admin/settings/general/branding/, roles: ROLE_OPERATOR }
         - { path: ^/admin/settings, roles: ROLE_DEVELOPER }
         - { path: ^/admin/users, roles: ROLE_ADMIN }
         - { path: ^/admin/home, roles: ROLE_OPERATOR }
