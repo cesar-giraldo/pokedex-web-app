@@ -127,8 +127,17 @@ final class GeneralSettingsController extends AbstractController
         }
 
         try {
-            $platformBrandingFormHandler->handleFromForm($settings, $generalForm);
-            $entityManager->flush();
+            $uploadBatch = $platformBrandingFormHandler->handleFromForm($settings, $generalForm);
+
+            try {
+                $entityManager->flush();
+            } catch (Throwable $exception) {
+                $uploadBatch->abort();
+
+                throw $exception;
+            }
+
+            $uploadBatch->deleteReplaced();
         } catch (Throwable) {
             $this->addFlash('error', 'No se pudo actualizar la configuración general. Inténtelo de nuevo.');
 

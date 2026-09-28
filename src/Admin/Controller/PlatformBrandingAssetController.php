@@ -21,6 +21,8 @@ use function stream_copy_to_stream;
 #[Route('/admin')]
 final class PlatformBrandingAssetController extends AbstractController
 {
+    private const string CONTENT_SECURITY_POLICY = "default-src 'none'; script-src 'none'; style-src 'unsafe-inline'";
+
     public function __construct(
         private readonly GeneralSettingsRepository $generalSettingsRepository,
         private readonly PlatformBrandingStorage $platformBrandingStorage,
@@ -70,6 +72,7 @@ final class PlatformBrandingAssetController extends AbstractController
 
         $response->headers->set('Content-Type', PlatformBrandingStorage::MIME_TYPE);
         $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->headers->set('Content-Security-Policy', self::CONTENT_SECURITY_POLICY);
         $response->headers->set('Cache-Control', 'private');
 
         return $response;

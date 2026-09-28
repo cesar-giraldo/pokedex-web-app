@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Admin\Service\Storage;
 
 use App\Entity\GeneralSettings;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -13,48 +12,65 @@ final class PlatformBrandingFormHandler
 {
     public function __construct(
         private readonly PlatformBrandingStorage $platformBrandingStorage,
-        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
     /**
+     * Sube los SVG y apunta la entidad a las claves nuevas.
+     * El archivo anterior se conserva hasta que el llamador confirma el flush.
+     *
      * @param FormInterface<mixed> $form
      */
-    public function handleFromForm(GeneralSettings $settings, FormInterface $form): void
+    public function handleFromForm(GeneralSettings $settings, FormInterface $form): PlatformBrandingUploadBatch
     {
-        foreach (PlatformBrandingAsset::cases() as $asset) {
-            if (!$form->has($asset->formField())) {
-                continue;
+        $replacements = [];
+
+        try {
+            foreach (PlatformBrandingAsset::cases() as $asset) {
+                if (!$form->has($asset->formField())) {
+                    continue;
+                }
+
+                $uploadedFile = $form->get($asset->formField())->getData();
+
+                if (!$uploadedFile instanceof UploadedFile) {
+                    continue;
+                }
+
+                $replacements[] = $this->stage($settings, $asset, $uploadedFile);
             }
+        } catch (PlatformBrandingUploadException $exception) {
+            $this->batch($settings, $replacements)->abort();
 
-            $uploadedFile = $form->get($asset->formField())->getData();
-
-            if (!$uploadedFile instanceof UploadedFile) {
-                continue;
-            }
-
-            $this->replace($settings, $asset, $uploadedFile);
+            throw $exception;
         }
+
+        return $this->batch($settings, $replacements);
     }
 
-    public function replace(GeneralSettings $settings, PlatformBrandingAsset $asset, UploadedFile $uploadedFile): void
+    private function stage(GeneralSettings $settings, PlatformBrandingAsset $asset, UploadedFile $uploadedFile): StagedPlatformBrandingFile
     {
         $previousPath = $asset->readPath($settings);
         $newPath = $this->platformBrandingStorage->allocateObjectKey($asset);
 
-        $asset->writePath($settings, $newPath);
-        $this->entityManager->flush();
-
         try {
             $this->platformBrandingStorage->write($newPath, $uploadedFile);
         } catch (PlatformBrandingUploadException $exception) {
-            $asset->writePath($settings, $previousPath);
-            $this->entityManager->flush();
             $this->platformBrandingStorage->tryDelete($newPath);
 
             throw $exception;
         }
 
-        $this->platformBrandingStorage->tryDelete($previousPath);
+        $asset->writePath($settings, $newPath);
+
+        return new StagedPlatformBrandingFile($asset, $previousPath, $newPath);
+    }
+
+    /**
+     * @param list<StagedPlatformBrandingFile> $replacements
+     */
+    private function batch(GeneralSettings $settings, array $replacements): PlatformBrandingUploadBatch
+    {
+        return new PlatformBrandingUploadBatch($this->platformBrandingStorage, $settings, $replacements);
     }
 }

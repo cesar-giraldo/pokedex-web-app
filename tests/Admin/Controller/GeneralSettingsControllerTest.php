@@ -142,8 +142,7 @@ final class GeneralSettingsControllerTest extends WebTestCase
         }
 
         self::assertResponseIsSuccessful();
-        self::assertResponseHeaderSame('content-type', 'image/svg+xml');
-        self::assertResponseHeaderSame('x-content-type-options', 'nosniff');
+        $this->assertBrandingAssetResponseHeaders();
     }
 
     public function testOperatorCannotOpenGeneralSettings(): void
@@ -245,7 +244,7 @@ final class GeneralSettingsControllerTest extends WebTestCase
             self::assertResponseStatusCodeSame(404);
         } else {
             self::assertResponseIsSuccessful();
-            self::assertResponseHeaderSame('content-type', 'image/svg+xml');
+            $this->assertBrandingAssetResponseHeaders();
         }
 
         $client->request('GET', '/admin/settings/general/branding/platform-auth-logo');
@@ -254,7 +253,7 @@ final class GeneralSettingsControllerTest extends WebTestCase
             self::assertResponseStatusCodeSame(404);
         } else {
             self::assertResponseIsSuccessful();
-            self::assertResponseHeaderSame('content-type', 'image/svg+xml');
+            $this->assertBrandingAssetResponseHeaders();
         }
 
         $client->request('GET', '/admin/settings/general/branding/platform-logo');
@@ -277,7 +276,17 @@ final class GeneralSettingsControllerTest extends WebTestCase
         }
 
         self::assertResponseIsSuccessful();
+        $this->assertBrandingAssetResponseHeaders();
+    }
+
+    private function assertBrandingAssetResponseHeaders(): void
+    {
         self::assertResponseHeaderSame('content-type', 'image/svg+xml');
+        self::assertResponseHeaderSame('x-content-type-options', 'nosniff');
+        self::assertResponseHeaderSame(
+            'content-security-policy',
+            "default-src 'none'; script-src 'none'; style-src 'unsafe-inline'",
+        );
     }
 
     private function captureGeneralSettings(): void

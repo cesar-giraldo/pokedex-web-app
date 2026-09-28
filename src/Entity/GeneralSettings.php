@@ -372,7 +372,6 @@ class GeneralSettings
     }
 
     #[ORM\PrePersist]
-    #[ORM\PreUpdate]
     public function touchLastUpdatedAt(): void
     {
         $this->lastUpdatedAt = new DateTime();
