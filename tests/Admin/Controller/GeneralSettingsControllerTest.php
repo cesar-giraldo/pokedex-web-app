@@ -63,14 +63,18 @@ final class GeneralSettingsControllerTest extends WebTestCase
         self::assertSelectorTextContains('body', 'Logo (modo claro)');
         self::assertSelectorTextContains('body', 'Logo (modo oscuro)');
         self::assertSelectorTextContains('body', 'Icono del menú lateral');
+        self::assertSelectorTextContains('body', 'Logo de inicio de sesión');
         self::assertSelectorTextContains('body', 'Correo de soporte');
         self::assertSelectorExists('#general-settings-platform-logo[accept=".svg,image/svg+xml"]');
         self::assertSelectorExists('#general-settings-platform-logo-dark[accept=".svg,image/svg+xml"]');
         self::assertSelectorExists('#general-settings-platform-icon[accept=".svg,image/svg+xml"]');
+        self::assertSelectorExists('#general-settings-platform-auth-logo[accept=".svg,image/svg+xml"]');
+        self::assertSelectorTextContains('#general-settings-platform-auth-logo-help', '260x54px');
 
         $settings = $this->generalSettingsRepository()->findSingleton();
         $this->assertLogoPreviewFrame($crawler, 'Logo (modo claro)', $settings?->getPlatformLogo(), 'bg-gray-50');
         $this->assertLogoPreviewFrame($crawler, 'Logo (modo oscuro)', $settings?->getPlatformLogoDark(), 'bg-gray-900');
+        $this->assertLogoPreviewFrame($crawler, 'Logo de inicio de sesión', $settings?->getPlatformAuthLogo(), 'bg-brand-950');
     }
 
     public function testDeveloperCanSaveOptionalBrandingText(): void
@@ -221,6 +225,13 @@ final class GeneralSettingsControllerTest extends WebTestCase
             $expectedSlogan,
             $crawler->filter('p.text-center.text-gray-400')->text(),
         );
+
+        $authLogoSrc = (string) $crawler->filter('div.max-w-xs img')->attr('src');
+        if (null === $settings?->getPlatformAuthLogo() || '' === $settings->getPlatformAuthLogo()) {
+            self::assertStringContainsString('images/logo/auth-logo.svg', $authLogoSrc);
+        } else {
+            self::assertStringContainsString('/admin/settings/general/branding/platform-auth-logo?', $authLogoSrc);
+        }
     }
 
     public function testAnonymousCanRequestTheFaviconButNotTheHeaderLogos(): void
@@ -231,6 +242,15 @@ final class GeneralSettingsControllerTest extends WebTestCase
         $client->request('GET', '/admin/settings/general/branding/platform-icon');
 
         if (null === $settings?->getPlatformIcon()) {
+            self::assertResponseStatusCodeSame(404);
+        } else {
+            self::assertResponseIsSuccessful();
+            self::assertResponseHeaderSame('content-type', 'image/svg+xml');
+        }
+
+        $client->request('GET', '/admin/settings/general/branding/platform-auth-logo');
+
+        if (null === $settings?->getPlatformAuthLogo()) {
             self::assertResponseStatusCodeSame(404);
         } else {
             self::assertResponseIsSuccessful();
@@ -284,7 +304,9 @@ final class GeneralSettingsControllerTest extends WebTestCase
         $logos = $crawler->filter(sprintf('img[alt="%s"]', $alt));
         self::assertGreaterThan(0, $logos->count());
         $logos->each(static function (Crawler $logo) use ($backgroundClass): void {
-            self::assertStringContainsString($backgroundClass, (string) $logo->closest('span')->attr('class'));
+            $frame = $logo->closest('span');
+            self::assertInstanceOf(Crawler::class, $frame);
+            self::assertStringContainsString($backgroundClass, (string) $frame->attr('class'));
         });
     }
 

@@ -11,8 +11,9 @@ enum PlatformBrandingAsset: string
     case Logo = 'platform-logo';
     case LogoDark = 'platform-logo-dark';
     case Icon = 'platform-icon';
+    case AuthLogo = 'platform-auth-logo';
 
-    public const string ROUTE_REQUIREMENT = 'platform-logo-dark|platform-logo|platform-icon';
+    public const string ROUTE_REQUIREMENT = 'platform-logo-dark|platform-auth-logo|platform-logo|platform-icon';
 
     public function formField(): string
     {
@@ -20,6 +21,7 @@ enum PlatformBrandingAsset: string
             self::Logo => 'platformLogo',
             self::LogoDark => 'platformLogoDark',
             self::Icon => 'platformIcon',
+            self::AuthLogo => 'platformAuthLogo',
         };
     }
 
@@ -29,6 +31,7 @@ enum PlatformBrandingAsset: string
             self::Logo => $settings->getPlatformLogo(),
             self::LogoDark => $settings->getPlatformLogoDark(),
             self::Icon => $settings->getPlatformIcon(),
+            self::AuthLogo => $settings->getPlatformAuthLogo(),
         };
     }
 
@@ -38,6 +41,7 @@ enum PlatformBrandingAsset: string
             self::Logo => $settings->setPlatformLogo($path),
             self::LogoDark => $settings->setPlatformLogoDark($path),
             self::Icon => $settings->setPlatformIcon($path),
+            self::AuthLogo => $settings->setPlatformAuthLogo($path),
         };
     }
 }

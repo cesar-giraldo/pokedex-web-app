@@ -53,6 +53,7 @@ final class GeneralSettingsGeneralType extends AbstractType
             ->add('platformLogo', FileType::class, $this->svgFileOptions())
             ->add('platformLogoDark', FileType::class, $this->svgFileOptions())
             ->add('platformIcon', FileType::class, $this->svgFileOptions())
+            ->add('platformAuthLogo', FileType::class, $this->svgFileOptions())
             ->add('contactSupportEmail', EmailType::class, [
                 'label' => false,
                 'required' => false,

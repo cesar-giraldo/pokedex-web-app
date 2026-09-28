@@ -72,6 +72,9 @@ class GeneralSettings
     #[ORM\Column(length: self::PLATFORM_ASSET_PATH_MAX_LENGTH, nullable: true)]
     private ?string $platformIcon = null;
 
+    #[ORM\Column(length: self::PLATFORM_ASSET_PATH_MAX_LENGTH, nullable: true)]
+    private ?string $platformAuthLogo = null;
+
     #[ORM\Column(length: self::CONTACT_SUPPORT_EMAIL_MAX_LENGTH, nullable: true)]
     private ?string $contactSupportEmail = null;
 
@@ -185,6 +188,18 @@ class GeneralSettings
     public function setPlatformIcon(?string $platformIcon): static
     {
         $this->platformIcon = $this->normalizeNullableText($platformIcon);
+
+        return $this;
+    }
+
+    public function getPlatformAuthLogo(): ?string
+    {
+        return $this->platformAuthLogo;
+    }
+
+    public function setPlatformAuthLogo(?string $platformAuthLogo): static
+    {
+        $this->platformAuthLogo = $this->normalizeNullableText($platformAuthLogo);
 
         return $this;
     }

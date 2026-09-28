@@ -32,6 +32,7 @@ final class GeneralSettingsTest extends TestCase
         self::assertNull($settings->getPlatformLogo());
         self::assertNull($settings->getPlatformLogoDark());
         self::assertNull($settings->getPlatformIcon());
+        self::assertNull($settings->getPlatformAuthLogo());
         self::assertNull($settings->getContactSupportEmail());
     }
 
@@ -102,6 +103,7 @@ final class GeneralSettingsTest extends TestCase
             ->setPlatformLogo('  dev/private/settings/branding/platform-logo/abc.svg  ')
             ->setPlatformLogoDark(null)
             ->setPlatformIcon('')
+            ->setPlatformAuthLogo('  dev/private/settings/branding/platform-auth-logo/abc.svg  ')
             ->setContactSupportEmail('  Support@Example.com  ');
 
         self::assertSame('Pokédex', $settings->getPlatformName());
@@ -112,6 +114,10 @@ final class GeneralSettingsTest extends TestCase
         );
         self::assertNull($settings->getPlatformLogoDark());
         self::assertNull($settings->getPlatformIcon());
+        self::assertSame(
+            'dev/private/settings/branding/platform-auth-logo/abc.svg',
+            $settings->getPlatformAuthLogo(),
+        );
         self::assertSame('support@example.com', $settings->getContactSupportEmail());
     }
 }

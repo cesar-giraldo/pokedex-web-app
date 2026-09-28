@@ -95,6 +95,18 @@
 
 							<div>
 								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Logo de inicio de sesión
+								</p>
+								{% include '@admin/settings/general/_branding_asset.html.twig' with {
+									asset: 'platform-auth-logo',
+									object_key: settings.platformAuthLogo,
+									alt: 'Logo de inicio de sesión',
+									version: settings.lastUpdatedAt.timestamp,
+								} %}
+							</div>
+
+							<div>
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
 									Correo de soporte
 								</p>
 								<p class="text-sm font-medium text-gray-800 dark:text-white/90">
@@ -209,6 +221,29 @@
 												accept=".svg,image/svg+xml"
 												error="{{ field_error(general_form.platformIcon) }}"
 												help="Opcional. Solo SVG. Tamaño máximo: 1 MB. Tamaño recomendado: 36x36px."
+											/>
+										</div>
+									</div>
+								</div>
+
+								<div>
+									<div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+										<div class="shrink-0">
+											{% include '@admin/settings/general/_branding_asset.html.twig' with {
+												asset: 'platform-auth-logo',
+												object_key: settings.platformAuthLogo,
+												alt: 'Logo de inicio de sesión',
+												version: settings.lastUpdatedAt.timestamp,
+											} %}
+										</div>
+										<div class="min-w-0 flex-1">
+											<twig:component_file_input
+												label="Logo de inicio de sesión"
+												name="{{ general_form.platformAuthLogo.vars.full_name }}"
+												id="general-settings-platform-auth-logo"
+												accept=".svg,image/svg+xml"
+												error="{{ field_error(general_form.platformAuthLogo) }}"
+												help="Opcional. Solo SVG. Tamaño máximo: 1 MB. Tamaño recomendado: 260x54px"
 											/>
 										</div>
 									</div>

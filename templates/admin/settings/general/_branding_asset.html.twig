@@ -16,6 +16,10 @@
 		<span class="inline-flex items-center rounded-lg bg-gray-900 px-3 py-2">
 			{{ logo }}
 		</span>
+	{% elseif asset == 'platform-auth-logo' %}
+		<span class="inline-flex items-center rounded-lg bg-brand-950 px-3 py-2">
+			{{ logo }}
+		</span>
 	{% else %}
 		{{ logo }}
 	{% endif %}
