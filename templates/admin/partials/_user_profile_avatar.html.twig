@@ -5,10 +5,13 @@
 	- user: User entity
 	- size_class: Tailwind size classes (default h-20 w-20)
 	- icon_class: Tailwind classes for placeholder icon
+	- width / height: intrinsic image dimensions (default 80)
 	- lightbox: when true and the user has a photo, clicking opens the display (1200px) variant in the parent lightbox
 #}
 {% set avatarSizeClass = size_class|default('h-20 w-20') %}
 {% set avatarIconClass = icon_class|default('h-full w-full text-gray-400 dark:text-gray-500') %}
+{% set avatarWidth = width|default(80) %}
+{% set avatarHeight = height|default(80) %}
 {% set enableLightbox = lightbox|default(false) %}
 {% set profileImageUrl = user_profile_image_url(user) %}
 {% set displayImageUrl = enableLightbox ? user_profile_image_url(user, 'display') : null %}
@@ -27,8 +30,8 @@
 		<img
 			src="{{ profileImageUrl }}"
 			alt="Foto de perfil de {{ avatarCaption }}"
-			width="80"
-			height="80"
+			width="{{ avatarWidth }}"
+			height="{{ avatarHeight }}"
 			class="h-full w-full object-cover"
 			loading="lazy"
 			decoding="async"
@@ -40,8 +43,8 @@
 			<img
 				src="{{ profileImageUrl }}"
 				alt="Foto de perfil de {{ avatarCaption }}"
-				width="80"
-				height="80"
+				width="{{ avatarWidth }}"
+				height="{{ avatarHeight }}"
 				class="h-full w-full object-cover"
 				loading="lazy"
 				decoding="async"

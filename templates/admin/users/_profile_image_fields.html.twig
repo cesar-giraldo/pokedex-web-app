@@ -2,11 +2,22 @@
 
 {% if form.profileImage is defined %}
 	{% set profileImageError = field_errors(form.profileImage) %}
+	{% set avatarSizeClass = size_class|default('h-20 w-20') %}
+	{% set enableLightbox = lightbox|default(false) %}
 	<div class="col-span-1 sm:col-span-2">
-		<div class="flex flex-col gap-5 sm:flex-row sm:items-start">
+		<div
+			class="flex flex-col gap-5 sm:flex-row sm:items-start"
+			{% if enableLightbox %}
+				data-controller="component-image-lightbox"
+				data-action="keydown.esc@window->component-image-lightbox#close keydown.left@window->component-image-lightbox#previous keydown.right@window->component-image-lightbox#next"
+			{% endif %}
+		>
 			{% include '@admin/partials/_user_profile_avatar.html.twig' with {
 				user: user,
-				size_class: 'h-20 w-20',
+				size_class: avatarSizeClass,
+				lightbox: enableLightbox,
+				width: width|default(80),
+				height: height|default(80),
 			} %}
 
 			<div class="min-w-0 flex-1 space-y-3">
@@ -29,6 +40,9 @@
 					/>
 				{% endif %}
 			</div>
+			{% if enableLightbox %}
+				{% include '@admin/partials/_image_lightbox.html.twig' %}
+			{% endif %}
 		</div>
 	</div>
 {% endif %}
