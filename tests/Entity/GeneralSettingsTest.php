@@ -27,6 +27,12 @@ final class GeneralSettingsTest extends TestCase
         self::assertNull($settings->getLastBackupFilePath());
         self::assertNull($settings->getLastBackupGeneratedAt());
         self::assertFalse($settings->hasLastDatabaseBackup());
+        self::assertNull($settings->getPlatformName());
+        self::assertNull($settings->getPlatformSlogan());
+        self::assertNull($settings->getPlatformLogo());
+        self::assertNull($settings->getPlatformLogoDark());
+        self::assertNull($settings->getPlatformIcon());
+        self::assertNull($settings->getContactSupportEmail());
     }
 
     public function testUpdatesLastUpdatedAtOnTouch(): void
@@ -86,5 +92,26 @@ final class GeneralSettingsTest extends TestCase
 
         self::assertNull($settings->getLastBackupFilePath());
         self::assertFalse($settings->hasLastDatabaseBackup());
+    }
+
+    public function testNormalizesPlatformBrandingFields(): void
+    {
+        $settings = GeneralSettings::createWithDefaults()
+            ->setPlatformName('  Pokédex  ')
+            ->setPlatformSlogan('   ')
+            ->setPlatformLogo('  dev/private/settings/branding/platform-logo/abc.svg  ')
+            ->setPlatformLogoDark(null)
+            ->setPlatformIcon('')
+            ->setContactSupportEmail('  Support@Example.com  ');
+
+        self::assertSame('Pokédex', $settings->getPlatformName());
+        self::assertNull($settings->getPlatformSlogan());
+        self::assertSame(
+            'dev/private/settings/branding/platform-logo/abc.svg',
+            $settings->getPlatformLogo(),
+        );
+        self::assertNull($settings->getPlatformLogoDark());
+        self::assertNull($settings->getPlatformIcon());
+        self::assertSame('support@example.com', $settings->getContactSupportEmail());
     }
 }

@@ -7,6 +7,9 @@ export default class extends Controller {
         editLanguage: Boolean,
         editDatetime: Boolean,
         showHiddenUsers: Boolean,
+        platformName: String,
+        platformSlogan: String,
+        contactSupportEmail: String,
         enabledLanguages: Array,
         defaultLanguage: String,
         defaultTimezone: String,
@@ -187,6 +190,26 @@ export default class extends Controller {
             checkbox.checked = this.showHiddenUsersValue;
             checkbox.dispatchEvent(new Event('change', { bubbles: true }));
         }
+
+        this.setTextInputValue('general-settings-platform-name', this.platformNameValue);
+        this.setTextInputValue('general-settings-platform-slogan', this.platformSloganValue);
+        this.setTextInputValue('general-settings-contact-support-email', this.contactSupportEmailValue);
+
+        form.querySelectorAll('input[type="file"]').forEach((input) => {
+            if (input instanceof HTMLInputElement) {
+                input.value = '';
+            }
+        });
+    }
+
+    setTextInputValue(id, value) {
+        const input = this.element.querySelector(`#${id}`);
+        if (!(input instanceof HTMLInputElement)) {
+            return;
+        }
+
+        input.value = value;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     resetLanguageForm() {
@@ -268,7 +291,19 @@ export default class extends Controller {
     }
 
     clearFormErrors(container) {
-        container.querySelectorAll('[role="alert"]').forEach((element) => element.remove());
+        container.querySelectorAll('[role="alert"]').forEach((element) => {
+            if (
+                element.hasAttribute('data-component-text-input-target')
+                || element.hasAttribute('data-component-email-input-target')
+            ) {
+                element.textContent = '';
+                element.classList.add('hidden');
+
+                return;
+            }
+
+            element.remove();
+        });
 
         container.querySelectorAll('[aria-invalid="true"]').forEach((element) => {
             element.removeAttribute('aria-invalid');

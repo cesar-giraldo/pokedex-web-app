@@ -1,0 +1,13 @@
+{% if object_key %}
+	<img
+		src="{{ path('app_backend_general_settings_branding_asset', { asset: asset }) }}?v={{ version }}"
+		alt="{{ alt }}"
+		class="h-10 w-auto max-w-full object-contain"
+		width="120"
+		height="40"
+	>
+{% else %}
+	<span class="inline-flex text-gray-400 dark:text-gray-500" role="img" aria-label="No configurado">
+		{{ ux_icon('heroicons:photo', { class: 'w-10 h-10' }) }}
+	</span>
+{% endif %}

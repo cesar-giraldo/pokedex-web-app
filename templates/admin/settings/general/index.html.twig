@@ -19,6 +19,9 @@
 		data-general-settings-edit-language-value="{{ edit_language ? 'true' : 'false' }}"
 		data-general-settings-edit-datetime-value="{{ edit_datetime ? 'true' : 'false' }}"
 		data-general-settings-show-hidden-users-value="{{ settings.showHiddenUsers ? 'true' : 'false' }}"
+		data-general-settings-platform-name-value="{{ persisted_branding.platformName|e('html_attr') }}"
+		data-general-settings-platform-slogan-value="{{ persisted_branding.platformSlogan|e('html_attr') }}"
+		data-general-settings-contact-support-email-value="{{ persisted_branding.contactSupportEmail|e('html_attr') }}"
 		data-general-settings-enabled-languages-value="{{ settings.enabledLanguages|json_encode|e('html_attr') }}"
 		data-general-settings-default-language-value="{{ settings.websiteDefaultLanguage }}"
 		data-general-settings-default-timezone-value="{{ settings.defaultTimezone }}"
@@ -36,6 +39,69 @@
 
 					<div data-general-settings-target="generalView" class="{{ edit_general ? 'hidden' : '' }}">
 						<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+							<div>
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Nombre de la plataforma
+								</p>
+								<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+									{{ persisted_branding.platformName ?: '—' }}
+								</p>
+							</div>
+
+							<div>
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Eslogan
+								</p>
+								<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+									{{ persisted_branding.platformSlogan ?: '—' }}
+								</p>
+							</div>
+
+							<div>
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Logo (modo claro)
+								</p>
+								{% include '@admin/settings/general/_branding_asset.html.twig' with {
+									asset: 'platform-logo',
+									object_key: settings.platformLogo,
+									alt: 'Logo (modo claro)',
+									version: settings.lastUpdatedAt.timestamp,
+								} %}
+							</div>
+
+							<div>
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Logo (modo oscuro)
+								</p>
+								{% include '@admin/settings/general/_branding_asset.html.twig' with {
+									asset: 'platform-logo-dark',
+									object_key: settings.platformLogoDark,
+									alt: 'Logo (modo oscuro)',
+									version: settings.lastUpdatedAt.timestamp,
+								} %}
+							</div>
+
+							<div>
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Icono del menú lateral
+								</p>
+								{% include '@admin/settings/general/_branding_asset.html.twig' with {
+									asset: 'platform-icon',
+									object_key: settings.platformIcon,
+									alt: 'Icono del menú lateral',
+									version: settings.lastUpdatedAt.timestamp,
+								} %}
+							</div>
+
+							<div>
+								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+									Correo de soporte
+								</p>
+								<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+									{{ persisted_branding.contactSupportEmail ?: '—' }}
+								</p>
+							</div>
+
 							<div class="lg:col-span-2">
 								<p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
 									Mostrar usuarios ocultos
@@ -57,6 +123,111 @@
 							render_rest: false,
 						}) }}
 							<div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+								<div>
+									<twig:component_text_input
+										label="Nombre de la plataforma"
+										name="{{ general_form.platformName.vars.full_name }}"
+										id="general-settings-platform-name"
+										value="{{ general_form.platformName.vars.data ?? '' }}"
+										:maxLength="form_field_max_length(general_form.platformName)"
+										error="{{ field_error(general_form.platformName) }}"
+									/>
+								</div>
+
+								<div>
+									<twig:component_text_input
+										label="Eslogan"
+										name="{{ general_form.platformSlogan.vars.full_name }}"
+										id="general-settings-platform-slogan"
+										value="{{ general_form.platformSlogan.vars.data ?? '' }}"
+										:maxLength="form_field_max_length(general_form.platformSlogan)"
+										error="{{ field_error(general_form.platformSlogan) }}"
+									/>
+								</div>
+
+								<div>
+									<div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+										<div class="shrink-0">
+											{% include '@admin/settings/general/_branding_asset.html.twig' with {
+												asset: 'platform-logo',
+												object_key: settings.platformLogo,
+												alt: 'Logo (modo claro)',
+												version: settings.lastUpdatedAt.timestamp,
+											} %}
+										</div>
+										<div class="min-w-0 flex-1">
+											<twig:component_file_input
+												label="Logo (modo claro)"
+												name="{{ general_form.platformLogo.vars.full_name }}"
+												id="general-settings-platform-logo"
+												accept=".svg,image/svg+xml"
+												error="{{ field_error(general_form.platformLogo) }}"
+												help="Opcional. Solo SVG. Tamaño máximo: 1 MB. Tamaño recomendado: 180x36px"
+											/>
+										</div>
+									</div>
+								</div>
+
+								<div>
+									<div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+										<div class="shrink-0">
+											{% include '@admin/settings/general/_branding_asset.html.twig' with {
+												asset: 'platform-logo-dark',
+												object_key: settings.platformLogoDark,
+												alt: 'Logo (modo oscuro)',
+												version: settings.lastUpdatedAt.timestamp,
+											} %}
+										</div>
+										<div class="min-w-0 flex-1">
+											<twig:component_file_input
+												label="Logo (modo oscuro)"
+												name="{{ general_form.platformLogoDark.vars.full_name }}"
+												id="general-settings-platform-logo-dark"
+												accept=".svg,image/svg+xml"
+												error="{{ field_error(general_form.platformLogoDark) }}"
+												help="Opcional. Solo SVG. Tamaño máximo: 1 MB. Tamaño recomendado: 180x36px"
+											/>
+										</div>
+									</div>
+								</div>
+
+								<div>
+									<div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+										<div class="shrink-0">
+											{% include '@admin/settings/general/_branding_asset.html.twig' with {
+												asset: 'platform-icon',
+												object_key: settings.platformIcon,
+												alt: 'Icono del menú lateral',
+												version: settings.lastUpdatedAt.timestamp,
+											} %}
+										</div>
+										<div class="min-w-0 flex-1">
+											<twig:component_file_input
+												label="Icono del menú lateral"
+												name="{{ general_form.platformIcon.vars.full_name }}"
+												id="general-settings-platform-icon"
+												accept=".svg,image/svg+xml"
+												error="{{ field_error(general_form.platformIcon) }}"
+												help="Opcional. Solo SVG. Tamaño máximo: 1 MB. Tamaño recomendado: 36x36px."
+											/>
+										</div>
+									</div>
+								</div>
+
+								<div>
+									<twig:component_email_input
+										label="Correo de soporte"
+										name="{{ general_form.contactSupportEmail.vars.full_name }}"
+										id="general-settings-contact-support-email"
+										value="{{ general_form.contactSupportEmail.vars.data ?? '' }}"
+										placeholder="soporte@ejemplo.com"
+										:showIcon="false"
+										:maxLength="form_field_max_length(general_form.contactSupportEmail)"
+										:required="false"
+										error="{{ field_error(general_form.contactSupportEmail) }}"
+									/>
+								</div>
+
 								<div class="lg:col-span-2">
 									<twig:component_toggle_switch
 										label="Mostrar usuarios ocultos"

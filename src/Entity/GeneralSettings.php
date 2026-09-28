@@ -14,6 +14,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 use function in_array;
+use function mb_strtolower;
 use function trim;
 
 /**
@@ -40,6 +41,14 @@ class GeneralSettings
 
     public const TimeFormat DEFAULT_TIME_FORMAT = TimeFormat::Hour12;
 
+    public const int PLATFORM_NAME_MAX_LENGTH = 120;
+
+    public const int PLATFORM_SLOGAN_MAX_LENGTH = 255;
+
+    public const int PLATFORM_ASSET_PATH_MAX_LENGTH = 512;
+
+    public const int CONTACT_SUPPORT_EMAIL_MAX_LENGTH = 180;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -47,6 +56,24 @@ class GeneralSettings
 
     #[ORM\Column(options: ['default' => true])]
     private bool $showHiddenUsers = self::DEFAULT_SHOW_HIDDEN_USERS;
+
+    #[ORM\Column(length: self::PLATFORM_NAME_MAX_LENGTH, nullable: true)]
+    private ?string $platformName = null;
+
+    #[ORM\Column(length: self::PLATFORM_SLOGAN_MAX_LENGTH, nullable: true)]
+    private ?string $platformSlogan = null;
+
+    #[ORM\Column(length: self::PLATFORM_ASSET_PATH_MAX_LENGTH, nullable: true)]
+    private ?string $platformLogo = null;
+
+    #[ORM\Column(length: self::PLATFORM_ASSET_PATH_MAX_LENGTH, nullable: true)]
+    private ?string $platformLogoDark = null;
+
+    #[ORM\Column(length: self::PLATFORM_ASSET_PATH_MAX_LENGTH, nullable: true)]
+    private ?string $platformIcon = null;
+
+    #[ORM\Column(length: self::CONTACT_SUPPORT_EMAIL_MAX_LENGTH, nullable: true)]
+    private ?string $contactSupportEmail = null;
 
     /**
      * @var list<string>
@@ -98,6 +125,78 @@ class GeneralSettings
     public function setShowHiddenUsers(bool $showHiddenUsers): static
     {
         $this->showHiddenUsers = $showHiddenUsers;
+
+        return $this;
+    }
+
+    public function getPlatformName(): ?string
+    {
+        return $this->platformName;
+    }
+
+    public function setPlatformName(?string $platformName): static
+    {
+        $this->platformName = $this->normalizeNullableText($platformName);
+
+        return $this;
+    }
+
+    public function getPlatformSlogan(): ?string
+    {
+        return $this->platformSlogan;
+    }
+
+    public function setPlatformSlogan(?string $platformSlogan): static
+    {
+        $this->platformSlogan = $this->normalizeNullableText($platformSlogan);
+
+        return $this;
+    }
+
+    public function getPlatformLogo(): ?string
+    {
+        return $this->platformLogo;
+    }
+
+    public function setPlatformLogo(?string $platformLogo): static
+    {
+        $this->platformLogo = $this->normalizeNullableText($platformLogo);
+
+        return $this;
+    }
+
+    public function getPlatformLogoDark(): ?string
+    {
+        return $this->platformLogoDark;
+    }
+
+    public function setPlatformLogoDark(?string $platformLogoDark): static
+    {
+        $this->platformLogoDark = $this->normalizeNullableText($platformLogoDark);
+
+        return $this;
+    }
+
+    public function getPlatformIcon(): ?string
+    {
+        return $this->platformIcon;
+    }
+
+    public function setPlatformIcon(?string $platformIcon): static
+    {
+        $this->platformIcon = $this->normalizeNullableText($platformIcon);
+
+        return $this;
+    }
+
+    public function getContactSupportEmail(): ?string
+    {
+        return $this->contactSupportEmail;
+    }
+
+    public function setContactSupportEmail(?string $contactSupportEmail): static
+    {
+        $this->contactSupportEmail = $this->normalizeNullableText($contactSupportEmail, true);
 
         return $this;
     }
@@ -262,5 +361,24 @@ class GeneralSettings
     public function touchLastUpdatedAt(): void
     {
         $this->lastUpdatedAt = new DateTime();
+    }
+
+    private function normalizeNullableText(?string $value, bool $lowercase = false): ?string
+    {
+        if (null === $value) {
+            return null;
+        }
+
+        $normalized = trim($value);
+
+        if ('' === $normalized) {
+            return null;
+        }
+
+        if ($lowercase) {
+            return mb_strtolower($normalized);
+        }
+
+        return $normalized;
     }
 }
