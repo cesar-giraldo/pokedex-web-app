@@ -9,7 +9,11 @@ use App\Admin\Service\DatabaseBackup\DatabaseBackupExportException;
 use App\Admin\Service\DatabaseBackup\DatabaseBackupFilenameFactory;
 use App\Admin\Service\DatabaseBackup\DatabaseBackupObjectKeyBuilder;
 use App\Admin\Service\DatabaseBackup\DatabaseBackupUploaderInterface;
+use App\Entity\Enum\NotificationType;
+use App\Entity\Enum\UserRole;
+use App\Notification\NotificationService;
 use App\Repository\GeneralSettingsRepository;
+use App\Repository\UserRepository;
 use DateTimeImmutable;
 use DateTimeZone;
 use Psr\Log\LoggerInterface;
@@ -20,6 +24,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Throwable;
 
 use function bin2hex;
@@ -52,6 +57,9 @@ final class GenerateDatabaseBackupCommand extends Command
         private readonly GeneralSettingsRepository $generalSettingsRepository,
         #[Autowire('%kernel.cache_dir%')]
         private readonly string $cacheDir,
+        private readonly NotificationService $notificationService,
+        private readonly UserRepository $userRepository,
+        private readonly UrlGeneratorInterface $urlGenerator,
         private readonly LoggerInterface $logger = new NullLogger(),
     ) {
         parent::__construct();
@@ -65,12 +73,15 @@ final class GenerateDatabaseBackupCommand extends Command
             $lockHandle = $this->acquireLock();
         } catch (DatabaseBackupExportException $exception) {
             $io->error($exception->getMessage());
+            $this->notifyDevelopers(NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $exception->getMessage());
 
             return Command::FAILURE;
         }
 
         if (false === $lockHandle) {
-            $io->error('Ya hay una generación de backup en curso.');
+            $message = 'Ya hay una generación de backup en curso.';
+            $io->error($message);
+            $this->notifyDevelopers(NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $message);
 
             return Command::FAILURE;
         }
@@ -94,26 +105,33 @@ final class GenerateDatabaseBackupCommand extends Command
                     'object_key' => $objectKey,
                     'error' => $exception->getMessage(),
                 ]);
-                $io->error(sprintf(
+                $message = sprintf(
                     'El archivo se subió a S3 pero no se pudo actualizar la configuración general. Clave: %s',
                     $objectKey,
-                ));
+                );
+                $io->error($message);
+                $this->notifyDevelopers(NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $message);
 
                 return Command::FAILURE;
             }
 
+            $message = sprintf('El backup se generó y se subió a S3. Clave: %s', $objectKey);
             $io->success(sprintf('Backup almacenado en %s', $objectKey));
+            $this->notifyDevelopers(NotificationType::DatabaseBackupCompleted, 'Backup de base de datos completado', $message);
 
             return Command::SUCCESS;
         } catch (DatabaseBackupExportException $exception) {
             $io->error($exception->getMessage());
+            $this->notifyDevelopers(NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $exception->getMessage());
 
             return Command::FAILURE;
         } catch (Throwable $exception) {
             $this->logger->error('Unexpected database backup failure.', [
                 'error' => $exception->getMessage(),
             ]);
-            $io->error('No se pudo generar el backup de la base de datos.');
+            $message = 'No se pudo generar el backup de la base de datos.';
+            $io->error($message);
+            $this->notifyDevelopers(NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $message);
 
             return Command::FAILURE;
         } finally {
@@ -166,5 +184,27 @@ final class GenerateDatabaseBackupCommand extends Command
 
         flock($handle, LOCK_UN);
         fclose($handle);
+    }
+
+    private function notifyDevelopers(NotificationType $type, string $title, string $message): void
+    {
+        try {
+            $recipients = $this->userRepository->findByRoles([UserRole::Developer]);
+            if ([] === $recipients) {
+                return;
+            }
+
+            $this->notificationService->notify(
+                recipients: $recipients,
+                type: $type,
+                title: $title,
+                message: $message,
+                actionUrl: $this->urlGenerator->generate('app_backend_general_settings'),
+            );
+        } catch (Throwable $exception) {
+            $this->logger->error('No se pudo crear la notificación del backup.', [
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 }

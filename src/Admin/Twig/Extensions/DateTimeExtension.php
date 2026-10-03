@@ -22,6 +22,7 @@ final class DateTimeExtension extends AbstractExtension
     {
         return [
             new TwigFilter('app_datetime', $this->formatDateTime(...)),
+            new TwigFilter('app_datetime_relative', $this->formatRelativeDateTime(...)),
             new TwigFilter('timezone_label', $this->timezoneLabel(...)),
         ];
     }
@@ -32,6 +33,14 @@ final class DateTimeExtension extends AbstractExtension
         ?User $viewer = null,
     ): string {
         return $this->dateTimeFormatter->format($value, $empty, $viewer);
+    }
+
+    public function formatRelativeDateTime(
+        ?DateTimeInterface $value,
+        string $empty = '—',
+        ?User $viewer = null,
+    ): string {
+        return $this->dateTimeFormatter->formatRelative($value, $empty, $viewer);
     }
 
     public function timezoneLabel(string $identifier): string

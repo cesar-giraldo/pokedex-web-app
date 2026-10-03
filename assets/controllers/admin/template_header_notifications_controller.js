@@ -5,10 +5,10 @@ import { useClickOutside } from "stimulus-use";
 export default class extends Controller {
     static values = {
         notificationsDropdownOpen: Boolean,
-        activeNotifications: Boolean,
+        markAllUrl: String,
+        csrfToken: String,
     };
 
-    // define classes keys (real class defined in the HTML template)
     static classes = ['hide'];
 
     static targets = [
@@ -17,19 +17,13 @@ export default class extends Controller {
 
     initialize() {
         this.notificationsDropdownOpenValue = false;
-        this.activeNotificationsValue = true;
     }
 
     connect() {
-        // this enables the automatic event 'click:outside'
         useClickOutside(this);
     }
 
-    disconnect() {
-    }
-
-    // Created to fix the the data-action "click:outside" event
-    clickOutside(event) {
+    clickOutside() {
         this.closeNotificationsDropdown();
     }
 
@@ -39,20 +33,43 @@ export default class extends Controller {
 
     toggleNotificationsDropdown() {
         this.notificationsDropdownOpenValue = !this.notificationsDropdownOpenValue;
-        this.activeNotificationsValue = false;
-    }
 
-    notificationsDropdownOpenValueChanged(newValue) {
-        if (this.hasNotificationsDropdownTarget) {
-            if (newValue) {
-                this.notificationsDropdownTarget.classList.remove(this.hideClass);
-            } else {
-                this.notificationsDropdownTarget.classList.add(this.hideClass);
-            }
+        if (this.notificationsDropdownOpenValue) {
+            this.markAllAsRead();
         }
     }
 
-    activeNotificationsValueChanged(newValue) {
-        this.element.setAttribute("data-notifications-status", newValue ? "unread" : "read");
+    notificationsDropdownOpenValueChanged(newValue) {
+        if (!this.hasNotificationsDropdownTarget) {
+            return;
+        }
+
+        if (newValue) {
+            this.notificationsDropdownTarget.classList.remove(this.hideClass);
+        } else {
+            this.notificationsDropdownTarget.classList.add(this.hideClass);
+        }
+    }
+
+    async markAllAsRead() {
+        if (!this.hasMarkAllUrlValue || this.element.getAttribute('data-notifications-status') !== 'unread') {
+            return;
+        }
+
+        const body = new URLSearchParams();
+        body.set('_token', this.csrfTokenValue);
+
+        const response = await fetch(this.markAllUrlValue, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            },
+            body: body.toString(),
+        });
+
+        if (response.ok) {
+            this.element.setAttribute('data-notifications-status', 'read');
+        }
     }
 }

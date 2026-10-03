@@ -52,6 +52,43 @@ final class DateTimeFormatterTest extends TestCase
 
         self::assertSame('—', $formatter->format(null));
         self::assertSame('', $formatter->format(null, ''));
+        self::assertSame('—', $formatter->formatRelative(null));
+    }
+
+    public function testFormatsRecentInstantAsRelativeSpanish(): void
+    {
+        $formatter = $this->createFormatter(
+            $this->viewer('America/Bogota', SupportedLocale::SpanishColombia, TimeFormat::Hour24),
+        );
+        $now = new DateTimeImmutable('2026-10-02 12:00:00', new DateTimeZone('UTC'));
+        $value = new DateTimeImmutable('2026-10-02 11:55:00', new DateTimeZone('UTC'));
+
+        self::assertSame('hace 5 min', $formatter->formatRelative($value, '—', null, $now));
+    }
+
+    public function testFormatsRecentInstantAsRelativeEnglish(): void
+    {
+        $formatter = $this->createFormatter(
+            $this->viewer('America/New_York', SupportedLocale::EnglishUnitedStates, TimeFormat::Hour12),
+        );
+        $now = new DateTimeImmutable('2026-10-02 12:00:00', new DateTimeZone('UTC'));
+        $value = new DateTimeImmutable('2026-10-02 11:00:00', new DateTimeZone('UTC'));
+
+        self::assertSame('1 hr ago', $formatter->formatRelative($value, '—', null, $now));
+    }
+
+    public function testFallsBackToAbsoluteFormatAfterSevenDays(): void
+    {
+        $formatter = $this->createFormatter(
+            $this->viewer('Europe/Madrid', SupportedLocale::SpanishSpain, TimeFormat::Hour24),
+        );
+        $now = new DateTimeImmutable('2026-10-02 12:00:00', new DateTimeZone('UTC'));
+        $value = new DateTimeImmutable('2026-09-20 21:46:47', new DateTimeZone('UTC'));
+
+        $formatted = $formatter->formatRelative($value, '—', null, $now);
+
+        self::assertStringContainsString('2026', $formatted);
+        self::assertStringNotContainsString('hace', $formatted);
     }
 
     private function createFormatter(?User $viewer): DateTimeFormatter

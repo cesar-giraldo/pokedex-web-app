@@ -7,11 +7,17 @@ namespace App\Admin\Command;
 use App\Admin\Service\PokeAPI\PokeAPIClient;
 use App\Admin\Service\PokeAPI\PokemonDetails;
 use App\Admin\Service\PokeAPI\PokemonTypeDetails;
+use App\Entity\Enum\NotificationType;
+use App\Entity\Enum\UserRole;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
+use App\Notification\NotificationService;
 use App\Repository\PokemonRepository;
 use App\Repository\PokemonTypeRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,6 +25,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Throwable;
 
 use function sprintf;
 
@@ -33,6 +41,10 @@ class SearchStorePokemonsCommand extends Command
         private PokemonRepository $pokemonRepository,
         private PokemonTypeRepository $pokemonTypeRepository,
         private PokeAPIClient $pokeApi,
+        private NotificationService $notificationService,
+        private UserRepository $userRepository,
+        private UrlGeneratorInterface $urlGenerator,
+        private LoggerInterface $logger = new NullLogger(),
     ) {
         parent::__construct();
     }
@@ -161,6 +173,10 @@ class SearchStorePokemonsCommand extends Command
                     $io->writeln($err);
                 }
             }
+
+            if ($totalPokemonsAdded > 0) {
+                $this->notifyDevelopers($totalPokemonsAdded);
+            }
         } else {
             $io->info('DRY RUN mode, no Pokemons were added to the database.');
         }
@@ -168,6 +184,35 @@ class SearchStorePokemonsCommand extends Command
         $io->success(' ------------ FINISHED SCRIPT EXECUTION ------------ ');
 
         return Command::SUCCESS;
+    }
+
+    private function notifyDevelopers(int $added): void
+    {
+        try {
+            $recipients = $this->userRepository->findByRoles([UserRole::Developer]);
+            if ([] === $recipients) {
+                return;
+            }
+
+            $title = 1 === $added
+                ? 'Se agregó 1 Pokémon'
+                : sprintf('Se agregaron %d Pokémon', $added);
+            $message = 1 === $added
+                ? 'El comando de importación guardó 1 Pokémon en la base de datos.'
+                : sprintf('El comando de importación guardó %d Pokémon en la base de datos.', $added);
+
+            $this->notificationService->notify(
+                recipients: $recipients,
+                type: NotificationType::PokemonsImported,
+                title: $title,
+                message: $message,
+                actionUrl: $this->urlGenerator->generate('app_backend_pokemons'),
+            );
+        } catch (Throwable $exception) {
+            $this->logger->error('No se pudo crear la notificación de importación de Pokémon.', [
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 
     private function getOrCreatePokemonType(string $typeName): ?PokemonType

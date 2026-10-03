@@ -79,3 +79,6 @@ services:
         resource: '../src/Doctrine/'
         exclude:
             - '../src/Doctrine/Dql/'
+
+    App\Notification\:
+        resource: '../src/Notification/'

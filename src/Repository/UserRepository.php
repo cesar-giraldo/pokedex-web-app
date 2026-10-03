@@ -10,6 +10,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
+use function implode;
 use function in_array;
 use function is_array;
 use function is_string;
@@ -110,5 +111,35 @@ class UserRepository extends ServiceEntityRepository
         $qb->orderBy($sort, $direction);
 
         return $qb;
+    }
+
+    /**
+     * @param list<UserRole> $roles
+     *
+     * @return list<User>
+     */
+    public function findByRoles(array $roles): array
+    {
+        if ([] === $roles) {
+            return [];
+        }
+
+        $queryBuilder = $this->createQueryBuilder('u');
+        $rolesAsText = 'JSON_AS_TEXT(u.roles)';
+        $conditions = [];
+
+        foreach ($roles as $index => $role) {
+            $parameter = 'role' . $index;
+            $conditions[] = $rolesAsText . ' LIKE :' . $parameter;
+            $queryBuilder->setParameter($parameter, '%"' . $role->value . '"%');
+        }
+
+        /** @var list<User> $users */
+        $users = $queryBuilder
+            ->andWhere(implode(' OR ', $conditions))
+            ->getQuery()
+            ->getResult();
+
+        return $users;
     }
 }
