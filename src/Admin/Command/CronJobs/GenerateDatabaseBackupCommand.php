@@ -79,9 +79,7 @@ final class GenerateDatabaseBackupCommand extends Command
         }
 
         if (false === $lockHandle) {
-            $message = 'Ya hay una generación de backup en curso.';
-            $io->error($message);
-            $this->notifyDevelopers(NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $message);
+            $io->error('Ya hay una generación de backup en curso.');
 
             return Command::FAILURE;
         }

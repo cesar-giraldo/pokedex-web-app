@@ -31,11 +31,16 @@
 		<ul class="divide-y divide-gray-100 dark:divide-gray-800">
 			{% for notification in entities %}
 				<li>
-					<a
-						href="{{ path('app_backend_notification_open', { id: notification.id }) }}"
-						class="flex gap-4 px-5 py-4 transition hover:bg-gray-50 dark:hover:bg-white/[0.03] sm:px-6"
-					>
-						<span class="shrink-0">
+					<form method="post" action="{{ path('app_backend_notification_open', { id: notification.id }) }}">
+						<input type="hidden" name="_token" value="{{ csrf_token('notification_open') }}">
+						<button
+							type="submit"
+							class="flex w-full cursor-pointer gap-4 border-0 bg-transparent px-5 py-4 text-left transition hover:bg-gray-50 dark:hover:bg-white/[0.03] sm:px-6"
+						>
+						<span class="relative z-1 block h-10 w-10 shrink-0">
+							{% if notification.readAt is null %}
+								<span class="absolute top-0 right-0 z-10 h-2.5 w-2.5 rounded-full bg-orange-400 ring-2 ring-white dark:ring-gray-900" aria-hidden="true"></span>
+							{% endif %}
 							{% if notification.actor %}
 								{% include '@admin/partials/_user_profile_avatar.html.twig' with {
 									user: notification.actor,
@@ -65,7 +70,8 @@
 								<time datetime="{{ notification.createdAt|date('c') }}">{{ notification.createdAt|app_datetime }}</time>
 							</span>
 						</span>
-					</a>
+						</button>
+					</form>
 				</li>
 			{% else %}
 				<li class="px-5 py-10 text-center text-sm text-gray-500 dark:text-gray-400 sm:px-6">

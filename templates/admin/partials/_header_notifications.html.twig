@@ -3,8 +3,6 @@
 	class="relative group"
 	data-controller="template-header-notifications"
 	data-template-header-notifications-hide-class="hidden"
-	data-template-header-notifications-mark-all-url-value="{{ path('app_backend_notifications_read_all') }}"
-	data-template-header-notifications-csrf-token-value="{{ csrf_token('notification_mark_all') }}"
 	data-notifications-status="{{ inbox.unreadCount > 0 ? 'unread' : 'read' }}"
 >
 	<button
@@ -44,11 +42,16 @@
 		<ul class="custom-scrollbar flex h-auto flex-col overflow-y-auto">
 			{% for notification in inbox.items %}
 				<li>
-					<a
-						class="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
-						href="{{ path('app_backend_notification_open', { id: notification.id }) }}"
-					>
+					<form method="post" action="{{ path('app_backend_notification_open', { id: notification.id }) }}">
+						<input type="hidden" name="_token" value="{{ csrf_token('notification_open') }}">
+						<button
+							type="submit"
+							class="flex w-full cursor-pointer gap-3 rounded-lg border-b border-gray-100 bg-transparent p-3 px-4.5 py-3 text-left hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
+						>
 						<span class="relative z-1 block h-10 w-10 shrink-0">
+							{% if notification.readAt is null %}
+								<span class="absolute top-0 right-0 z-10 h-2.5 w-2.5 rounded-full bg-orange-400 ring-2 ring-white dark:ring-gray-900" aria-hidden="true"></span>
+							{% endif %}
 							{% if notification.actor %}
 								{% include '@admin/partials/_user_profile_avatar.html.twig' with {
 									user: notification.actor,
@@ -66,7 +69,11 @@
 
 						<span class="block min-w-0">
 							<span class="text-theme-sm mb-1.5 block text-gray-500 dark:text-gray-400">
-								<span class="font-medium text-gray-800 dark:text-white/90">{{ notification.title }}</span></br>
+								{% if notification.readAt is null %}
+									<span class="sr-only">No leída.</span>
+								{% endif %}
+								<span class="font-medium text-gray-800 dark:text-white/90">{{ notification.title }}</span>
+								<br>
 								{{ notification.message }}
 							</span>
 
@@ -78,7 +85,8 @@
 								</time>
 							</span>
 						</span>
-					</a>
+						</button>
+					</form>
 				</li>
 			{% else %}
 				<li class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">

@@ -11,7 +11,6 @@ use App\Notification\Exception\NotificationAccessDeniedException;
 use App\Notification\NotificationService;
 use App\Repository\NotificationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -45,9 +44,13 @@ final class NotificationController extends AbstractController
         ]);
     }
 
-    #[Route('/notifications/{id}/open', name: 'app_backend_notification_open', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function open(Notification $notification): Response
+    #[Route('/notifications/{id}/open', name: 'app_backend_notification_open', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function open(Request $request, Notification $notification): Response
     {
+        if (!$this->isCsrfTokenValid('notification_open', $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF inválido.');
+        }
+
         try {
             $this->notificationService->markAsRead($notification, $this->currentUser());
         } catch (NotificationAccessDeniedException) {
@@ -65,10 +68,6 @@ final class NotificationController extends AbstractController
         }
 
         $this->notificationService->markAllAsRead($this->currentUser());
-
-        if ($request->isXmlHttpRequest()) {
-            return new JsonResponse(['ok' => true]);
-        }
 
         return $this->redirectToRoute('app_backend_notifications');
     }

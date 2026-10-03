@@ -52,12 +52,15 @@ final class NotificationControllerTest extends WebTestCase
         self::assertSelectorTextContains('body', 'Alta de usuario');
         self::assertSelectorExists('[data-notifications-status="unread"]');
 
-        $client->request('GET', '/admin/notifications');
+        $crawler = $client->request('GET', '/admin/notifications');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'Alta de usuario');
         self::assertSelectorTextContains('body', 'No leída');
 
         $client->request('GET', sprintf('/admin/notifications/%d/open', $notification->getId()));
+        self::assertResponseStatusCodeSame(405);
+
+        $client->submit($crawler->filter(sprintf('form[action$="/notifications/%d/open"]', $notification->getId()))->form());
         self::assertResponseRedirects('/admin/home');
 
         $client->request('GET', '/admin/notifications');
@@ -88,8 +91,15 @@ final class NotificationControllerTest extends WebTestCase
         $developer = $this->loginAsDeveloper($client);
         $notification = $this->notify($developer, 'Solo developer', '/admin/home');
 
-        $this->loginAsAdmin($client);
-        $client->request('GET', sprintf('/admin/notifications/%d/open', $notification->getId()));
+        $admin = $this->loginAsAdmin($client);
+        $this->notify($admin, 'Aviso propio', '/admin/home');
+        $crawler = $client->request('GET', '/admin/notifications');
+        $token = $crawler->filter('input[name="_token"]')->first()->attr('value');
+        self::assertIsString($token);
+
+        $client->request('POST', sprintf('/admin/notifications/%d/open', $notification->getId()), [
+            '_token' => $token,
+        ]);
 
         self::assertResponseStatusCodeSame(404);
     }
