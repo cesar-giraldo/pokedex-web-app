@@ -32,7 +32,7 @@
 - Match the template location to the context: use templates/admin for admin screens and templates/web for public pages.
 - Keep shared UI fragments in reusable template components rather than duplicating markup across contexts.
 - Use Heroicons for all icons in the project. Prefer the Heroicons library and the available outline set from Heroicons, using it consistently across admin and web interfaces.
-- After creating or modifying Stimulus/JavaScript controllers (files under `assets/controllers/` or other JS entrypoints), run `docker compose exec php composer assets:compile` so AssetMapper picks up the changes. Do not skip this step.
+- Mandatory when the agent creates or edits any file under `assets/` (`assets/controllers/**/*.js` and other JavaScript entrypoints) or `importmap.php`: before finishing the task, the agent itself must run `docker compose exec php composer assets:compile` from the project root. Do not ask the user to run it. Do not treat the task as done if that command was not run or failed. Twig, PHP, and CSS-only edits do not require it.
 
 ## Testing & Quality
 - Add or update PHPUnit tests when changing behavior.

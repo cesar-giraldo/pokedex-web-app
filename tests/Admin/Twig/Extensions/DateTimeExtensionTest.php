@@ -25,9 +25,10 @@ final class DateTimeExtensionTest extends TestCase
         $extension = new DateTimeExtension($this->createFormatter());
         $filters = $extension->getFilters();
 
-        self::assertCount(2, $filters);
+        self::assertCount(3, $filters);
         self::assertSame('app_datetime', $filters[0]->getName());
-        self::assertSame('timezone_label', $filters[1]->getName());
+        self::assertSame('app_datetime_relative', $filters[1]->getName());
+        self::assertSame('timezone_label', $filters[2]->getName());
     }
 
     public function testFormatsDateTimeThroughService(): void

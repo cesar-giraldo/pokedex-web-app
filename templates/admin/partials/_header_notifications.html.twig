@@ -1,0 +1,105 @@
+{% set inbox = header_notifications() %}
+<div
+	class="relative group"
+	data-controller="template-header-notifications"
+	data-template-header-notifications-hide-class="hidden"
+	data-notifications-status="{{ inbox.unreadCount > 0 ? 'unread' : 'read' }}"
+>
+	<button
+		type="button"
+		class="hover:text-dark-900 relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+		data-action="click->template-header-notifications#toggleNotificationsDropdown"
+		aria-label="Notificaciones"
+		aria-haspopup="true"
+	>
+		<span class="absolute top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-orange-400
+			group-data-[notifications-status=read]:hidden
+			group-data-[notifications-status=unread]:flex">
+			<span class="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
+		</span>
+		{{ ux_icon('heroicons:bell', { class: 'w-5 h-5 fill-current' }) }}
+	</button>
+
+	<div
+		data-template-header-notifications-target="notificationsDropdown"
+		class="shadow-theme-lg dark:bg-gray-dark absolute -right-[240px] mt-[17px] flex max-h-[480px] w-[350px] flex-col rounded-2xl border border-gray-200 bg-white p-3 sm:w-[361px] lg:right-0 dark:border-gray-800 hidden"
+	>
+		<div class="mb-3 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
+			<p class="text-lg font-semibold text-gray-800 dark:text-white/90">
+				Notificaciones
+			</p>
+
+			<button
+				type="button"
+				data-action="click->template-header-notifications#closeNotificationsDropdown"
+				class="text-gray-500 dark:text-gray-400"
+				aria-label="Cerrar notificaciones"
+			>
+				{{ ux_icon('heroicons:x-mark', { class: 'w-6 h-6 fill-current' }) }}
+			</button>
+		</div>
+
+		<ul class="custom-scrollbar flex h-auto flex-col overflow-y-auto">
+			{% for notification in inbox.items %}
+				<li>
+					<form method="post" action="{{ path('app_backend_notification_open', { id: notification.id }) }}">
+						<input type="hidden" name="_token" value="{{ csrf_token('notification_open') }}">
+						<button
+							type="submit"
+							class="flex w-full cursor-pointer gap-3 rounded-lg border-b border-gray-100 bg-transparent p-3 px-4.5 py-3 text-left hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
+						>
+						<span class="relative z-1 block h-10 w-10 shrink-0">
+							{% if notification.readAt is null %}
+								<span class="absolute top-0 right-0 z-10 h-2.5 w-2.5 rounded-full bg-orange-400 ring-2 ring-white dark:ring-gray-900" aria-hidden="true"></span>
+							{% endif %}
+							{% if notification.actor %}
+								{% include '@admin/partials/_user_profile_avatar.html.twig' with {
+									user: notification.actor,
+									size_class: 'h-10 w-10',
+									icon_class: 'h-10 w-10 text-gray-400 dark:text-gray-500',
+									width: 40,
+									height: 40,
+								} %}
+							{% else %}
+								<span class="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-gray-500 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400">
+									{{ ux_icon('heroicons:bell', { class: 'h-5 w-5' }) }}
+								</span>
+							{% endif %}
+						</span>
+
+						<span class="block min-w-0">
+							<span class="text-theme-sm mb-1.5 block text-gray-500 dark:text-gray-400">
+								{% if notification.readAt is null %}
+									<span class="sr-only">No leída.</span>
+								{% endif %}
+								<span class="font-medium text-gray-800 dark:text-white/90">{{ notification.title }}</span>
+								<br>
+								{{ notification.message }}
+							</span>
+
+							<span class="text-theme-xs flex items-center gap-2 text-gray-500 dark:text-gray-400">
+								<span>{{ notification.type.label }}</span>
+								<span class="h-1 w-1 rounded-full bg-gray-400"></span>
+								<time datetime="{{ notification.createdAt|date('c') }}" title="{{ notification.createdAt|app_datetime }}">
+									{{ notification.createdAt|app_datetime_relative }}
+								</time>
+							</span>
+						</span>
+						</button>
+					</form>
+				</li>
+			{% else %}
+				<li class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+					No tienes notificaciones.
+				</li>
+			{% endfor %}
+		</ul>
+
+		<a
+			href="{{ path('app_backend_notifications') }}"
+			class="text-theme-sm shadow-theme-xs mt-3 flex justify-center rounded-lg border border-gray-300 bg-white p-3 font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+		>
+			Ver todas las notificaciones
+		</a>
+	</div>
+</div>

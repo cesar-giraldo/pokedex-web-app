@@ -1,0 +1,20 @@
+---
+description: After editing Stimulus or other JavaScript under assets/, compile AssetMapper before finishing.
+globs: assets/**/*.js,importmap.php
+alwaysApply: false
+---
+
+# Compile assets after JavaScript changes
+
+When this task creates or edits a file under `assets/` or `importmap.php`, compile assets before the task is finished.
+
+Run this command yourself from the project root. Do not ask the user to run it.
+
+```bash
+docker compose exec php composer assets:compile
+```
+
+- Run it in the same turn as the JavaScript change, after the file edits.
+- If it fails, fix the cause and run it again.
+- Do not end the task while this command is still pending or failing.
+- Do not run it for Twig, PHP, or CSS-only changes.

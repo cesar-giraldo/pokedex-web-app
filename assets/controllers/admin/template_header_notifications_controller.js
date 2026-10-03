@@ -5,10 +5,8 @@ import { useClickOutside } from "stimulus-use";
 export default class extends Controller {
     static values = {
         notificationsDropdownOpen: Boolean,
-        activeNotifications: Boolean,
     };
 
-    // define classes keys (real class defined in the HTML template)
     static classes = ['hide'];
 
     static targets = [
@@ -17,19 +15,13 @@ export default class extends Controller {
 
     initialize() {
         this.notificationsDropdownOpenValue = false;
-        this.activeNotificationsValue = true;
     }
 
     connect() {
-        // this enables the automatic event 'click:outside'
         useClickOutside(this);
     }
 
-    disconnect() {
-    }
-
-    // Created to fix the the data-action "click:outside" event
-    clickOutside(event) {
+    clickOutside() {
         this.closeNotificationsDropdown();
     }
 
@@ -39,20 +31,17 @@ export default class extends Controller {
 
     toggleNotificationsDropdown() {
         this.notificationsDropdownOpenValue = !this.notificationsDropdownOpenValue;
-        this.activeNotificationsValue = false;
     }
 
     notificationsDropdownOpenValueChanged(newValue) {
-        if (this.hasNotificationsDropdownTarget) {
-            if (newValue) {
-                this.notificationsDropdownTarget.classList.remove(this.hideClass);
-            } else {
-                this.notificationsDropdownTarget.classList.add(this.hideClass);
-            }
+        if (!this.hasNotificationsDropdownTarget) {
+            return;
         }
-    }
 
-    activeNotificationsValueChanged(newValue) {
-        this.element.setAttribute("data-notifications-status", newValue ? "unread" : "read");
+        if (newValue) {
+            this.notificationsDropdownTarget.classList.remove(this.hideClass);
+        } else {
+            this.notificationsDropdownTarget.classList.add(this.hideClass);
+        }
     }
 }
