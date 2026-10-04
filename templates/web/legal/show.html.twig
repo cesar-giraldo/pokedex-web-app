@@ -1,0 +1,22 @@
+{% extends '@web/base.html.twig' %}
+
+{% block title %}{{ translation.title }}{% endblock %}
+
+{% block meta_tags %}
+	<meta name="description" content="{{ translation.summary|default(document.name) }}">
+	<meta property="og:title" content="{{ translation.title }}">
+{% endblock %}
+
+{% block body %}
+	<main class="mx-auto max-w-3xl px-4 py-10">
+		<article>
+			<header>
+				<p class="text-sm text-gray-500">{{ document.name }} · v{{ version.versionNumber }}</p>
+				<h1 class="mt-2 text-3xl font-semibold text-gray-900">{{ translation.title }}</h1>
+			</header>
+			<div class="mt-8 text-base leading-7 text-gray-800">
+				{{ translation.contentHtml|raw }}
+			</div>
+		</article>
+	</main>
+{% endblock %}

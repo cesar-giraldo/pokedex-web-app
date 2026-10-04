@@ -85,6 +85,20 @@
 					<!-- Menu Item Usuarios -->
 
 					{% if effective_is_granted('ROLE_DEVELOPER') %}
+					<li>
+						{% set legalMenu = get_menu_classes(active_menu, active_page, 'legal', 'legal') %}
+						<a href="{{ path('app_backend_legal') }}"
+							class="menu-item group {{ legalMenu.item_class }}">
+							{{ ux_icon('heroicons:scale', { class: 'w-6 h-6 '~ legalMenu.item_icon_class }) }}
+
+							<span class="menu-item-text group-data-[sidebar=collapsed]:lg:hidden">
+								Legal
+							</span>
+						</a>
+					</li>
+					{% endif %}
+
+					{% if effective_is_granted('ROLE_DEVELOPER') %}
 						<!-- Menu Item UI Kit -->
 						<li class="group-menu-ui-kit">
 							{# Call twig function (custom extension) to determine classes values #}

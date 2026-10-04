@@ -1,0 +1,61 @@
+{% extends '@admin/base.html.twig' %}
+
+{% block page_title %}{{ document.name }}{% endblock %}
+{% block title %}{{ document.name }}{% endblock %}
+
+{% block breadcrumb %}
+	<li class="text-sm text-gray-500 dark:text-gray-400"><a href="{{ path('app_backend_legal') }}">Legal</a></li>
+	<li class="text-sm text-gray-800 dark:text-white/90">{{ document.name }}</li>
+{% endblock %}
+
+{% block page_actions %}
+	<form method="post" action="{{ path('app_backend_legal_draft_create', { type: document.type.value }) }}">
+		<input type="hidden" name="_token" value="{{ csrf_token('legal_draft_create_' ~ document.type.value) }}">
+		<twig:component_submit_button label="Nueva versión" processingLabel="Creando borrador..." />
+	</form>
+{% endblock %}
+
+{% block body %}
+	<section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+		<div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
+			<h2 class="text-base font-medium text-gray-800 dark:text-white/90">Historial</h2>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="min-w-full text-left text-sm">
+				<thead class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+					<tr>
+						<th class="px-5 py-3 font-medium sm:px-6">Versión</th>
+						<th class="px-5 py-3 font-medium">Estado</th>
+						<th class="px-5 py-3 font-medium">Aceptación</th>
+						<th class="px-5 py-3 font-medium">Acciones</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+					{% for version in document.versions %}
+						<tr>
+							<td class="px-5 py-4 sm:px-6">v{{ version.versionNumber }}</td>
+							<td class="px-5 py-4">{{ version.status.label }}</td>
+							<td class="px-5 py-4">{{ version.requiresReacceptance() ? 'Obligatoria' : 'No requerida' }}</td>
+							<td class="px-5 py-4">
+								<div class="flex flex-wrap gap-3">
+									<a class="font-medium text-brand-500" href="{{ path('app_backend_legal_preview', { type: document.type.value, versionNumber: version.versionNumber }) }}">Previsualizar</a>
+									{% if version.draft %}
+										<a class="font-medium text-brand-500" href="{{ path('app_backend_legal_edit', { type: document.type.value, versionNumber: version.versionNumber }) }}">Editar</a>
+										<a class="font-medium text-brand-500" href="{{ path('app_backend_legal_publish', { type: document.type.value, versionNumber: version.versionNumber }) }}">Publicar</a>
+									{% endif %}
+									{% if version.published and missing_languages is not empty %}
+										<a class="font-medium text-brand-500" href="{{ path('app_backend_legal_languages', { type: document.type.value, versionNumber: version.versionNumber }) }}">Completar idiomas</a>
+									{% endif %}
+								</div>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="4" class="px-5 py-8 text-center text-gray-500 sm:px-6">Todavía no hay versiones.</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</section>
+{% endblock %}

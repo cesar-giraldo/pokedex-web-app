@@ -8,6 +8,7 @@ use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\GeneralSettings;
 use App\Entity\User;
+use App\Legal\LegalDocumentPublisher;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -36,6 +37,7 @@ final class CreateInitialDataCommand extends Command
         private readonly GeneralSettingsRepository $generalSettingsRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly LegalDocumentPublisher $legalDocumentPublisher,
         #[Autowire('%env(default::INITIAL_USER_EMAIL)%')]
         private readonly ?string $initialUserEmail,
         #[Autowire('%env(default::INITIAL_USER_PASSWORD)%')]
@@ -66,6 +68,7 @@ final class CreateInitialDataCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $this->ensureGeneralSettings($io);
+        $this->legalDocumentPublisher->ensureDocuments();
 
         if (!$this->ensureInitialUser($input, $io)) {
             return Command::FAILURE;

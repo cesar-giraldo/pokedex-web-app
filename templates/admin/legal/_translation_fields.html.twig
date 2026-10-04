@@ -1,0 +1,26 @@
+{% for language in languages %}
+	{% set translation = version.findTranslation(language.code) %}
+	<fieldset class="space-y-4 rounded-2xl border border-gray-200 p-5 dark:border-gray-800">
+		<legend class="px-2 text-sm font-medium text-gray-800 dark:text-white/90">{{ language.label }}</legend>
+		<div>
+			<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" for="title-{{ language.code }}">Título</label>
+			<input id="title-{{ language.code }}" name="translations[{{ language.code }}][title]" value="{{ translation ? translation.title : '' }}" class="shadow-theme-xs w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" required>
+		</div>
+		<twig:component_rich_text
+			label="Contenido"
+			name="translations[{{ language.code }}][contentHtml]"
+			id="content-{{ language.code }}"
+			value="{{ translation ? translation.contentHtml : '' }}"
+			:required="true"
+			help="El texto se guarda sanitizado."
+		/>
+		<div>
+			<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" for="acceptance-{{ language.code }}">Texto del checkbox de aceptación</label>
+			<input id="acceptance-{{ language.code }}" name="translations[{{ language.code }}][acceptanceLabel]" value="{{ translation ? translation.acceptanceLabel : '' }}" class="shadow-theme-xs w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" required>
+		</div>
+		<div>
+			<label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" for="summary-{{ language.code }}">Resumen de cambios</label>
+			<textarea id="summary-{{ language.code }}" name="translations[{{ language.code }}][summary]" rows="3" class="shadow-theme-xs w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">{{ translation ? translation.summary : '' }}</textarea>
+		</div>
+	</fieldset>
+{% endfor %}

@@ -1,0 +1,44 @@
+{% extends '@admin/base.html.twig' %}
+
+{% block page_title %}Legal{% endblock %}
+{% block title %}Legal{% endblock %}
+
+{% block breadcrumb %}
+	<li class="text-sm text-gray-800 dark:text-white/90">Legal</li>
+{% endblock %}
+
+{% block body %}
+	<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+		<div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
+			<h2 class="text-base font-medium text-gray-800 dark:text-white/90">Documentos vigentes</h2>
+			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Idiomas habilitados: {{ enabled_languages|join(', ') }}</p>
+		</div>
+		<ul class="divide-y divide-gray-100 dark:divide-gray-800">
+			{% for row in rows %}
+				<li class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+					<div>
+						<h3 class="font-medium text-gray-800 dark:text-white/90">{{ row.document.name }}</h3>
+						<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+							{% if row.published %}
+								Versión vigente v{{ row.published.versionNumber }}
+								{% if row.missing_languages is not empty %}
+									· faltan {{ row.missing_languages|join(', ') }}
+								{% else %}
+									· idiomas completos
+								{% endif %}
+							{% else %}
+								Sin versión publicada
+							{% endif %}
+							{% if row.draft %}
+								· borrador v{{ row.draft.versionNumber }}
+							{% endif %}
+						</p>
+					</div>
+					<a href="{{ path('app_backend_legal_show', { type: row.document.type.value }) }}" class="text-sm font-medium text-brand-500 hover:text-brand-600">
+						Gestionar
+					</a>
+				</li>
+			{% endfor %}
+		</ul>
+	</div>
+{% endblock %}

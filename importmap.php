@@ -44,4 +44,11 @@ return [
     'apexcharts/core' => [
         'version' => '7.4.0',
     ],
+    'trix' => [
+        'version' => '2.1.19',
+    ],
+    'trix/dist/trix.min.css' => [
+        'version' => '2.1.19',
+        'type' => 'css',
+    ],
 ];

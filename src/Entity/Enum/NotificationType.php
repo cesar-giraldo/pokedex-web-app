@@ -12,6 +12,7 @@ enum NotificationType: string
     case DatabaseBackupCompleted = 'database_backup.completed';
     case DatabaseBackupFailed = 'database_backup.failed';
     case PokemonsImported = 'pokemons.imported';
+    case LegalVersionPublished = 'legal.version_published';
 
     public function label(): string
     {
@@ -20,6 +21,7 @@ enum NotificationType: string
             self::UserCreated, self::UserUpdated => 'Usuarios',
             self::DatabaseBackupCompleted, self::DatabaseBackupFailed => 'Base de datos',
             self::PokemonsImported => 'Pokémon',
+            self::LegalVersionPublished => 'Legal',
         };
     }
 }
