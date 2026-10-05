@@ -153,6 +153,29 @@ final class LegalDocumentController extends AbstractController
         ]);
     }
 
+    #[Route('/{type}/versions/{versionNumber}/delete', name: 'app_backend_legal_draft_delete', methods: ['POST'], requirements: ['type' => 'privacy_policy|terms_of_use', 'versionNumber' => '\d+'])]
+    public function deleteDraft(Request $request, string $type, int $versionNumber): Response
+    {
+        $document = $this->document($type);
+        $version = $this->version($document, $versionNumber);
+
+        if (!$this->isCsrfTokenValid('legal_draft_delete_' . $version->getId(), $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF inválido.');
+        }
+
+        try {
+            $this->publisher->deleteDraft($version);
+        } catch (LegalPublicationException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToRoute('app_backend_legal_show', ['type' => $type]);
+        }
+
+        $this->addFlash('success', 'Borrador eliminado.');
+
+        return $this->redirectToRoute('app_backend_legal_show', ['type' => $type]);
+    }
+
     #[Route('/{type}/versions/{versionNumber}/preview', name: 'app_backend_legal_preview', methods: ['GET'], requirements: ['type' => 'privacy_policy|terms_of_use', 'versionNumber' => '\d+'])]
     public function preview(Request $request, string $type, int $versionNumber): Response
     {

@@ -117,6 +117,37 @@ final class LegalDocumentControllerTest extends WebTestCase
         self::assertSelectorTextContains('body', 'Historial');
     }
 
+    public function testDeletingADraftReturnsToTheVersionHistoryWithASuccessMessage(): void
+    {
+        $client = static::createClient();
+        $developer = $this->loginAsDeveloper($client);
+        $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        /** @var LegalDocumentPublisher $publisher */
+        $publisher = static::getContainer()->get(LegalDocumentPublisher::class);
+        $publisher->ensureDocuments();
+
+        /** @var LegalDocumentRepository $documents */
+        $documents = static::getContainer()->get(LegalDocumentRepository::class);
+        $document = $documents->findOneByType(LegalDocumentType::PrivacyPolicy);
+        self::assertNotNull($document);
+
+        $draft = $publisher->startDraft($document, $developer);
+        $this->versionId = $draft->getId();
+
+        $crawler = $client->request('GET', '/admin/legal/privacy_policy/versions/' . $draft->getVersionNumber() . '/edit');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Eliminar borrador');
+
+        $client->submit($crawler->filter('form[action$="/delete"]')->form());
+
+        self::assertResponseRedirects('/admin/legal/privacy_policy');
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Borrador eliminado.');
+        self::assertSelectorTextContains('body', 'Historial');
+    }
+
     public function testOperatorCannotManageLegalDocuments(): void
     {
         $client = static::createClient();

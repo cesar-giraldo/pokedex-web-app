@@ -104,6 +104,16 @@ final class LegalDocumentPublisher
         $this->entityManager->flush();
     }
 
+    public function deleteDraft(LegalDocumentVersion $version): void
+    {
+        if (!$version->isDraft()) {
+            throw new LegalPublicationException('Solo se puede eliminar un borrador.');
+        }
+
+        $this->entityManager->remove($version);
+        $this->entityManager->flush();
+    }
+
     public function publish(
         LegalDocumentVersion $draft,
         bool $requiresReacceptance,

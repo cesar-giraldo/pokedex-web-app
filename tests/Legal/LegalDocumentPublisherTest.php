@@ -20,6 +20,7 @@ use App\Repository\LegalDocumentRepository;
 use App\Repository\LegalDocumentVersionRepository;
 use App\Repository\NotificationRepository;
 use App\Repository\UserRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -50,6 +51,27 @@ final class LegalDocumentPublisherTest extends TestCase
         self::assertTrue($draft->isPublished());
         self::assertTrue($draft->requiresReacceptance());
         self::assertNotNull($draft->findTranslation('es')?->getContentHash());
+    }
+
+    public function testDeleteDraftRemovesTheVersion(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())->method('remove');
+        $entityManager->expects(self::once())->method('flush');
+
+        $this->publisherWithEntityManager($entityManager)->deleteDraft($this->draft());
+    }
+
+    public function testDeleteDraftRejectsAPublishedVersion(): void
+    {
+        $version = $this->draft();
+        $version->publish(true, 'Título', 'Mensaje', new DateTime());
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::never())->method('remove');
+
+        $this->expectException(LegalPublicationException::class);
+        $this->publisherWithEntityManager($entityManager)->deleteDraft($version);
     }
 
     private function publisher(int $releasedCount, bool $expectNotify): LegalDocumentPublisher
@@ -88,6 +110,23 @@ final class LegalDocumentPublisherTest extends TestCase
             new LegalContentSanitizer($html),
             $notifications,
             $urls,
+        );
+    }
+
+    private function publisherWithEntityManager(EntityManagerInterface $entityManager): LegalDocumentPublisher
+    {
+        $html = $this->createStub(HtmlSanitizerInterface::class);
+
+        return new LegalDocumentPublisher(
+            $entityManager,
+            $this->createStub(LegalDocumentRepository::class),
+            $this->createStub(LegalDocumentVersionRepository::class),
+            $this->createStub(UserRepository::class),
+            $this->createStub(GeneralSettingsRepository::class),
+            new LegalLanguageResolver(),
+            new LegalContentSanitizer($html),
+            new NotificationService($this->createStub(EntityManagerInterface::class), $this->createStub(NotificationRepository::class)),
+            $this->createStub(UrlGeneratorInterface::class),
         );
     }
 
