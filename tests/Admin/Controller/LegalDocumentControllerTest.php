@@ -22,6 +22,10 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Field\ChoiceFormField;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+use function array_unique;
+use function array_values;
+use function sprintf;
+
 #[Group('functional')]
 final class LegalDocumentControllerTest extends WebTestCase
 {
@@ -31,15 +35,27 @@ final class LegalDocumentControllerTest extends WebTestCase
 
     private ?int $versionId = null;
 
+    /** @var list<int> */
+    private array $versionIds = [];
+
     private string $notificationTitle = '';
+
+    /** @var list<string> */
+    private array $notificationTitles = [];
 
     protected function tearDown(): void
     {
         if ($this->entityManager instanceof EntityManagerInterface && $this->entityManager->isOpen()) {
+            $titles = $this->notificationTitles;
+
             if ('' !== $this->notificationTitle) {
+                $titles[] = $this->notificationTitle;
+            }
+
+            foreach (array_values(array_unique($titles)) as $title) {
                 $notifications = $this->entityManager->getRepository(Notification::class)->findBy([
                     'type' => NotificationType::LegalVersionPublished,
-                    'title' => $this->notificationTitle,
+                    'title' => $title,
                 ]);
 
                 foreach ($notifications as $notification) {
@@ -47,8 +63,14 @@ final class LegalDocumentControllerTest extends WebTestCase
                 }
             }
 
+            $versionIds = $this->versionIds;
+
             if (null !== $this->versionId) {
-                $version = $this->entityManager->find(LegalDocumentVersion::class, $this->versionId);
+                $versionIds[] = $this->versionId;
+            }
+
+            foreach (array_values(array_unique($versionIds)) as $versionId) {
+                $version = $this->entityManager->find(LegalDocumentVersion::class, $versionId);
 
                 if ($version instanceof LegalDocumentVersion) {
                     $acceptances = $this->entityManager->getRepository(UserLegalAcceptance::class)->findBy([
@@ -187,6 +209,58 @@ final class LegalDocumentControllerTest extends WebTestCase
         self::assertSelectorTextContains('h1', 'Política de prueba');
     }
 
+    public function testOpeningAnAcceptedLegalNotificationShowsThatPublicVersion(): void
+    {
+        $client = static::createClient();
+        $developer = $this->loginAsDeveloper($client);
+        $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        $privacy = $this->publishDocument(
+            $developer,
+            LegalDocumentType::PrivacyPolicy,
+            'Política de prueba',
+            'Acepto la política de prueba',
+        );
+        $privacyTitle = $this->notificationTitle;
+        $this->publishDocument(
+            $developer,
+            LegalDocumentType::TermsOfUse,
+            'Términos de prueba',
+            'Acepto los términos de prueba',
+        );
+
+        $notification = $this->entityManager->getRepository(Notification::class)->findOneBy([
+            'recipient' => $developer,
+            'title' => $privacyTitle,
+        ]);
+        self::assertInstanceOf(Notification::class, $notification);
+
+        $crawler = $client->request('GET', '/admin/legal/accept');
+        $token = $crawler->filter('form[action$="/open"] input[name="_token"]')->attr('value');
+        self::assertIsString($token);
+        $openUrl = sprintf('/admin/notifications/%d/open', $notification->getId());
+
+        $client->request('POST', $openUrl, ['_token' => $token]);
+        self::assertResponseRedirects('/admin/legal/accept');
+
+        $crawler = $client->followRedirect();
+        $form = $crawler->selectButton('Aceptar y continuar')->form();
+        $accepted = $form['accepted'];
+        self::assertInstanceOf(ChoiceFormField::class, $accepted);
+        $accepted->tick();
+        $client->submit($form);
+
+        $client->request('POST', $openUrl, ['_token' => $token]);
+        self::assertResponseRedirects(sprintf('/legal/privacy_policy/%d?lang=es', $privacy->getVersionNumber()));
+
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', 'Política de prueba');
+
+        $client->request('GET', '/admin/home');
+        self::assertResponseRedirects('/admin/legal/accept');
+    }
+
     public function testIncompleteProfileSkipsTheLegalGate(): void
     {
         $client = static::createClient();
@@ -205,13 +279,23 @@ final class LegalDocumentControllerTest extends WebTestCase
 
     private function publishPrivacyPolicy(User $actor): LegalDocumentVersion
     {
+        return $this->publishDocument(
+            $actor,
+            LegalDocumentType::PrivacyPolicy,
+            'Política de prueba',
+            'Acepto la política de prueba',
+        );
+    }
+
+    private function publishDocument(User $actor, LegalDocumentType $type, string $title, string $acceptanceLabel): LegalDocumentVersion
+    {
         /** @var LegalDocumentPublisher $publisher */
         $publisher = static::getContainer()->get(LegalDocumentPublisher::class);
         $publisher->ensureDocuments();
 
         /** @var LegalDocumentRepository $documents */
         $documents = static::getContainer()->get(LegalDocumentRepository::class);
-        $document = $documents->findOneByType(LegalDocumentType::PrivacyPolicy);
+        $document = $documents->findOneByType($type);
         self::assertNotNull($document);
 
         /** @var GeneralSettingsRepository $settingsRepository */
@@ -219,20 +303,24 @@ final class LegalDocumentControllerTest extends WebTestCase
         $languages = $settingsRepository->getOrCreateSingleton()->getEnabledLanguages();
 
         $draft = $publisher->startDraft($document, $actor);
-        $this->versionId = $draft->getId();
+        $versionId = $draft->getId();
+        self::assertNotNull($versionId);
+        $this->versionId = $versionId;
+        $this->versionIds[] = $versionId;
         $payload = [];
 
         foreach ($languages as $language) {
             $payload[$language] = [
-                'title' => 'Política de prueba',
+                'title' => $title,
                 'contentHtml' => '<p>Contenido de prueba</p>',
-                'acceptanceLabel' => 'Acepto la política de prueba',
+                'acceptanceLabel' => $acceptanceLabel,
                 'summary' => 'Versión de prueba',
             ];
         }
 
         $publisher->updateDraft($draft, $payload);
-        $this->notificationTitle = 'Política de prueba ' . $draft->getVersionNumber() . ' ' . uniqid('', true);
+        $this->notificationTitle = $title . ' ' . $draft->getVersionNumber() . ' ' . uniqid('', true);
+        $this->notificationTitles[] = $this->notificationTitle;
         $publisher->publish($draft, true, $this->notificationTitle, 'Debes aceptar el documento de prueba.', $actor);
 
         return $draft;

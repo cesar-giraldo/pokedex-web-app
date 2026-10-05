@@ -67,7 +67,7 @@ final class LegalAcceptanceSubscriber implements EventSubscriberInterface
         $request = $event->getRequest();
         $path = $request->getPathInfo();
 
-        if ($this->isAllowedPath($path)) {
+        if ($this->isAllowedPath($path) || $this->isPublicLegalPath($path) || $this->isNotificationOpenPath($path)) {
             return;
         }
 
@@ -89,5 +89,15 @@ final class LegalAcceptanceSubscriber implements EventSubscriberInterface
         }
 
         return '/admin/login' === $path;
+    }
+
+    private function isPublicLegalPath(string $path): bool
+    {
+        return '/legal' === $path || str_starts_with($path, '/legal/');
+    }
+
+    private function isNotificationOpenPath(string $path): bool
+    {
+        return 1 === preg_match('#^/admin/notifications/\d+/open$#', $path);
     }
 }

@@ -10,8 +10,10 @@
 {% block body %}
 	<section class="mx-auto max-w-3xl rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
 		<header class="border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
-			<h2 class="text-lg font-medium text-gray-800 dark:text-white/90">{{ translation.title }}</h2>
-			<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ version.document.name }} · v{{ version.versionNumber }}</p>
+			<div class="flex items-start justify-between gap-4">
+				<h2 class="text-lg font-medium text-gray-800 dark:text-white/90">{{ translation.title }}</h2>
+				<p class="shrink-0 text-sm text-gray-500 dark:text-gray-400">v{{ version.versionNumber }}</p>
+			</div>
 			{% if translation.summary %}
 				<p class="mt-3 text-sm text-gray-700 dark:text-gray-300">{{ translation.summary }}</p>
 			{% endif %}
