@@ -226,7 +226,7 @@ final class LegalDocumentPublisher
 
     public function defaultNotificationMessage(LegalDocumentVersion $version): string
     {
-        return $version->getDocument()->getType()->defaultNotificationMessage($version->getVersionNumber());
+        return $version->getDocument()->getType()->defaultNotificationMessage();
     }
 
     /**

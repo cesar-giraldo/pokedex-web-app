@@ -4,7 +4,12 @@
 {% block title %}{{ document.name }}{% endblock %}
 
 {% block breadcrumb %}
-	<li class="text-sm text-gray-500 dark:text-gray-400"><a href="{{ path('app_backend_legal') }}">Legal</a></li>
+	<li>
+		<a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_backend_legal') }}">
+			Legal
+			{{ ux_icon('heroicons:chevron-right', { class: 'w-4 h-4' }) }}
+		</a>
+	</li>
 	<li class="text-sm text-gray-800 dark:text-white/90">{{ document.name }}</li>
 {% endblock %}
 
@@ -37,14 +42,26 @@
 							<td class="px-5 py-4">{{ version.status.label }}</td>
 							<td class="px-5 py-4">{{ version.requiresReacceptance() ? 'Obligatoria' : 'No requerida' }}</td>
 							<td class="px-5 py-4">
-								<div class="flex flex-wrap gap-3">
-									<a class="font-medium text-brand-500" href="{{ path('app_backend_legal_preview', { type: document.type.value, versionNumber: version.versionNumber }) }}">Previsualizar</a>
+								<div class="flex flex-wrap gap-2">
+									<a class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]" href="{{ path('app_backend_legal_preview', { type: document.type.value, versionNumber: version.versionNumber }) }}">
+										{{ ux_icon('heroicons:eye', { class: 'h-4 w-4' }) }}
+										Previsualizar
+									</a>
 									{% if version.draft %}
-										<a class="font-medium text-brand-500" href="{{ path('app_backend_legal_edit', { type: document.type.value, versionNumber: version.versionNumber }) }}">Editar</a>
-										<a class="font-medium text-brand-500" href="{{ path('app_backend_legal_publish', { type: document.type.value, versionNumber: version.versionNumber }) }}">Publicar</a>
+										<a class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]" href="{{ path('app_backend_legal_edit', { type: document.type.value, versionNumber: version.versionNumber }) }}">
+											{{ ux_icon('heroicons:pencil-square', { class: 'h-4 w-4' }) }}
+											Editar
+										</a>
+										<a class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-3 py-2 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600" href="{{ path('app_backend_legal_publish', { type: document.type.value, versionNumber: version.versionNumber }) }}">
+											{{ ux_icon('heroicons:paper-airplane', { class: 'h-4 w-4' }) }}
+											Publicar
+										</a>
 									{% endif %}
 									{% if version.published and missing_languages is not empty %}
-										<a class="font-medium text-brand-500" href="{{ path('app_backend_legal_languages', { type: document.type.value, versionNumber: version.versionNumber }) }}">Completar idiomas</a>
+										<a class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]" href="{{ path('app_backend_legal_languages', { type: document.type.value, versionNumber: version.versionNumber }) }}">
+											{{ ux_icon('heroicons:language', { class: 'h-4 w-4' }) }}
+											Completar idiomas
+										</a>
 									{% endif %}
 								</div>
 							</td>

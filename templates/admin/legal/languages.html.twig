@@ -4,7 +4,18 @@
 {% block title %}Completar idiomas{% endblock %}
 
 {% block breadcrumb %}
-	<li class="text-sm text-gray-500 dark:text-gray-400"><a href="{{ path('app_backend_legal_show', { type: document.type.value }) }}">{{ document.name }}</a></li>
+	<li>
+		<a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_backend_legal') }}">
+			Legal
+			{{ ux_icon('heroicons:chevron-right', { class: 'w-4 h-4' }) }}
+		</a>
+	</li>
+	<li>
+		<a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_backend_legal_show', { type: document.type.value }) }}">
+			{{ document.name }}
+			{{ ux_icon('heroicons:chevron-right', { class: 'w-4 h-4' }) }}
+		</a>
+	</li>
 	<li class="text-sm text-gray-800 dark:text-white/90">Idiomas de v{{ version.versionNumber }}</li>
 {% endblock %}
 

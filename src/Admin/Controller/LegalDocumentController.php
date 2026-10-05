@@ -130,15 +130,18 @@ final class LegalDocumentController extends AbstractController
 
             try {
                 $this->publisher->updateDraft($version, $this->translationPayload($request));
-                $this->addFlash('success', 'Borrador guardado.');
             } catch (LegalPublicationException $exception) {
                 $this->addFlash('error', $exception->getMessage());
+
+                return $this->redirectToRoute('app_backend_legal_edit', [
+                    'type' => $type,
+                    'versionNumber' => $versionNumber,
+                ]);
             }
 
-            return $this->redirectToRoute('app_backend_legal_edit', [
-                'type' => $type,
-                'versionNumber' => $versionNumber,
-            ]);
+            $this->addFlash('success', 'Borrador guardado.');
+
+            return $this->redirectToRoute('app_backend_legal_show', ['type' => $type]);
         }
 
         return $this->render('@admin/legal/edit.html.twig', [

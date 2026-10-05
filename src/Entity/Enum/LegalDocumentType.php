@@ -30,8 +30,11 @@ enum LegalDocumentType: string
         return $this->label() . ' v' . $versionNumber;
     }
 
-    public function defaultNotificationMessage(int $versionNumber): string
+    public function defaultNotificationMessage(): string
     {
-        return 'Se publicó la versión ' . $versionNumber . ' de ' . $this->label() . '. Debes leerla y aceptarla para continuar.';
+        return match ($this) {
+            self::PrivacyPolicy => 'Conoce nuestra Política de privacidad. Debes leerla y aceptarla para continuar.',
+            self::TermsOfUse => 'Conoce nuestros Términos y condiciones de uso. Debes leerlos y aceptarlos para continuar.',
+        };
     }
 }
