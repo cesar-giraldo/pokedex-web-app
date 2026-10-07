@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Admin\Controller;
 
 use App\Admin\Controller\Concerns\AdminPaginatorTrait;
+use App\Admin\Service\Pdf\LegalDocumentPdfExporter;
+use App\Admin\Service\Pdf\PdfGenerationException;
 use App\Entity\Enum\LegalDocumentType;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\LegalDocument;
 use App\Entity\LegalDocumentVersion;
+use App\Entity\LegalDocumentVersionTranslation;
 use App\Entity\User;
 use App\Legal\Exception\LegalPublicationException;
 use App\Legal\LegalDocumentPublisher;
@@ -22,9 +25,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 use function is_array;
 use function is_string;
+use function sprintf;
+use function strtolower;
 
 #[Route('/admin/legal')]
 #[IsGranted('ROLE_DEVELOPER')]
@@ -193,6 +199,58 @@ final class LegalDocumentController extends AbstractController
             'document' => $document,
             'version' => $version,
             ...$this->getPagination($this->acceptanceRepository->queryForVersion($version), $request),
+        ]);
+    }
+
+    #[Route('/{type}/versions/{versionNumber}/pdf', name: 'app_backend_legal_pdf', methods: ['GET'], requirements: ['type' => 'privacy_policy|terms_of_use', 'versionNumber' => '\d+'])]
+    public function downloadPdf(Request $request, string $type, int $versionNumber, LegalDocumentPdfExporter $pdfExporter): Response
+    {
+        $document = $this->document($type);
+        $version = $this->version($document, $versionNumber);
+        $lang = $request->query->getString('lang');
+        $previewParams = [
+            'type' => $type,
+            'versionNumber' => $versionNumber,
+        ];
+
+        if ('' !== $lang) {
+            $previewParams['lang'] = $lang;
+        }
+
+        if ($version->isDraft()) {
+            $this->addFlash('error', 'Los borradores no se pueden descargar.');
+
+            return $this->redirectToRoute('app_backend_legal_preview', $previewParams);
+        }
+
+        $settings = $this->generalSettingsRepository->getOrCreateSingleton();
+        $preferred = $this->languageResolver->preferredFromCode('' !== $lang ? $lang : null, $settings);
+        $translation = $this->languageResolver->resolveTranslation($version, $preferred, $settings);
+
+        if (!$translation instanceof LegalDocumentVersionTranslation) {
+            $this->addFlash('error', 'No hay contenido para generar el PDF.');
+
+            return $this->redirectToRoute('app_backend_legal_preview', $previewParams);
+        }
+
+        try {
+            $pdfContent = $pdfExporter->export($document, $version, $translation);
+        } catch (PdfGenerationException) {
+            $this->addFlash('error', 'No se pudo generar el PDF. Verifique que Gotenberg esté disponible e inténtelo de nuevo.');
+
+            return $this->redirectToRoute('app_backend_legal_preview', $previewParams);
+        }
+
+        $filename = sprintf(
+            '%s-v%d-%s.pdf',
+            strtolower(new AsciiSlugger()->slug($document->getName())->toString()),
+            $version->getVersionNumber(),
+            $translation->getLanguage(),
+        );
+
+        return new Response($pdfContent, Response::HTTP_OK, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
         ]);
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Admin\Controller;
 
+use App\Admin\Service\Pdf\LegalDocumentPdfExporter;
 use App\Entity\Enum\LegalDocumentType;
 use App\Entity\Enum\NotificationType;
 use App\Entity\Enum\UserRole;
@@ -317,6 +318,76 @@ final class LegalDocumentControllerTest extends WebTestCase
         self::assertSelectorTextContains('body', 'Aceptación obligatoria');
         self::assertSelectorTextContains('body', 'Español - es');
         self::assertSelectorTextNotContains('body', 'Nadie ha aceptado esta versión.');
+    }
+
+    public function testPublishedPreviewDownloadsAPdfAndDraftsDoNot(): void
+    {
+        $client = static::createClient();
+        $developer = $this->loginAsDeveloper($client);
+        $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        /** @var LegalDocumentPublisher $publisher */
+        $publisher = static::getContainer()->get(LegalDocumentPublisher::class);
+        $publisher->ensureDocuments();
+
+        /** @var LegalDocumentRepository $documents */
+        $documents = static::getContainer()->get(LegalDocumentRepository::class);
+        $terms = $documents->findOneByType(LegalDocumentType::TermsOfUse);
+        self::assertNotNull($terms);
+        $draft = $publisher->startDraft($terms, $developer);
+        $draftId = $draft->getId();
+        self::assertNotNull($draftId);
+        $this->versionId = $draftId;
+        $this->versionIds[] = $draftId;
+
+        $draftPreview = sprintf('/admin/legal/terms_of_use/versions/%d/preview', $draft->getVersionNumber());
+        $client->request('GET', $draftPreview);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextNotContains('body', 'Descargar PDF');
+
+        $client->request('GET', sprintf('/admin/legal/terms_of_use/versions/%d/pdf', $draft->getVersionNumber()));
+        self::assertResponseRedirects($draftPreview);
+
+        $developerId = $developer->getId();
+        $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $developer = $this->entityManager->find(User::class, $developerId);
+        self::assertInstanceOf(User::class, $developer);
+
+        $privacy = $this->publishDocument(
+            $developer,
+            LegalDocumentType::PrivacyPolicy,
+            'Política de prueba',
+            'Acepto la política de prueba',
+        );
+
+        $crawler = $client->request('GET', '/admin/legal/accept');
+        $form = $crawler->selectButton('Aceptar y continuar')->form();
+        $accepted = $form['accepted'];
+        self::assertInstanceOf(ChoiceFormField::class, $accepted);
+        $accepted->tick();
+        $client->submit($form);
+
+        $previewUrl = sprintf('/admin/legal/privacy_policy/versions/%d/preview?lang=es', $privacy->getVersionNumber());
+        $crawler = $client->request('GET', $previewUrl);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(sprintf(
+            'a[href$="/versions/%d/pdf?lang=es"]',
+            $privacy->getVersionNumber(),
+        ));
+        self::assertSelectorTextContains('body', 'Descargar PDF');
+
+        $client->disableReboot();
+        $pdfExporter = $this->createMock(LegalDocumentPdfExporter::class);
+        $pdfExporter->expects($this->once())->method('export')->willReturn('%PDF-1.4 legal');
+        static::getContainer()->set(LegalDocumentPdfExporter::class, $pdfExporter);
+
+        $client->request('GET', sprintf('/admin/legal/privacy_policy/versions/%d/pdf?lang=es', $privacy->getVersionNumber()));
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('Content-Type', 'application/pdf');
+        $disposition = $client->getResponse()->headers->get('Content-Disposition');
+        self::assertIsString($disposition);
+        self::assertStringContainsString(sprintf('-v%d-es.pdf"', $privacy->getVersionNumber()), $disposition);
+        self::assertSame('%PDF-1.4 legal', $client->getResponse()->getContent());
     }
 
     public function testIncompleteProfileSkipsTheLegalGate(): void

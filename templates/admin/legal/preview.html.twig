@@ -54,6 +54,14 @@
 						value="1"
 					/>
 				</div>
+				{% if not version.draft %}
+					<div class="mt-8 flex justify-end">
+						<a class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-green-700" href="{{ path('app_backend_legal_pdf', { type: document.type.value, versionNumber: version.versionNumber, lang: preferred.value }) }}">
+							{{ ux_icon('heroicons:arrow-down-tray', { class: 'h-4 w-4' }) }}
+							Descargar PDF
+						</a>
+					</div>
+				{% endif %}
 			{% else %}
 				<p class="text-sm text-gray-500">No hay contenido para este idioma ni para el idioma por defecto.</p>
 			{% endif %}
