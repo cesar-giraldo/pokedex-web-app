@@ -15,6 +15,7 @@ use App\Repository\GeneralSettingsRepository;
 use App\Repository\LegalDocumentVersionRepository;
 use App\Repository\UserLegalAcceptanceRepository;
 use DateTime;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
 use function mb_substr;
@@ -97,7 +98,12 @@ final class LegalAcceptanceService
         );
 
         $this->entityManager->persist($acceptance);
-        $this->entityManager->flush();
+
+        try {
+            $this->entityManager->flush();
+        } catch (UniqueConstraintViolationException) {
+            // La otra petición ya insertó la aceptación de esta versión.
+        }
 
         return $acceptance;
     }
