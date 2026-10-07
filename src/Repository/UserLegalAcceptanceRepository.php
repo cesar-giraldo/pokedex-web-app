@@ -8,6 +8,7 @@ use App\Entity\LegalDocumentVersion;
 use App\Entity\User;
 use App\Entity\UserLegalAcceptance;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -32,5 +33,16 @@ class UserLegalAcceptanceRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
 
         return $count > 0;
+    }
+
+    public function queryForVersion(LegalDocumentVersion $version): QueryBuilder
+    {
+        return $this->createQueryBuilder('acceptance')
+            ->addSelect('acceptedUser')
+            ->innerJoin('acceptance.user', 'acceptedUser')
+            ->andWhere('acceptance.version = :version')
+            ->setParameter('version', $version)
+            ->orderBy('acceptance.acceptedAt', 'DESC')
+            ->addOrderBy('acceptance.id', 'DESC');
     }
 }

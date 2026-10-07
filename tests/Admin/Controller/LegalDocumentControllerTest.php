@@ -19,6 +19,7 @@ use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\DomCrawler\Field\ChoiceFormField;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -259,6 +260,63 @@ final class LegalDocumentControllerTest extends WebTestCase
 
         $client->request('GET', '/admin/home');
         self::assertResponseRedirects('/admin/legal/accept');
+    }
+
+    public function testAcceptanceListShowsWhoAcceptedAPublishedVersion(): void
+    {
+        $client = static::createClient();
+        $developer = $this->loginAsDeveloper($client);
+        $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        /** @var LegalDocumentPublisher $publisher */
+        $publisher = static::getContainer()->get(LegalDocumentPublisher::class);
+        $publisher->ensureDocuments();
+
+        /** @var LegalDocumentRepository $documents */
+        $documents = static::getContainer()->get(LegalDocumentRepository::class);
+        $terms = $documents->findOneByType(LegalDocumentType::TermsOfUse);
+        self::assertNotNull($terms);
+        $draft = $publisher->startDraft($terms, $developer);
+        $draftId = $draft->getId();
+        self::assertNotNull($draftId);
+        $this->versionId = $draftId;
+        $this->versionIds[] = $draftId;
+
+        $crawler = $client->request('GET', '/admin/legal/terms_of_use');
+        self::assertResponseIsSuccessful();
+        $draftRow = $crawler->filter('tbody tr')->reduce(
+            static fn (Crawler $row): bool => 'v' . $draft->getVersionNumber() === trim($row->filter('td')->eq(0)->text()),
+        );
+        self::assertCount(1, $draftRow);
+        self::assertStringNotContainsString('Aceptaciones', $draftRow->text());
+
+        $privacy = $this->publishDocument(
+            $developer,
+            LegalDocumentType::PrivacyPolicy,
+            'Política de prueba',
+            'Acepto la política de prueba',
+        );
+
+        $crawler = $client->request('GET', '/admin/legal/accept');
+        $form = $crawler->selectButton('Aceptar y continuar')->form();
+        $accepted = $form['accepted'];
+        self::assertInstanceOf(ChoiceFormField::class, $accepted);
+        $accepted->tick();
+        $client->submit($form);
+
+        $crawler = $client->request('GET', '/admin/legal/privacy_policy');
+        self::assertResponseIsSuccessful();
+        $acceptancesLink = sprintf('/admin/legal/privacy_policy/versions/%d/acceptances', $privacy->getVersionNumber());
+        self::assertGreaterThan(0, $crawler->filter(sprintf('a[href$="%s"]', $acceptancesLink))->count());
+
+        $client->request('GET', $acceptancesLink);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', 'Functional Developer');
+        self::assertSelectorTextContains('body', '@tst-devel');
+        self::assertSelectorTextContains('body', 'Developer');
+        self::assertSelectorTextContains('body', 'Aceptación obligatoria');
+        self::assertSelectorTextContains('body', 'Español - es');
+        self::assertSelectorTextNotContains('body', 'Nadie ha aceptado esta versión.');
     }
 
     public function testIncompleteProfileSkipsTheLegalGate(): void

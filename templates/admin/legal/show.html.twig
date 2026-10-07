@@ -47,6 +47,12 @@
 										{{ ux_icon('heroicons:eye', { class: 'h-4 w-4' }) }}
 										Previsualizar
 									</a>
+									{% if not version.draft %}
+										<a class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]" href="{{ path('app_backend_legal_acceptances', { type: document.type.value, versionNumber: version.versionNumber }) }}">
+											{{ ux_icon('heroicons:clipboard-document-check', { class: 'h-4 w-4' }) }}
+											Aceptaciones
+										</a>
+									{% endif %}
 									{% if version.draft %}
 										<a class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]" href="{{ path('app_backend_legal_edit', { type: document.type.value, versionNumber: version.versionNumber }) }}">
 											{{ ux_icon('heroicons:pencil-square', { class: 'h-4 w-4' }) }}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Controller;
 
+use App\Admin\Controller\Concerns\AdminPaginatorTrait;
 use App\Entity\Enum\LegalDocumentType;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\LegalDocument;
@@ -15,6 +16,7 @@ use App\Legal\LegalLanguageResolver;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\LegalDocumentRepository;
 use App\Repository\LegalDocumentVersionRepository;
+use App\Repository\UserLegalAcceptanceRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,9 +30,12 @@ use function is_string;
 #[IsGranted('ROLE_DEVELOPER')]
 final class LegalDocumentController extends AbstractController
 {
+    use AdminPaginatorTrait;
+
     public function __construct(
         private readonly LegalDocumentRepository $documentRepository,
         private readonly LegalDocumentVersionRepository $versionRepository,
+        private readonly UserLegalAcceptanceRepository $acceptanceRepository,
         private readonly LegalDocumentPublisher $publisher,
         private readonly LegalLanguageResolver $languageResolver,
         private readonly GeneralSettingsRepository $generalSettingsRepository,
@@ -174,6 +179,21 @@ final class LegalDocumentController extends AbstractController
         $this->addFlash('success', 'Borrador eliminado.');
 
         return $this->redirectToRoute('app_backend_legal_show', ['type' => $type]);
+    }
+
+    #[Route('/{type}/versions/{versionNumber}/acceptances', name: 'app_backend_legal_acceptances', methods: ['GET'], requirements: ['type' => 'privacy_policy|terms_of_use', 'versionNumber' => '\d+'])]
+    public function acceptances(Request $request, string $type, int $versionNumber): Response
+    {
+        $document = $this->document($type);
+        $version = $this->version($document, $versionNumber);
+
+        return $this->render('@admin/legal/acceptances.html.twig', [
+            'active_menu' => 'legal',
+            'active_page' => 'legal_acceptances',
+            'document' => $document,
+            'version' => $version,
+            ...$this->getPagination($this->acceptanceRepository->queryForVersion($version), $request),
+        ]);
     }
 
     #[Route('/{type}/versions/{versionNumber}/preview', name: 'app_backend_legal_preview', methods: ['GET'], requirements: ['type' => 'privacy_policy|terms_of_use', 'versionNumber' => '\d+'])]

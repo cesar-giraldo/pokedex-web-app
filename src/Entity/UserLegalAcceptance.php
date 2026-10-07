@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Entity\Enum\LegalAcceptanceMethod;
+use App\Entity\Enum\SupportedLanguage;
 use App\Repository\UserLegalAcceptanceRepository;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
@@ -99,6 +100,11 @@ class UserLegalAcceptance
     public function getLanguage(): string
     {
         return $this->language;
+    }
+
+    public function languageLabel(): string
+    {
+        return SupportedLanguage::tryFrom($this->language)?->label() ?? $this->language;
     }
 
     public function getAcceptedAt(): DateTime
