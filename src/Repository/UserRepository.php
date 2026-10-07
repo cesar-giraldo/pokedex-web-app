@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Enum\UserRole;
+use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -137,6 +138,21 @@ class UserRepository extends ServiceEntityRepository
         /** @var list<User> $users */
         $users = $queryBuilder
             ->andWhere(implode(' OR ', $conditions))
+            ->getQuery()
+            ->getResult();
+
+        return $users;
+    }
+
+    /**
+     * @return list<User>
+     */
+    public function findByStatus(UserStatus $status): array
+    {
+        /** @var list<User> $users */
+        $users = $this->createQueryBuilder('u')
+            ->andWhere('u.status = :status')
+            ->setParameter('status', $status)
             ->getQuery()
             ->getResult();
 

@@ -1,0 +1,70 @@
+{% extends '@admin/base.html.twig' %}
+
+{% block page_title %}Previsualizar v{{ version.versionNumber }}{% endblock %}
+{% block title %}Previsualizar {{ document.name }}{% endblock %}
+
+{% block breadcrumb %}
+	<li>
+		<a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_backend_legal') }}">
+			Legal
+			{{ ux_icon('heroicons:chevron-right', { class: 'w-4 h-4' }) }}
+		</a>
+	</li>
+	<li>
+		<a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_backend_legal_show', { type: document.type.value }) }}">
+			{{ document.name }}
+			{{ ux_icon('heroicons:chevron-right', { class: 'w-4 h-4' }) }}
+		</a>
+	</li>
+	<li class="text-sm text-gray-800 dark:text-white/90">Vista previa v{{ version.versionNumber }}</li>
+{% endblock %}
+
+{% block body %}
+	{% set tab_base = 'inline-flex items-center border-b-2 px-4 pt-2 pb-3 text-sm font-medium transition' %}
+	{% set tab_active = 'border-brand-500 text-brand-500' %}
+	{% set tab_inactive = 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200' %}
+
+	<section class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+		<div class="border-b border-gray-100 px-5 pt-4 dark:border-gray-800 sm:px-6 sm:pt-5">
+			<nav class="flex flex-wrap gap-1" aria-label="Idioma de la vista previa">
+				{% for language in languages %}
+					{% set is_active = preferred.value == language.code %}
+					<a
+						href="{{ path('app_backend_legal_preview', { type: document.type.value, versionNumber: version.versionNumber, lang: language.code }) }}"
+						class="{{ tab_base }} {{ is_active ? tab_active : tab_inactive }}"
+						{% if is_active %}aria-current="page"{% endif %}
+					>
+						{{ language.label }}
+					</a>
+				{% endfor %}
+			</nav>
+		</div>
+		<div class="p-5 sm:p-6">
+			{% if translation %}
+				<h2 class="text-xl font-medium text-gray-800 dark:text-white/90">{{ translation.title }}</h2>
+				{% if translation.summary %}
+					<p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ translation.summary }}</p>
+				{% endif %}
+				<div class="prose mt-6 max-w-none text-sm text-gray-800 dark:text-white/90">{{ translation.contentHtml|raw }}</div>
+				<div class="mt-8">
+					<twig:component_checkbox
+						label="{{ translation.acceptanceLabel }}"
+						name="legal_preview_acceptance"
+						id="legal-preview-acceptance"
+						value="1"
+					/>
+				</div>
+				{% if not version.draft %}
+					<div class="mt-8 flex justify-end">
+						<a class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-green-700" href="{{ path('app_backend_legal_pdf', { type: document.type.value, versionNumber: version.versionNumber, lang: preferred.value }) }}">
+							{{ ux_icon('heroicons:arrow-down-tray', { class: 'h-4 w-4' }) }}
+							Descargar PDF
+						</a>
+					</div>
+				{% endif %}
+			{% else %}
+				<p class="text-sm text-gray-500">No hay contenido para este idioma ni para el idioma por defecto.</p>
+			{% endif %}
+		</div>
+	</section>
+{% endblock %}

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity\Enum;
 
 use function str_replace;
+use function substr;
 
 enum SupportedLocale: string
 {
@@ -59,6 +60,11 @@ enum SupportedLocale: string
     public function intlLocale(): string
     {
         return str_replace('-', '_', $this->value);
+    }
+
+    public function language(): SupportedLanguage
+    {
+        return SupportedLanguage::from(substr($this->value, 0, 2));
     }
 
     /**

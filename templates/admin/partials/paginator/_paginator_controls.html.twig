@@ -3,7 +3,7 @@
 	{% if start_page is defined %}
 		{# Get current route and existing GET params #}
 		{% set current_route = app.request.attributes.get('_route') %}
-		{% set current_params = app.request.query.all() %}
+		{% set current_params = app.request.attributes.get('_route_params')|default({})|merge(app.request.query.all()) %}
 
 		<nav class="flex items-center justify-between border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
 			{# <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between"> #}

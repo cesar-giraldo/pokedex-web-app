@@ -1,0 +1,108 @@
+{% extends '@admin/base.html.twig' %}
+
+{% block page_title %}Aceptaciones v{{ version.versionNumber }}{% endblock %}
+{% block title %}Aceptaciones {{ document.name }} v{{ version.versionNumber }}{% endblock %}
+
+{% block breadcrumb %}
+	<li>
+		<a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_backend_legal') }}">
+			Legal
+			{{ ux_icon('heroicons:chevron-right', { class: 'w-4 h-4' }) }}
+		</a>
+	</li>
+	<li>
+		<a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_backend_legal_show', { type: document.type.value }) }}">
+			{{ document.name }}
+			{{ ux_icon('heroicons:chevron-right', { class: 'w-4 h-4' }) }}
+		</a>
+	</li>
+	<li>
+		<a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400" href="{{ path('app_backend_legal_show', { type: document.type.value }) }}">
+			v{{ version.versionNumber }}
+			{{ ux_icon('heroicons:chevron-right', { class: 'w-4 h-4' }) }}
+		</a>
+	</li>
+	<li class="text-sm text-gray-800 dark:text-white/90">Aceptaciones</li>
+{% endblock %}
+
+{% block body %}
+	<section
+		class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
+		data-controller="admin-paginator"
+		data-admin-paginator-entity-value="legal_acceptances"
+	>
+		<div class="border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
+			<h2 class="text-base font-medium text-gray-800 dark:text-white/90">Aceptaciones</h2>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="min-w-full text-left text-sm">
+				<thead class="border-b border-gray-100 text-gray-500 dark:border-gray-800 dark:text-gray-400">
+					<tr>
+						<th class="px-5 py-3 font-medium sm:px-6">Usuario</th>
+						<th class="px-5 py-3 font-medium">Rol</th>
+						<th class="px-5 py-3 font-medium">Estado</th>
+						<th class="px-5 py-3 font-medium">Aceptación</th>
+						<th class="px-5 py-3 font-medium">Idioma</th>
+						<th class="px-5 py-3 font-medium">Método</th>
+						<th class="px-5 py-3 font-medium">IP</th>
+						<th class="px-5 py-3 font-medium">Navegador</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+					{% for acceptance in entities %}
+						{% set user = acceptance.user %}
+						<tr>
+							<td class="px-5 py-4 sm:px-6">
+								<div class="flex items-center gap-3">
+									{% include '@admin/partials/_user_profile_avatar.html.twig' with {
+										user: user,
+										size_class: 'h-10 w-10',
+										icon_class: 'h-10 w-10 text-gray-400 dark:text-gray-500',
+										width: 40,
+										height: 40,
+									} %}
+									<div class="min-w-0">
+										<a href="{{ path('app_backend_user_show', { id: user.id }) }}" class="block truncate font-medium text-gray-800 transition hover:text-brand-500 dark:text-white/90 dark:hover:text-brand-400">
+											{{ user.name }} {{ user.lastname }}
+										</a>
+										<p class="truncate text-xs text-gray-500 dark:text-gray-400">@{{ user.nickname }}</p>
+									</div>
+								</div>
+							</td>
+							<td class="px-5 py-4">
+								<div class="flex flex-wrap items-center gap-1.5">
+									{% for role in user.applicationRoles %}
+										<span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium {{ role.listBadgeClasses }}">{{ role.label }}</span>
+									{% endfor %}
+								</div>
+							</td>
+							<td class="px-5 py-4">
+								<span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium {{ user.status.listBadgeClasses }}">{{ user.status.label }}</span>
+							</td>
+							<td class="px-5 py-4 whitespace-nowrap">
+								<time datetime="{{ acceptance.acceptedAt|date('c') }}">{{ acceptance.acceptedAt|app_datetime }}</time>
+							</td>
+							<td class="px-5 py-4 whitespace-nowrap">{{ acceptance.languageLabel }}</td>
+							<td class="px-5 py-4 whitespace-nowrap">{{ acceptance.method.label }}</td>
+							<td class="px-5 py-4 whitespace-nowrap">{{ acceptance.ipAddress ?: '—' }}</td>
+							<td class="px-5 py-4">
+								{% if acceptance.userAgent %}
+									<span class="block max-w-xs truncate" title="{{ acceptance.userAgent }}">{{ acceptance.userAgent }}</span>
+								{% else %}
+									—
+								{% endif %}
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="8" class="px-5 py-8 text-center text-gray-500 sm:px-6">Nadie ha aceptado esta versión.</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		<div class="px-5 pb-5 sm:px-6">
+			{% include '@admin/partials/paginator/_paginator.html.twig' %}
+		</div>
+	</section>
+{% endblock %}

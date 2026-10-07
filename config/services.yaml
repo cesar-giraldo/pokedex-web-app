@@ -82,3 +82,10 @@ services:
 
     App\Notification\:
         resource: '../src/Notification/'
+
+    App\Legal\:
+        resource: '../src/Legal/'
+
+    App\Legal\LegalContentSanitizer:
+        arguments:
+            $legalSanitizer: '@html_sanitizer.sanitizer.legal'

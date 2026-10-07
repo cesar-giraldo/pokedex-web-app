@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 12px;
+            line-height: 1.55;
+            color: #1f2937;
+            background: #ffffff;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 22px;
+            line-height: 1.3;
+            font-weight: 650;
+            color: #111827;
+        }
+
+        .summary {
+            margin: 0 0 20px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .content h1,
+        .content h2,
+        .content h3 {
+            margin: 1.25em 0 0.5em;
+            line-height: 1.3;
+            color: #111827;
+            page-break-after: avoid;
+        }
+
+        .content h1 {
+            font-size: 20px;
+        }
+
+        .content h2 {
+            font-size: 16px;
+        }
+
+        .content h3 {
+            font-size: 14px;
+        }
+
+        .content p,
+        .content ul,
+        .content ol,
+        .content blockquote {
+            margin: 0 0 12px;
+        }
+
+        .content ul,
+        .content ol {
+            padding-left: 1.25rem;
+        }
+
+        .content li {
+            margin: 0 0 4px;
+        }
+
+        .content strong {
+            font-weight: 700;
+        }
+
+        .content em {
+            font-style: italic;
+        }
+
+        .content a {
+            color: #047857;
+            text-decoration: underline;
+        }
+
+        .content blockquote {
+            padding-left: 12px;
+            border-left: 3px solid #d1d5db;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    {% if summary %}
+        <p class="summary">{{ summary }}</p>
+    {% endif %}
+    <div class="content">{{ content_html|raw }}</div>
+</body>
+</html>
