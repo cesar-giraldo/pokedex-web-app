@@ -4,7 +4,7 @@ symfonycasts_tailwind:
 
     input_css:
         - '%kernel.project_dir%/assets/admin/styles/app.css'
-        - '%kernel.project_dir%/assets/web/styles/app.css'
+        - '%kernel.project_dir%/assets/web/styles/site.css'
 
     # Alternatively, you can specify the path to the binary that you manage yourself
     #binary: 'node_modules/.bin/tailwindcss'

@@ -1,71 +1,94 @@
 {% extends '@web/base.html.twig' %}
 
-{% block title %}Home · PokeDex{% endblock %}
+{% block title %}{{ 'home.title'|trans }} · {{ public_site_name() }}{% endblock %}
+{% block meta_description %}{{ 'home.meta_description'|trans({'name': public_site_name()}) }}{% endblock %}
+
+{% block social_images %}
+    {% if slides is not empty %}
+        {% set hero = public_absolute_url(pokemon_image_url(slides|first, 'display')) %}
+        {% if hero %}
+            <meta property="og:image" content="{{ hero }}">
+            <meta name="twitter:image" content="{{ hero }}">
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block twitter_card %}{% if slides is not empty %}summary_large_image{% else %}summary{% endif %}{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-8">
-    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-        <h1 class="text-4xl font-bold text-indigo-700 mb-4">
-            Listado de Pokemons
-        </h1>
-        <ul class="divide-y divide-gray-200">
-            {% for pokemon in pokemons %}
-                <li class="py-3 flex justify-between">
-                    <span class="font-medium text-gray-800">{{ pokemon.name }}</span>
-                    <span class="text-indigo-600 font-semibold">{{ pokemon.type.name }}</span>
-                </li>
-            {% else %}
-                <li class="py-3 text-gray-500">No hay Pokemons.</li>
-            {% endfor %}
-        </ul>
-    </div>
-
-    <div class="mt-8 p-6 bg-amber-50 rounded-xl border border-amber-200"
-        {{ stimulus_controller('hi') }}>
-        <h2 class="text-xl font-bold text-amber-700 mb-2">Contenido Dinamico con Stimulus Controllers</h2>
-        <input type="text"
-            {{ stimulus_target('hi', 'name') }}
-            placeholder="Tu nombre"
-            class="border rounded px-3 py-2 mr-2">
-
-        <button type="button"
-                {{ stimulus_action('hi', 'greet') }}
-                class="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600">
-            Saludar
-        </button>
-
-        <p class="mt-3 text-lg font-medium" {{ stimulus_target('hi', 'output') }}></p>
-    </div>
-
-    <div class="mt-8 p-6 bg-green-50 rounded-xl border border-green-200">
-        <h2 class="text-xl font-bold text-amber-700 mb-2">Live Component Ajax - Buscar Pokemon</h2>
-        {{ component('pokemon_internal_search', { name: 'Pikachu' }) }}        
-    </div>
-
-    <div class="mt-8 p-6 bg-green-50 rounded-xl border border-green-200">
-        <h2 class="text-xl font-bold text-amber-700 mb-2">Live Component Ajax - Buscar Pokemon - API Externa</h2>
-        {{ component('pokemon_external_search', { name: 'Charmander' }) }}        
-    </div>
-
-    <div class="mt-8 p-6 bg-amber-50 rounded-xl border border-amber-200" {{ stimulus_controller('search-pokemon') }}>
-        <h2 class="text-xl font-bold text-amber-700 mb-2">Buscar Pokemon - Stimulus + Fetch</h2>
-        <input type="text" {{ stimulus_target('search-pokemon', 'pokemonName') }} placeholder="Nombre del Pokemon" class="border rounded px-3 py-2 mr-2">
-
-        <button type="button" {{ stimulus_action('search-pokemon', 'search') }} class="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600">
-            Buscar API Externa
-        </button>
-
-        <button type="button" {{ stimulus_action('search-pokemon', 'internalSearch') }} class="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600">
-            Busqueda Interna
-        </button>
-
-        <div class="mt-3 text-lg font-medium" {{ stimulus_target('search-pokemon', 'pokemonDetails') }}></div>
-        <div {{ stimulus_target('search-pokemon', 'spinner') }} class="hidden">
-            {{ ux_icon('heroicons:arrow-path', {class: 'size-6 text-gray-500 hover:text-indigo-600'}) }}
+    <section class="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-[1.1fr_0.9fr] md:items-center md:py-20">
+        <div>
+            <p class="text-sm font-medium tracking-wide text-brand">{{ 'home.kicker'|trans }}</p>
+            <h1 class="mt-3 text-4xl font-extrabold tracking-tight md:text-6xl">{{ public_site_name() }}</h1>
+            {% set slogan = public_site_slogan() %}
+            <p class="mt-4 max-w-xl text-lg leading-8 text-muted">{{ slogan|default('home.lead'|trans) }}</p>
+            <form class="mt-8 flex flex-col gap-3 sm:flex-row" method="get" action="{{ path('app_public_pokedex', {_locale: app.request.locale}) }}" role="search">
+                <label class="sr-only" for="home-search">{{ 'home.search_label'|trans }}</label>
+                <input id="home-search" class="field" type="search" name="q" placeholder="{{ 'home.search_placeholder'|trans }}" autocomplete="off">
+                <button class="btn btn-primary" type="submit">{{ 'home.search_submit'|trans }}</button>
+            </form>
         </div>
-    </div>
+        <div class="rounded-3xl bg-surface p-8">
+            <p class="text-sm font-medium text-muted">{{ 'home.panel_kicker'|trans }}</p>
+            <p class="mt-3 text-2xl font-semibold leading-snug">{{ 'home.panel_title'|trans }}</p>
+            <a class="btn btn-secondary mt-6" href="{{ path('app_public_pokedex', {_locale: app.request.locale}) }}">{{ 'home.browse'|trans }}</a>
+        </div>
+    </section>
 
-</div>
+    <section class="bg-surface" aria-labelledby="carousel-title">
+        <div class="mx-auto max-w-6xl px-4 py-14">
+            <h2 id="carousel-title" class="text-3xl font-semibold tracking-tight">{{ 'home.carousel_title'|trans }}</h2>
+            {% if slides is empty %}
+                <p class="mt-6 max-w-xl text-muted">{{ 'home.carousel_empty'|trans }}</p>
+            {% else %}
+                <div
+                    class="home-carousel mt-8"
+                    data-controller="carousel"
+                    data-carousel-pause-label-value="{{ 'home.pause'|trans }}"
+                    data-carousel-play-label-value="{{ 'home.play'|trans }}"
+                    data-action="mouseenter->carousel#pause mouseleave->carousel#resume focusin->carousel#pause focusout->carousel#resume"
+                    tabindex="0"
+                    aria-roledescription="carousel"
+                    aria-label="{{ 'home.carousel_label'|trans }}"
+                >
+                    {% for slide in slides %}
+                        {% set pokemon = slide.pokemon %}
+                        <article class="home-slide{% if loop.first %} is-active{% endif %}" data-carousel-target="slide" aria-roledescription="slide" aria-label="{{ 'home.slide'|trans({current: loop.index, total: loop.length}) }}" {% if not loop.first %}hidden{% endif %}>
+                            <a class="home-slide-link" href="{{ path('app_public_pokemon', {_locale: app.request.locale, id: pokemon.id}) }}">
+                                <img
+                                    class="home-slide-image"
+                                    src="{{ pokemon_image_url(slide, 'display') }}"
+                                    alt="{{ slide.description|default(pokemon.name) }}"
+                                    width="960"
+                                    height="640"
+                                    {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                                    decoding="async"
+                                >
+                                <div class="home-slide-copy">
+                                    {% if pokemon.type %}
+                                        <p class="text-sm font-medium text-brand">{{ pokemon.type.name|capitalize }}</p>
+                                    {% endif %}
+                                    <h3 class="text-4xl font-extrabold tracking-tight">{{ pokemon.name }}</h3>
+                                    <p class="text-sm font-semibold text-brand">{{ 'home.view_pokemon'|trans }}</p>
+                                </div>
+                            </a>
+                        </article>
+                    {% endfor %}
 
-
+                    {% if slides|length > 1 %}
+                        <div class="mt-4 flex flex-wrap items-center gap-3">
+                            <button class="btn btn-secondary" type="button" data-action="carousel#previous">{{ 'home.previous'|trans }}</button>
+                            <button class="btn btn-secondary" type="button" data-action="carousel#next">{{ 'home.next'|trans }}</button>
+                            <button class="btn btn-secondary" type="button" data-carousel-target="toggle" data-action="carousel#toggle" aria-pressed="false">{{ 'home.pause'|trans }}</button>
+                            <div class="flex flex-wrap gap-2" role="group" aria-label="{{ 'home.slides'|trans }}">
+                                {% for slide in slides %}
+                                    <button class="h-2.5 w-2.5 rounded-full {{ loop.first ? 'bg-brand' : 'bg-black/20' }}" type="button" data-carousel-target="dot" data-action="carousel#go" data-carousel-index-param="{{ loop.index0 }}" aria-label="{{ 'home.go_to_slide'|trans({number: loop.index}) }}" {% if loop.first %}aria-current="true"{% endif %}></button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </section>
 {% endblock %}

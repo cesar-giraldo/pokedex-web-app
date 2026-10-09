@@ -1,0 +1,24 @@
+{% set languages = public_languages() %}
+{% if languages is not empty %}
+    <details class="relative">
+        <summary class="site-summary cursor-pointer rounded-full px-3 py-2 text-sm font-medium text-ink hover:text-brand">
+            <span class="sr-only">{{ 'nav.language'|trans }}: </span>
+            {% set current_language = null %}
+            {% for language in languages %}
+                {% if language.value == app.request.locale %}
+                    {% set current_language = language %}
+                {% endif %}
+            {% endfor %}
+            {{ current_language ? current_language.nativeName : app.request.locale|upper }}
+        </summary>
+        <ul class="absolute right-0 z-20 mt-2 min-w-40 rounded-2xl bg-white p-2 shadow-lg ring-1 ring-black/10">
+            {% for language in languages %}
+                <li>
+                    <a href="{{ public_alternate_url(language.value) }}" hreflang="{{ language.value }}" lang="{{ language.value }}" class="block rounded-xl px-3 py-2 text-sm font-medium hover:bg-surface {% if language.value == app.request.locale %}text-brand{% else %}text-ink{% endif %}" {% if language.value == app.request.locale %}aria-current="true"{% endif %}>
+                        {{ language.nativeName }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </details>
+{% endif %}

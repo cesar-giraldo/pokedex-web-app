@@ -10,11 +10,18 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 #[Group('functional')]
 final class HomeControllerTest extends WebTestCase
 {
-    public function testIndex(): void
+    public function testIndexRedirectsToTheDefaultLanguage(): void
     {
         $client = static::createClient();
         $client->request('GET', '/');
 
+        self::assertResponseRedirects();
+        $location = (string) $client->getResponse()->headers->get('Location');
+        self::assertMatchesRegularExpression('#/(es|en|pt|fr)$#', $location);
+
+        $client->followRedirect();
+
         self::assertResponseIsSuccessful();
+        self::assertSelectorExists('h1');
     }
 }

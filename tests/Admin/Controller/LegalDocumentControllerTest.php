@@ -207,6 +207,8 @@ final class LegalDocumentControllerTest extends WebTestCase
         self::assertResponseRedirects('/admin/home');
 
         $client->request('GET', '/legal/privacy_policy');
+        self::assertResponseRedirects('/es/privacidad');
+        $client->followRedirect();
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Política de prueba');
     }

@@ -77,6 +77,10 @@ final class PokemonApiControllerTest extends WebTestCase
             'HTTP_ORIGIN' => 'http://localhost:3000',
         ]);
 
+        self::assertResponseRedirects();
+        self::assertFalse($client->getResponse()->headers->has('Access-Control-Allow-Origin'));
+
+        $client->followRedirect();
         self::assertResponseIsSuccessful();
         self::assertFalse($client->getResponse()->headers->has('Access-Control-Allow-Origin'));
     }

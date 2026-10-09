@@ -6,6 +6,8 @@ namespace App\Entity\Enum;
 
 enum SupportedLanguage: string
 {
+    public const string ROUTE_REQUIREMENT = 'es|en|pt|fr';
+
     case Spanish = 'es';
     case English = 'en';
     case Portuguese = 'pt';
@@ -18,6 +20,26 @@ enum SupportedLanguage: string
             self::English => 'English - en',
             self::Portuguese => 'Português - pt',
             self::French => 'Français - fr',
+        };
+    }
+
+    public function nativeName(): string
+    {
+        return match ($this) {
+            self::Spanish => 'Español',
+            self::English => 'English',
+            self::Portuguese => 'Português',
+            self::French => 'Français',
+        };
+    }
+
+    public function ogLocale(): string
+    {
+        return match ($this) {
+            self::Spanish => 'es_ES',
+            self::English => 'en_US',
+            self::Portuguese => 'pt_BR',
+            self::French => 'fr_FR',
         };
     }
 

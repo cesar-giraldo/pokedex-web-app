@@ -56,6 +56,11 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/(es|en|pt|fr)(/|$), roles: PUBLIC_ACCESS }
+        - { path: ^/sitemap\.xml$, roles: PUBLIC_ACCESS }
+        - { path: ^/robots\.txt$, roles: PUBLIC_ACCESS }
+        - { path: ^/legal, roles: PUBLIC_ACCESS }
         - { path: ^/admin/login, roles: PUBLIC_ACCESS }
         - { path: ^/admin/logout, roles: PUBLIC_ACCESS }
         - { path: ^/media, roles: PUBLIC_ACCESS }

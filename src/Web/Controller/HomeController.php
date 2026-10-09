@@ -4,50 +4,48 @@ declare(strict_types=1);
 
 namespace App\Web\Controller;
 
+use App\Admin\Service\GeneralSettingsProvider;
+use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Pokemon;
-use App\Entity\PokemonType;
+use App\Web\Service\PublicLanguageResolver;
+use App\Web\Service\PublicPokemonCatalog;
+use App\Web\Service\PublicStructuredData;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController
 {
-    #[Route('/', name: 'app_home')]
-    public function index(EntityManagerInterface $em): Response
+    public function __construct(
+        private readonly GeneralSettingsProvider $settings,
+        private readonly PublicLanguageResolver $languages,
+        private readonly PublicPokemonCatalog $catalog,
+        private readonly PublicStructuredData $structuredData,
+    ) {
+    }
+
+    #[Route('/', name: 'app_home', methods: ['GET'])]
+    public function root(): Response
     {
-        // Insertar un pokemon si no existe ninguno
-        $repo = $em->getRepository(Pokemon::class);
-        if (0 === $repo->count([])) {
-            $type = new PokemonType()
-                ->setName('electric')
-                ->setGeneration('generation-i')
-                ->setSprite('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-iii/colosseum/13.png');
+        return $this->redirectToRoute('app_public_home', [
+            '_locale' => $this->languages->defaultLanguage($this->settings->get())->value,
+        ]);
+    }
 
-            $em->persist($type);
-
-            $pokemon = new Pokemon()
-                ->setName('Pikachu')
-                ->setType($type)
-                ->setListOrder(35)
-                ->setHealthPoints(35)
-                ->setAttack(55)
-                ->setDefense(40)
-                ->setSpeed(90)
-                ->setHeight(4)
-                ->setWeight(60)
-                ->setSpriteFront('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png')
-                ->setSpriteBack('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/25.png');
-
-            $em->persist($pokemon);
-            $em->flush();
-        }
-
+    #[Route(
+        '/{_locale}',
+        name: 'app_public_home',
+        requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
+        methods: ['GET'],
+    )]
+    public function index(Request $request): Response
+    {
         return $this->render('@web/home/index.html.twig', [
-            'controller_name' => 'HomeController',
-            'message' => 'Hi from Symfony 8 + Docker!',
-            'pokemons' => $repo->findAll(),
+            'slides' => $this->catalog->featuredImages(),
+            'structured_data_json' => $this->structuredData->websiteJson($request->getLocale()),
         ]);
     }
 

@@ -1,0 +1,13 @@
+{% set current = app.request.attributes.get('_route') %}
+{% set locale = app.request.locale %}
+<nav aria-label="{{ 'nav.primary'|trans }}" class="{{ nav_class|default('flex items-center gap-6') }}">
+    <a href="{{ path('app_public_pokedex', {_locale: locale}) }}" class="text-sm font-medium text-ink hover:text-brand" {% if current in ['app_public_pokedex', 'app_public_pokemon'] %}aria-current="page"{% endif %}>
+        {{ 'nav.pokedex'|trans }}
+    </a>
+    <a href="{{ path('app_public_about', {_locale: locale}) }}" class="text-sm font-medium text-ink hover:text-brand" {% if current == 'app_public_about' %}aria-current="page"{% endif %}>
+        {{ 'nav.about'|trans }}
+    </a>
+    <a href="{{ path('app_public_contact', {_locale: locale}) }}" class="text-sm font-medium text-ink hover:text-brand" {% if current == 'app_public_contact' %}aria-current="page"{% endif %}>
+        {{ 'nav.contact'|trans }}
+    </a>
+</nav>
