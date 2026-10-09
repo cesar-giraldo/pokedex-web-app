@@ -48,7 +48,7 @@ final class LegalControllerTest extends WebTestCase
 
         $client->request('GET', '/legal/terms_of_use?lang=zz');
 
-        self::assertResponseRedirects('/' . $locale . '/terminos');
+        self::assertResponseRedirects('/' . $locale . '/terms');
         $client->followRedirect();
 
         if (!$published instanceof LegalDocumentVersion) {

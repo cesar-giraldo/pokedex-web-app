@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class AuthController extends AbstractController
 {
     #[Route(
-        '/{_locale}/iniciar-sesion',
+        '/{_locale}/login',
         name: 'app_public_login',
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
         methods: ['GET', 'POST'],
@@ -26,7 +26,7 @@ final class AuthController extends AbstractController
     }
 
     #[Route(
-        '/{_locale}/registro',
+        '/{_locale}/register',
         name: 'app_public_register',
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
         methods: ['GET', 'POST'],

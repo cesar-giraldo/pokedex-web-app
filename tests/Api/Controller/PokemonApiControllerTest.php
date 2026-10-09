@@ -15,7 +15,7 @@ final class PokemonApiControllerTest extends WebTestCase
     public function testListReturnsSuccessfulJsonResponse(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/api/v1/pokemones');
+        $client->request('GET', '/api/v1/pokemon');
 
         self::assertResponseIsSuccessful();
         self::assertResponseHeaderSame('Content-Type', 'application/json');
@@ -47,7 +47,7 @@ final class PokemonApiControllerTest extends WebTestCase
     public function testApiResponsesIncludeCorsHeadersForAllowedOrigin(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/api/v1/pokemones', server: [
+        $client->request('GET', '/api/v1/pokemon', server: [
             'HTTP_ORIGIN' => 'http://localhost:3000',
         ]);
 
@@ -59,7 +59,7 @@ final class PokemonApiControllerTest extends WebTestCase
     public function testApiPreflightRequestReturnsCorsHeaders(): void
     {
         $client = static::createClient();
-        $client->request('OPTIONS', '/api/v1/pokemones', server: [
+        $client->request('OPTIONS', '/api/v1/pokemon', server: [
             'HTTP_ORIGIN' => 'http://localhost:3000',
             'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'GET',
         ]);

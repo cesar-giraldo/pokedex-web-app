@@ -21,7 +21,7 @@ final class PageController extends AbstractController
     }
 
     #[Route(
-        '/{_locale}/quienes-somos',
+        '/{_locale}/about',
         name: 'app_public_about',
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
         methods: ['GET'],
@@ -34,7 +34,7 @@ final class PageController extends AbstractController
     }
 
     #[Route(
-        '/{_locale}/contacto',
+        '/{_locale}/contact',
         name: 'app_public_contact',
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
         methods: ['GET'],

@@ -28,19 +28,19 @@ final class PokemonController extends AbstractController
     }
 
     #[Route(
-        '/{_locale}/pokemones',
+        '/{_locale}/pokemon',
         name: 'app_public_pokedex',
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
         methods: ['GET'],
     )]
     public function index(Request $request): Response
     {
-        $type = $request->query->get('tipo');
+        $type = $request->query->get('type');
         $typeId = is_numeric($type) ? (int) $type : null;
         $page = $this->catalog->page(
             $request->query->getString('q'),
             $typeId,
-            $request->query->getInt('pagina', 1),
+            $request->query->getInt('page', 1),
         );
         $description = $this->translator->trans('listing.meta_description');
 
@@ -57,7 +57,7 @@ final class PokemonController extends AbstractController
     }
 
     #[Route(
-        '/{_locale}/pokemones/{id}',
+        '/{_locale}/pokemon/{id}',
         name: 'app_public_pokemon',
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT, 'id' => '\d+'],
         methods: ['GET'],

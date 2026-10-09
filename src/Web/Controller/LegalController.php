@@ -75,7 +75,7 @@ final class LegalController extends AbstractController
     }
 
     #[Route(
-        '/{_locale}/privacidad',
+        '/{_locale}/privacy',
         name: 'app_public_privacy',
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
         methods: ['GET'],
@@ -86,7 +86,7 @@ final class LegalController extends AbstractController
     }
 
     #[Route(
-        '/{_locale}/terminos',
+        '/{_locale}/terms',
         name: 'app_public_terms',
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
         methods: ['GET'],

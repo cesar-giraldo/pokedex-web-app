@@ -5,7 +5,7 @@
     {% set filters = filters|merge({q: page.query}) %}
 {% endif %}
 {% if page.typeId %}
-    {% set filters = filters|merge({tipo: page.typeId}) %}
+    {% set filters = filters|merge({type: page.typeId}) %}
 {% endif %}
 
 {% block title %}{{ 'listing.title'|trans }} · {{ public_site_name() }}{% endblock %}
@@ -13,10 +13,10 @@
 
 {% block extra_meta %}
     {% if page.hasPrevious %}
-        <link rel="prev" href="{{ url('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge(page.page > 2 ? {pagina: page.page - 1} : {})) }}">
+        <link rel="prev" href="{{ url('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge(page.page > 2 ? {page: page.page - 1} : {})) }}">
     {% endif %}
     {% if page.hasNext %}
-        <link rel="next" href="{{ url('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge({pagina: page.page + 1})) }}">
+        <link rel="next" href="{{ url('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge({page: page.page + 1})) }}">
     {% endif %}
 {% endblock %}
 
@@ -33,7 +33,7 @@
             </div>
             <div>
                 <label class="text-sm font-medium" for="pokemon-type">{{ 'listing.type_label'|trans }}</label>
-                <select id="pokemon-type" class="field mt-2" name="tipo">
+                <select id="pokemon-type" class="field mt-2" name="type">
                     <option value="">{{ 'listing.type_all'|trans }}</option>
                     {% for type in types %}
                         <option value="{{ type.id }}" {% if page.typeId == type.id %}selected{% endif %}>{{ type.name|capitalize }}</option>
@@ -80,15 +80,15 @@
         {% if page.pageCount > 1 %}
             <nav class="mt-10 flex flex-wrap items-center gap-2" aria-label="{{ 'listing.pagination'|trans }}">
                 {% if page.hasPrevious %}
-                    <a class="btn btn-secondary" href="{{ path('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge(page.page > 2 ? {pagina: page.page - 1} : {})) }}">{{ 'listing.previous'|trans }}</a>
+                    <a class="btn btn-secondary" href="{{ path('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge(page.page > 2 ? {page: page.page - 1} : {})) }}">{{ 'listing.previous'|trans }}</a>
                 {% endif %}
                 {% for number in 1..page.pageCount %}
                     {% if number == page.page or (number >= page.page - 2 and number <= page.page + 2) or number == 1 or number == page.pageCount %}
-                        <a class="btn {{ number == page.page ? 'btn-primary' : 'btn-secondary' }}" href="{{ path('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge(number > 1 ? {pagina: number} : {})) }}" {% if number == page.page %}aria-current="page"{% endif %}>{{ number }}</a>
+                        <a class="btn {{ number == page.page ? 'btn-primary' : 'btn-secondary' }}" href="{{ path('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge(number > 1 ? {page: number} : {})) }}" {% if number == page.page %}aria-current="page"{% endif %}>{{ number }}</a>
                     {% endif %}
                 {% endfor %}
                 {% if page.hasNext %}
-                    <a class="btn btn-secondary" href="{{ path('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge({pagina: page.page + 1})) }}">{{ 'listing.next'|trans }}</a>
+                    <a class="btn btn-secondary" href="{{ path('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge({page: page.page + 1})) }}">{{ 'listing.next'|trans }}</a>
                 {% endif %}
             </nav>
         {% endif %}

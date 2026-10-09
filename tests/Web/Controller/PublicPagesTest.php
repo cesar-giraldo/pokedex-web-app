@@ -48,7 +48,7 @@ final class PublicPagesTest extends WebTestCase
         $client = static::createClient();
         $locale = $this->defaultLocale();
 
-        foreach (['/pokemones', '/quienes-somos', '/contacto', '/iniciar-sesion', '/registro'] as $path) {
+        foreach (['/pokemon', '/about', '/contact', '/login', '/register'] as $path) {
             $client->request('GET', '/' . $locale . $path);
             self::assertResponseIsSuccessful();
             self::assertSelectorExists('h1');
@@ -70,8 +70,8 @@ final class PublicPagesTest extends WebTestCase
         $entityManager->flush();
 
         try {
-            $client->request('GET', '/fr/contacto');
-            self::assertResponseRedirects('/es/contacto');
+            $client->request('GET', '/fr/contact');
+            self::assertResponseRedirects('/es/contact');
         } finally {
             $settings->setEnabledLanguages($enabled);
             $settings->setWebsiteDefaultLanguage($default);
@@ -102,11 +102,11 @@ final class PublicPagesTest extends WebTestCase
         $this->pokemonId = $pokemon->getId();
         $this->hiddenPokemonId = $hidden->getId();
 
-        $client->request('GET', '/' . $locale . '/pokemones/' . $this->pokemonId);
+        $client->request('GET', '/' . $locale . '/pokemon/' . $this->pokemonId);
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Public Catalog Mon');
 
-        $client->request('GET', '/' . $locale . '/pokemones/' . $this->hiddenPokemonId);
+        $client->request('GET', '/' . $locale . '/pokemon/' . $this->hiddenPokemonId);
         self::assertResponseStatusCodeSame(404);
     }
 
@@ -123,7 +123,7 @@ final class PublicPagesTest extends WebTestCase
             static fn (): string => $translator->trans('auth.unavailable'),
         );
 
-        $client->request('POST', '/' . $locale . '/iniciar-sesion', [
+        $client->request('POST', '/' . $locale . '/login', [
             'email' => 'ada@example.com',
             'password' => 'secret-secret',
         ]);
@@ -148,7 +148,7 @@ final class PublicPagesTest extends WebTestCase
         $client->request('GET', '/sitemap.xml');
         self::assertResponseIsSuccessful();
         $sitemap = (string) $client->getResponse()->getContent();
-        self::assertStringContainsString('/' . $locale . '/pokemones', $sitemap);
+        self::assertStringContainsString('/' . $locale . '/pokemon', $sitemap);
         self::assertStringContainsString('xhtml:link', $sitemap);
     }
 
