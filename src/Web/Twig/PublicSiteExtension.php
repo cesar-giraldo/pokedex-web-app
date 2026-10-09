@@ -8,6 +8,7 @@ use App\Admin\Service\GeneralSettingsProvider;
 use App\Admin\Service\Storage\PlatformBrandingAsset;
 use App\Entity\Enum\SupportedLanguage;
 use App\Web\Service\PublicLanguageResolver;
+use App\Web\Service\PublicLegalAvailability;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -25,6 +26,7 @@ final class PublicSiteExtension extends AbstractExtension
     public function __construct(
         private readonly GeneralSettingsProvider $settings,
         private readonly PublicLanguageResolver $languageResolver,
+        private readonly PublicLegalAvailability $legalAvailability,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly RequestStack $requestStack,
         private readonly TranslatorInterface $translator,
@@ -43,6 +45,7 @@ final class PublicSiteExtension extends AbstractExtension
             new TwigFunction('public_canonical_url', $this->canonicalUrl(...)),
             new TwigFunction('public_og_locale', $this->ogLocale(...)),
             new TwigFunction('public_absolute_url', $this->absoluteUrl(...)),
+            new TwigFunction('public_legal_links', $this->legalLinks(...)),
         ];
     }
 
@@ -98,6 +101,14 @@ final class PublicSiteExtension extends AbstractExtension
     public function ogLocale(string $locale): string
     {
         return SupportedLanguage::tryFrom($locale)?->ogLocale() ?? SupportedLanguage::Spanish->ogLocale();
+    }
+
+    /**
+     * @return array{privacy: bool, terms: bool}
+     */
+    public function legalLinks(): array
+    {
+        return $this->legalAvailability->links();
     }
 
     public function absoluteUrl(?string $path): ?string

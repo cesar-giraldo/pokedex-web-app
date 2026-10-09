@@ -1,6 +1,8 @@
 {% set locale = app.request.locale %}
+{% set legal = public_legal_links() %}
+{% set show_legal = legal.privacy or legal.terms %}
 <footer class="border-t border-black/5 bg-surface">
-    <div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-4">
+    <div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 {{ show_legal ? 'md:grid-cols-4' : 'md:grid-cols-3' }}">
         <div>
             <p class="text-lg font-extrabold">{{ public_site_name() }}</p>
             {% set slogan = public_site_slogan() %}
@@ -9,18 +11,24 @@
         <nav aria-label="{{ 'footer.explore'|trans }}">
             <p class="text-sm font-medium text-muted">{{ 'footer.explore'|trans }}</p>
             <ul class="mt-3 space-y-2">
-                <li><a class="text-sm font-medium hover:text-brand" href="{{ path('app_public_pokedex', {_locale: locale}) }}">{{ 'nav.pokedex'|trans }}</a></li>
+                <li><a class="text-sm font-medium hover:text-brand" href="{{ path('app_public_pokedex', {_locale: locale}) }}">{{ 'nav.home'|trans }}</a></li>
                 <li><a class="text-sm font-medium hover:text-brand" href="{{ path('app_public_about', {_locale: locale}) }}">{{ 'nav.about'|trans }}</a></li>
                 <li><a class="text-sm font-medium hover:text-brand" href="{{ path('app_public_contact', {_locale: locale}) }}">{{ 'nav.contact'|trans }}</a></li>
             </ul>
         </nav>
-        <nav aria-label="{{ 'footer.legal'|trans }}">
-            <p class="text-sm font-medium text-muted">{{ 'footer.legal'|trans }}</p>
-            <ul class="mt-3 space-y-2">
-                <li><a class="text-sm font-medium hover:text-brand" href="{{ path('app_public_privacy', {_locale: locale}) }}">{{ 'nav.privacy'|trans }}</a></li>
-                <li><a class="text-sm font-medium hover:text-brand" href="{{ path('app_public_terms', {_locale: locale}) }}">{{ 'nav.terms'|trans }}</a></li>
-            </ul>
-        </nav>
+        {% if show_legal %}
+            <nav aria-label="{{ 'footer.legal'|trans }}">
+                <p class="text-sm font-medium text-muted">{{ 'footer.legal'|trans }}</p>
+                <ul class="mt-3 space-y-2">
+                    {% if legal.privacy %}
+                        <li><a class="text-sm font-medium hover:text-brand" href="{{ path('app_public_privacy', {_locale: locale}) }}">{{ 'nav.privacy'|trans }}</a></li>
+                    {% endif %}
+                    {% if legal.terms %}
+                        <li><a class="text-sm font-medium hover:text-brand" href="{{ path('app_public_terms', {_locale: locale}) }}">{{ 'nav.terms'|trans }}</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
         <div>
             <p class="text-sm font-medium text-muted">{{ 'nav.contact'|trans }}</p>
             <ul class="mt-3 space-y-2 text-sm">

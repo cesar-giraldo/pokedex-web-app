@@ -5,14 +5,19 @@ declare(strict_types=1);
 namespace App\Tests\Web\Controller;
 
 use App\Admin\Service\GeneralSettingsProvider;
+use App\Entity\Enum\LegalDocumentType;
 use App\Entity\Pokemon;
 use App\Repository\GeneralSettingsRepository;
+use App\Repository\LegalDocumentVersionRepository;
 use App\Web\Service\PublicLanguageResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Contracts\Translation\TranslatorInterface;
+
+use function in_array;
+use function sprintf;
 
 #[Group('functional')]
 final class PublicPagesTest extends WebTestCase
@@ -150,6 +155,48 @@ final class PublicPagesTest extends WebTestCase
         $sitemap = (string) $client->getResponse()->getContent();
         self::assertStringContainsString('/' . $locale . '/pokemon', $sitemap);
         self::assertStringContainsString('xhtml:link', $sitemap);
+    }
+
+    public function testFooterLegalSectionMatchesPublishedDocuments(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        /** @var LegalDocumentVersionRepository $versions */
+        $versions = static::getContainer()->get(LegalDocumentVersionRepository::class);
+        $published = $versions->findPublishedDocumentTypes();
+        $privacy = in_array(LegalDocumentType::PrivacyPolicy, $published, true);
+        $terms = in_array(LegalDocumentType::TermsOfUse, $published, true);
+        /** @var TranslatorInterface $translator */
+        $translator = static::getContainer()->get(TranslatorInterface::class);
+        /** @var LocaleSwitcher $localeSwitcher */
+        $localeSwitcher = static::getContainer()->get(LocaleSwitcher::class);
+        $legalLabel = $localeSwitcher->runWithLocale(
+            $locale,
+            static fn (): string => $translator->trans('footer.legal'),
+        );
+
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+
+        if ($privacy) {
+            self::assertSelectorExists('footer a[href$="/privacy"]');
+        } else {
+            self::assertSelectorNotExists('footer a[href$="/privacy"]');
+        }
+
+        if ($terms) {
+            self::assertSelectorExists('footer a[href$="/terms"]');
+        } else {
+            self::assertSelectorNotExists('footer a[href$="/terms"]');
+        }
+
+        $legalNav = sprintf('footer nav[aria-label="%s"]', $legalLabel);
+
+        if ($privacy || $terms) {
+            self::assertSelectorExists($legalNav);
+        } else {
+            self::assertSelectorNotExists($legalNav);
+        }
     }
 
     private function defaultLocale(): string

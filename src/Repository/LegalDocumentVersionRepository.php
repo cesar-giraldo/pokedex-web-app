@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Enum\LegalDocumentType;
 use App\Entity\Enum\LegalDocumentVersionStatus;
 use App\Entity\LegalDocument;
 use App\Entity\LegalDocumentVersion;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+
+use function is_string;
 
 /**
  * @extends ServiceEntityRepository<LegalDocumentVersion>
@@ -23,6 +26,34 @@ class LegalDocumentVersionRepository extends ServiceEntityRepository
     public function findPublished(LegalDocument $document): ?LegalDocumentVersion
     {
         return $this->findOneByDocumentAndStatus($document, LegalDocumentVersionStatus::Published);
+    }
+
+    /**
+     * @return list<LegalDocumentType>
+     */
+    public function findPublishedDocumentTypes(): array
+    {
+        /** @var list<mixed> $types */
+        $types = $this->createQueryBuilder('version')
+            ->select('document.type')
+            ->distinct()
+            ->innerJoin('version.document', 'document')
+            ->andWhere('version.status = :published')
+            ->setParameter('published', LegalDocumentVersionStatus::Published)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        $published = [];
+
+        foreach ($types as $type) {
+            $resolved = $this->resolveDocumentType($type);
+
+            if ($resolved instanceof LegalDocumentType) {
+                $published[] = $resolved;
+            }
+        }
+
+        return $published;
     }
 
     public function findDraft(LegalDocument $document): ?LegalDocumentVersion
@@ -85,6 +116,19 @@ class LegalDocumentVersionRepository extends ServiceEntityRepository
         );
 
         return $versions;
+    }
+
+    private function resolveDocumentType(mixed $type): ?LegalDocumentType
+    {
+        if ($type instanceof LegalDocumentType) {
+            return $type;
+        }
+
+        if (!is_string($type)) {
+            return null;
+        }
+
+        return LegalDocumentType::tryFrom($type);
     }
 
     private function findOneByDocumentAndStatus(LegalDocument $document, LegalDocumentVersionStatus $status): ?LegalDocumentVersion
