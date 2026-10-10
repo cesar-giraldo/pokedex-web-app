@@ -25,7 +25,6 @@ footer:
 home:
     title: Home
     meta_description: 'Discover Pokémon, search by name and open each species page on {name}.'
-    kicker: Public Pokédex
     lead: Search for a species, browse the collection and open a page with its data, sprites and gallery.
     search_label: Search Pokémon
     search_placeholder: Type a name
@@ -47,7 +46,6 @@ home:
 
 listing:
     title: Pokédex
-    kicker: Collection
     intro: Filter by name or type and open the page you want to read.
     meta_description: Public Pokémon list with search by name and a type filter.
     search_label: Name

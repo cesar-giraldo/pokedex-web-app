@@ -3,7 +3,7 @@ site:
     skip_to_content: Saltar al contenido
 
 seo:
-    default_description: 'Explora el Pokédex de {name}.'
+    default_description: 'Explora el Pokedex de {name}.'
 
 nav:
     primary: Principal
@@ -25,7 +25,6 @@ footer:
 home:
     title: Inicio
     meta_description: 'Descubre Pokémon, busca por nombre y abre la ficha de cada especie en {name}.'
-    kicker: Pokédex público
     lead: Busca una especie, recorre la colección y abre la ficha con sus datos, sprites y galería.
     search_label: Buscar Pokémon
     search_placeholder: Escribe un nombre
@@ -47,7 +46,6 @@ home:
 
 listing:
     title: Pokédex
-    kicker: Colección
     intro: Filtra por nombre o por tipo y abre la ficha que quieras consultar.
     meta_description: Listado público de Pokémon con búsqueda por nombre y filtro por tipo.
     search_label: Nombre

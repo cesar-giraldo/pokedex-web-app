@@ -25,7 +25,6 @@ footer:
 home:
     title: Início
     meta_description: 'Descubra Pokémon, pesquise por nome e abra a ficha de cada espécie em {name}.'
-    kicker: Pokédex pública
     lead: Pesquise uma espécie, percorra a coleção e abra a ficha com dados, sprites e galeria.
     search_label: Pesquisar Pokémon
     search_placeholder: Digite um nome
@@ -47,7 +46,6 @@ home:
 
 listing:
     title: Pokédex
-    kicker: Coleção
     intro: Filtre por nome ou por tipo e abra a ficha que quiser consultar.
     meta_description: Lista pública de Pokémon com pesquisa por nome e filtro por tipo.
     search_label: Nome

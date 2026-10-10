@@ -22,8 +22,7 @@
 
 {% block body %}
     <div class="mx-auto max-w-6xl px-4 py-12">
-        <p class="text-sm font-medium text-brand">{{ 'listing.kicker'|trans }}</p>
-        <h1 class="mt-2 text-4xl font-extrabold tracking-tight">{{ 'listing.title'|trans }}</h1>
+        <h1 class="text-4xl font-extrabold tracking-tight">{{ 'listing.title'|trans }}</h1>
         <p class="mt-3 max-w-2xl text-muted">{{ 'listing.intro'|trans }}</p>
 
         <form class="mt-8 grid gap-3 rounded-3xl bg-surface p-4 md:grid-cols-[1fr_16rem_auto] md:items-end" method="get" action="{{ path('app_public_pokedex', {_locale: app.request.locale}) }}" role="search">
