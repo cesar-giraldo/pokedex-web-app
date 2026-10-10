@@ -7,7 +7,26 @@
         {% endif %}
     {% endfor %}
 
-    {% if variant|default('compact') == 'list' %}
+    {% if variant|default('compact') == 'footer' %}
+        <div class="mt-4 flex items-center gap-3">
+            <span class="text-muted" aria-hidden="true">{{ ux_icon('heroicons:language', { class: 'h-5 w-5 stroke-current' }) }}</span>
+            <details class="relative z-20">
+                <summary class="site-summary inline-flex cursor-pointer items-center gap-1 rounded-full bg-white px-3 py-2 text-sm font-semibold tracking-wide text-ink ring-1 ring-black/10 hover:text-brand" aria-label="{{ 'nav.language'|trans }}: {{ current_language ? current_language.nativeName : app.request.locale|upper }}">
+                    <span aria-hidden="true">{{ (current_language ? current_language.value : app.request.locale)|upper }}</span>
+                    <span aria-hidden="true">{{ ux_icon('heroicons:chevron-down', { class: 'h-4 w-4 stroke-current' }) }}</span>
+                </summary>
+                <ul class="absolute bottom-full left-0 z-20 mb-2 min-w-40 rounded-2xl bg-white p-2 shadow-lg ring-1 ring-black/10">
+                    {% for language in languages %}
+                        <li>
+                            <a href="{{ public_alternate_url(language.value) }}" hreflang="{{ language.value }}" lang="{{ language.value }}" class="block rounded-xl px-3 py-2 text-sm font-medium hover:bg-surface {% if language.value == app.request.locale %}text-brand{% else %}text-ink{% endif %}" {% if language.value == app.request.locale %}aria-current="true"{% endif %}>
+                                {{ language.nativeName }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </details>
+        </div>
+    {% elseif variant|default('compact') == 'list' %}
         <p class="text-sm font-medium text-muted">{{ 'nav.language'|trans }}</p>
         <ul class="mt-3 space-y-2">
             {% for language in languages %}

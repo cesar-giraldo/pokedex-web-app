@@ -7,6 +7,7 @@
             <p class="text-lg font-extrabold">{{ public_site_name() }}</p>
             {% set slogan = public_site_slogan() %}
             <p class="mt-2 text-sm leading-6 text-muted">{{ slogan|default('footer.tagline'|trans) }}</p>
+            {% include '@web/partials/_language_switcher.html.twig' with {variant: 'footer'} %}
         </div>
         <nav aria-label="{{ 'footer.explore'|trans }}">
             <p class="text-sm font-medium text-muted">{{ 'footer.explore'|trans }}</p>
