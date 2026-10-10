@@ -172,6 +172,58 @@ final class PublicPagesTest extends WebTestCase
         }
     }
 
+    public function testFooterMarksTheCurrentPage(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $pokemon = new Pokemon()
+            ->setName('Footer Current Mon')
+            ->setHeight(4)
+            ->setWeight(60);
+        $entityManager->persist($pokemon);
+        $entityManager->flush();
+        $this->pokemonId = $pokemon->getId();
+
+        $pages = [
+            '/' . $locale => '/' . $locale,
+            '/' . $locale . '/pokemon' => '/' . $locale . '/pokemon',
+            '/' . $locale . '/pokemon/' . $this->pokemonId => '/' . $locale . '/pokemon',
+            '/' . $locale . '/about' => '/' . $locale . '/about',
+            '/' . $locale . '/contact' => '/' . $locale . '/contact',
+        ];
+
+        foreach ($pages as $path => $currentHref) {
+            $client->request('GET', $path);
+            self::assertResponseIsSuccessful();
+            self::assertSelectorExists(sprintf('footer a[href="%s"][aria-current="page"]', $currentHref));
+            self::assertSelectorCount(1, 'footer a[aria-current="page"]');
+        }
+
+        $client->request('GET', '/' . $locale . '/login');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('footer a[aria-current="page"]');
+
+        /** @var LegalDocumentVersionRepository $versions */
+        $versions = static::getContainer()->get(LegalDocumentVersionRepository::class);
+        $published = $versions->findPublishedDocumentTypes();
+
+        if (in_array(LegalDocumentType::PrivacyPolicy, $published, true)) {
+            $client->request('GET', '/' . $locale . '/privacy');
+            self::assertResponseIsSuccessful();
+            self::assertSelectorExists(sprintf('footer a[href="/%s/privacy"][aria-current="page"]', $locale));
+            self::assertSelectorCount(1, 'footer a[aria-current="page"]');
+        }
+
+        if (in_array(LegalDocumentType::TermsOfUse, $published, true)) {
+            $client->request('GET', '/' . $locale . '/terms');
+            self::assertResponseIsSuccessful();
+            self::assertSelectorExists(sprintf('footer a[href="/%s/terms"][aria-current="page"]', $locale));
+            self::assertSelectorCount(1, 'footer a[aria-current="page"]');
+        }
+    }
+
     public function testFooterLegalSectionMatchesPublishedDocuments(): void
     {
         $client = static::createClient();

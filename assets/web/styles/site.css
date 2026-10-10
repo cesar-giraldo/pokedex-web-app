@@ -241,6 +241,11 @@ a.header-login-mobile[aria-current="page"] {
     --tw-ring-color: var(--color-brand);
 }
 
+footer a[aria-current="page"] {
+    color: var(--color-brand);
+    font-weight: 600;
+}
+
 dialog.gallery-dialog {
     width: min(960px, calc(100% - 2rem));
     border: 0;
