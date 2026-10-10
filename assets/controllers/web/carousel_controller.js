@@ -69,7 +69,6 @@ export default class extends Controller {
         event.preventDefault();
 
         if (this.paused) {
-            this.reduceMotion = false;
             this.resume();
 
             return;
