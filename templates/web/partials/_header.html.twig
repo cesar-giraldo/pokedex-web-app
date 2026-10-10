@@ -26,7 +26,7 @@
             <div class="absolute right-0 z-20 mt-2 w-64 rounded-3xl bg-white p-4 shadow-lg ring-1 ring-black/10">
                 {% include '@web/partials/_nav.html.twig' with {nav_class: 'site-nav-menu flex flex-col items-start gap-3'} %}
                 <div class="mt-4 border-t border-black/5 pt-4">
-                    {% include '@web/partials/_language_switcher.html.twig' %}
+                    {% include '@web/partials/_language_switcher.html.twig' with {variant: 'list'} %}
                 </div>
                 <div class="mt-4 flex flex-col gap-2">
                     <a href="{{ path('app_public_login', {_locale: locale}) }}" class="btn btn-secondary header-login-mobile" {% if current == 'app_public_login' %}aria-current="page"{% endif %}>{{ 'nav.login'|trans }}</a>
