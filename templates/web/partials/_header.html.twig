@@ -1,0 +1,38 @@
+{% set locale = app.request.locale %}
+{% set current = app.request.attributes.get('_route') %}
+{% set site_icon = public_icon_url() %}
+<header class="sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
+        <a href="{{ path('app_public_home', {_locale: locale}) }}" class="flex min-w-0 items-center gap-3">
+            {% if site_icon %}
+                <img src="{{ site_icon }}" alt="" width="36" height="36" class="h-9 w-9 rounded-xl object-contain">
+            {% else %}
+                <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand text-sm font-extrabold text-white" aria-hidden="true">P</span>
+            {% endif %}
+            <span class="truncate text-lg font-extrabold tracking-tight">{{ public_site_name() }}</span>
+        </a>
+
+        <div class="ml-auto hidden items-center gap-6 md:flex">
+            {% include '@web/partials/_nav.html.twig' %}
+            {% include '@web/partials/_language_switcher.html.twig' %}
+            <a href="{{ path('app_public_login', {_locale: locale}) }}" class="nav-link header-login text-sm font-medium text-ink hover:text-brand" {% if current == 'app_public_login' %}aria-current="page"{% endif %}>{{ 'nav.login'|trans }}</a>
+            <a href="{{ path('app_public_register', {_locale: locale}) }}" class="btn btn-primary">{{ 'nav.register'|trans }}</a>
+        </div>
+
+        <details class="relative ml-auto md:hidden">
+            <summary class="site-summary cursor-pointer rounded-full px-3 py-2 text-sm font-semibold text-ink">
+                {{ 'nav.menu'|trans }}
+            </summary>
+            <div class="absolute right-0 z-20 mt-2 w-64 rounded-3xl bg-white p-4 shadow-lg ring-1 ring-black/10">
+                {% include '@web/partials/_nav.html.twig' with {nav_class: 'site-nav-menu flex flex-col items-start gap-3'} %}
+                <div class="mt-4 border-t border-black/5 pt-4">
+                    {% include '@web/partials/_language_switcher.html.twig' with {variant: 'list'} %}
+                </div>
+                <div class="mt-4 flex flex-col gap-2">
+                    <a href="{{ path('app_public_login', {_locale: locale}) }}" class="btn btn-secondary header-login-mobile" {% if current == 'app_public_login' %}aria-current="page"{% endif %}>{{ 'nav.login'|trans }}</a>
+                    <a href="{{ path('app_public_register', {_locale: locale}) }}" class="btn btn-primary">{{ 'nav.register'|trans }}</a>
+                </div>
+            </div>
+        </details>
+    </div>
+</header>

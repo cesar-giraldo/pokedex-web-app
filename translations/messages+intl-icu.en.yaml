@@ -1,0 +1,145 @@
+site:
+    name_fallback: PokeDex
+    skip_to_content: Skip to content
+
+seo:
+    default_description: 'Explore the {name} Pokédex.'
+
+nav:
+    primary: Primary
+    home: Home
+    pokemon: Pokemons
+    about: About us
+    contact: Contact
+    privacy: Privacy policy
+    terms: Terms and conditions
+    login: Log in
+    register: Create account
+    menu: Menu
+    language: Language
+
+footer:
+    tagline: A clear, fast Pokédex that is easy to browse.
+    explore: Explore
+    legal: Legal
+
+home:
+    title: Home
+    meta_description: 'Discover Pokémon, search by name and open each species page on {name}.'
+    lead: Search for a species, browse the collection and open a page with its data, sprites and gallery.
+    search_label: Search Pokémon
+    search_placeholder: Type a name
+    search_submit: Search
+    browse: Browse the Pokédex
+    panel_kicker: Collection
+    panel_title: Every visible species, in one list.
+    carousel_title: Highlights
+    carousel_label: Pokémon carousel
+    carousel_empty: There are no gallery images yet. The first published photo of a Pokémon will appear here.
+    view_pokemon: View page
+    previous: Previous
+    next: Next
+    pause: Pause
+    play: Play
+    slides: Slides
+    slide: '{current} of {total}'
+    go_to_slide: 'Go to slide {number}'
+
+listing:
+    title: Pokédex
+    intro: Filter by name or type and open the page you want to read.
+    meta_description: Public Pokémon list with search by name and a type filter.
+    search_label: Name
+    search_placeholder: For example, Pikachu
+    type_label: Type
+    type_all: All types
+    submit: Search
+    empty: No Pokémon matches that search.
+    results: '{count, plural, =0 {No results} one {# Pokémon} other {# Pokémon}}'
+    pagination: Pagination
+    previous: Previous
+    next: Next
+
+pokemon:
+    back: Back to the list
+    entry: Entry
+    number: 'No. {number}'
+    height: Height
+    weight: Weight
+    height_value: '{value} m'
+    weight_value: '{value} kg'
+    about: Description
+    description_empty: This entry does not have a description yet.
+    stats: Stats
+    hp: HP
+    attack: Attack
+    defense: Defense
+    speed: Speed
+    sprites: Sprites
+    sprite_front_label: Front
+    sprite_back_label: Back
+    sprite_front: 'Front sprite of {name}'
+    sprite_back: 'Back sprite of {name}'
+    gallery: Gallery
+    gallery_empty: This species does not have gallery photos yet.
+    open_image: Enlarge image
+    close: Close
+    meta_fallback: '{name} entry.'
+
+about:
+    title: About us
+    meta_description: 'Meet the team behind {name}.'
+    intro: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet.
+    mission_title: Our mission
+    mission_body: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Donec sed odio dui.
+    collection_title: The collection
+    collection_body: Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur. Vestibulum id ligula porta felis euismod semper.
+    visit_title: How to browse the site
+    visit_body: Donec ullamcorper nulla non metus auctor fringilla. Maecenas faucibus mollis interdum. Nullam quis risus eget urna mollis ornare vel eu leo.
+
+contact:
+    title: Contact
+    meta_description: Phone, email and address for the Pokédex.
+    intro: Write to us or visit. These details are sample content for the public page.
+    phone_label: Phone
+    phone: '+57 601 555 0142'
+    email_label: Email
+    email: hola@pokedex.example
+    address_label: Address
+    address: 'Calle 100 #19-54, Bogotá, Colombia'
+    hours_label: Hours
+    hours: Monday to Friday, 9:00 to 18:00
+
+auth:
+    unavailable: This feature is not available yet.
+    login_title: Log in
+    login_description: Sign in with your email to continue. Access is not active yet.
+    register_title: Create account
+    register_description: Create an account to save your progress. Registration is not active yet.
+    email: Email
+    password: Password
+    password_confirm: Confirm password
+    password_hint: At least 8 characters.
+    name: Name
+    remember: Remember me on this device
+    submit_login: Log in
+    submit_register: Create account
+    no_account: No account yet?
+    has_account: Already have an account?
+    accept_terms: I accept the
+
+legal:
+    version: 'Version {number}'
+    fallback: 'This document is shown in {language} because there is no translation for the page language yet.'
+    meta_description: '{title}'
+
+error:
+    home: Back to home
+    not_found_title: Page not found
+    not_found_body: The address you entered does not exist or was moved.
+    unauthorized_title: You need to sign in
+    unauthorized_body: This page requires an active session.
+    forbidden_title: Access denied
+    forbidden_body: You do not have permission to view this page.
+    server_title: Something went wrong
+    server_body: We could not complete the request. Try again in a few minutes.

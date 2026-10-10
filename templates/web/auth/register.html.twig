@@ -1,0 +1,48 @@
+{% extends '@web/base.html.twig' %}
+
+{% block title %}{{ 'auth.register_title'|trans }} · {{ public_site_name() }}{% endblock %}
+{% block meta_description %}{{ 'auth.register_description'|trans }}{% endblock %}
+{% block robots %}noindex, follow{% endblock %}
+
+{% block body %}
+    <div class="bg-surface px-4 py-16">
+        <div class="mx-auto max-w-md rounded-3xl bg-white p-8 ring-1 ring-black/5">
+            <h1 class="text-3xl font-extrabold tracking-tight">{{ 'auth.register_title'|trans }}</h1>
+            <p class="mt-2 text-sm leading-6 text-muted">{{ 'auth.register_description'|trans }}</p>
+            {% if submitted %}
+                <p class="mt-6 rounded-2xl bg-surface px-4 py-3 text-sm font-medium" role="status">{{ 'auth.unavailable'|trans }}</p>
+            {% endif %}
+            <form class="mt-8 space-y-4" method="post">
+                <div>
+                    <label class="text-sm font-medium" for="register-name">{{ 'auth.name'|trans }}</label>
+                    <input id="register-name" class="field mt-2" type="text" name="name" autocomplete="name" required>
+                </div>
+                <div>
+                    <label class="text-sm font-medium" for="register-email">{{ 'auth.email'|trans }}</label>
+                    <input id="register-email" class="field mt-2" type="email" name="email" autocomplete="email" required>
+                </div>
+                <div>
+                    <label class="text-sm font-medium" for="register-password">{{ 'auth.password'|trans }}</label>
+                    <input id="register-password" class="field mt-2" type="password" name="password" autocomplete="new-password" required minlength="8" aria-describedby="register-password-hint">
+                    <p id="register-password-hint" class="mt-2 text-sm text-muted">{{ 'auth.password_hint'|trans }}</p>
+                </div>
+                <div>
+                    <label class="text-sm font-medium" for="register-password-confirm">{{ 'auth.password_confirm'|trans }}</label>
+                    <input id="register-password-confirm" class="field mt-2" type="password" name="password_confirm" autocomplete="new-password" required minlength="8">
+                </div>
+                <label class="flex items-start gap-2 text-sm">
+                    <input type="checkbox" name="terms" class="mt-1 h-4 w-4 accent-brand" required>
+                    <span>
+                        {{ 'auth.accept_terms'|trans }}
+                        <a class="font-semibold text-brand" href="{{ path('app_public_terms', {_locale: app.request.locale}) }}">{{ 'nav.terms'|trans }}</a>
+                    </span>
+                </label>
+                <button class="btn btn-primary w-full" type="submit">{{ 'auth.submit_register'|trans }}</button>
+            </form>
+            <p class="mt-6 text-sm text-muted">
+                {{ 'auth.has_account'|trans }}
+                <a class="font-semibold text-brand" href="{{ path('app_public_login', {_locale: app.request.locale}) }}">{{ 'nav.login'|trans }}</a>
+            </p>
+        </div>
+    </div>
+{% endblock %}

@@ -141,7 +141,7 @@ Imágenes estáticas del admin: `public/admin/images/…` referenciadas con `ass
 
 | Clase | Ruta | Descripción |
 | ----- | ---- | ----------- |
-| `App\Api\Controller\PokemonApiController` | **GET `/api/v1/pokemones`** | Lista de Pokémon serializados (`groups: ['pokemon:read']`) |
+| `App\Api\Controller\PokemonApiController` | **GET `/api/v1/pokemon`** | Lista de Pokémon serializados (`groups: ['pokemon:read']`) |
 
 Sin assets frontend propios; el prefijo `/api/v1` se define en `config/routes.yaml`.
 
@@ -236,7 +236,7 @@ Configuración: `.php-cs-fixer.dist.php`, `phpstan.dist.neon`, `phpunit.dist.xml
 | Entidad `Producto` | `Pokemon` + `PokemonType` |
 | `HomeController` con listado | `App\Web\Controller\HomeController` — listado público + demos interactivas |
 | Panel / CRUD backend | `App\Admin\Controller\PokemonController` — `/admin/pokemons` |
-| API REST JSON | `App\Api\Controller\PokemonApiController` — `/api/v1/pokemones` |
+| API REST JSON | `App\Api\Controller\PokemonApiController` — `/api/v1/pokemon` |
 | Ejemplo Live Component `PokemonSearch` | `PokemonInternalSearch`, `PokemonExternalSearch` (PHP en `src/Admin/Twig/Components/`, Twig en `templates/web/components/`) |
 | `App\Service\PokeAPIClient` (en guía 04) | `App\Admin\Service\PokeAPI\PokeAPIClient` |
 | Plantilla `base.html.twig` única | `@web/base.html.twig` (sitio público) y `@admin/base.html.twig` (admin + `/design`) |
@@ -262,4 +262,4 @@ Abrir:
 - <https://localhost> — Pokédex (contexto **Web**)
 - <https://localhost/design> — UI kit (contexto **Admin**)
 - <https://localhost/admin/pokemons> — Listado administrativo de Pokémon
-- <https://localhost/api/v1/pokemones> — API JSON
+- <https://localhost/api/v1/pokemon> — API JSON

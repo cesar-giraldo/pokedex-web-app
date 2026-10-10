@@ -1,0 +1,145 @@
+site:
+    name_fallback: PokeDex
+    skip_to_content: Aller au contenu
+
+seo:
+    default_description: 'Explorez le Pokédex de {name}.'
+
+nav:
+    primary: Principal
+    home: Accueil
+    pokemon: Pokémon
+    about: Qui sommes-nous
+    contact: Contact
+    privacy: Politique de confidentialité
+    terms: Conditions d’utilisation
+    login: Connexion
+    register: Créer un compte
+    menu: Menu
+    language: Langue
+
+footer:
+    tagline: Un Pokédex clair, rapide et simple à parcourir.
+    explore: Explorer
+    legal: Mentions
+
+home:
+    title: Accueil
+    meta_description: 'Découvrez des Pokémon, cherchez par nom et ouvrez la fiche de chaque espèce sur {name}.'
+    lead: Cherchez une espèce, parcourez la collection et ouvrez la fiche avec ses données, ses sprites et sa galerie.
+    search_label: Chercher un Pokémon
+    search_placeholder: Saisissez un nom
+    search_submit: Chercher
+    browse: Voir le Pokédex
+    panel_kicker: Collection
+    panel_title: Toutes les espèces visibles, dans une seule liste.
+    carousel_title: À la une
+    carousel_label: Carrousel de Pokémon
+    carousel_empty: Il n’y a pas encore d’images dans la galerie. La première photo publiée d’un Pokémon apparaîtra ici.
+    view_pokemon: Voir la fiche
+    previous: Précédent
+    next: Suivant
+    pause: Pause
+    play: Lecture
+    slides: Diapositives
+    slide: '{current} sur {total}'
+    go_to_slide: 'Aller à la diapositive {number}'
+
+listing:
+    title: Pokédex
+    intro: Filtrez par nom ou par type et ouvrez la fiche que vous voulez consulter.
+    meta_description: Liste publique de Pokémon avec recherche par nom et filtre par type.
+    search_label: Nom
+    search_placeholder: Par exemple, Pikachu
+    type_label: Type
+    type_all: Tous les types
+    submit: Chercher
+    empty: Aucun Pokémon ne correspond à cette recherche.
+    results: '{count, plural, =0 {Aucun résultat} one {# Pokémon} other {# Pokémon}}'
+    pagination: Pagination
+    previous: Précédent
+    next: Suivant
+
+pokemon:
+    back: Retour à la liste
+    entry: Fiche
+    number: 'Nº {number}'
+    height: Taille
+    weight: Poids
+    height_value: '{value} m'
+    weight_value: '{value} kg'
+    about: Description
+    description_empty: Cette fiche n’a pas encore de description.
+    stats: Statistiques
+    hp: PV
+    attack: Attaque
+    defense: Défense
+    speed: Vitesse
+    sprites: Sprites
+    sprite_front_label: Face
+    sprite_back_label: Dos
+    sprite_front: 'Sprite de face de {name}'
+    sprite_back: 'Sprite de dos de {name}'
+    gallery: Galerie
+    gallery_empty: Cette espèce n’a pas encore de photos dans la galerie.
+    open_image: Agrandir l’image
+    close: Fermer
+    meta_fallback: 'Fiche de {name}.'
+
+about:
+    title: Qui sommes-nous
+    meta_description: 'Découvrez l’équipe derrière {name}.'
+    intro: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet.
+    mission_title: Notre mission
+    mission_body: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Donec sed odio dui.
+    collection_title: La collection
+    collection_body: Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur. Vestibulum id ligula porta felis euismod semper.
+    visit_title: Comment parcourir le site
+    visit_body: Donec ullamcorper nulla non metus auctor fringilla. Maecenas faucibus mollis interdum. Nullam quis risus eget urna mollis ornare vel eu leo.
+
+contact:
+    title: Contact
+    meta_description: Téléphone, e-mail et adresse de contact du Pokédex.
+    intro: Écrivez-nous ou venez nous voir. Ces coordonnées sont un exemple pour la page publique.
+    phone_label: Téléphone
+    phone: '+57 601 555 0142'
+    email_label: E-mail
+    email: hola@pokedex.example
+    address_label: Adresse
+    address: 'Calle 100 #19-54, Bogotá, Colombia'
+    hours_label: Horaires
+    hours: Du lundi au vendredi, de 9:00 à 18:00
+
+auth:
+    unavailable: Cette fonction n’est pas encore disponible.
+    login_title: Connexion
+    login_description: Connectez-vous avec votre e-mail pour continuer. L’accès n’est pas encore actif.
+    register_title: Créer un compte
+    register_description: Créez un compte pour enregistrer votre progression. L’inscription n’est pas encore active.
+    email: E-mail
+    password: Mot de passe
+    password_confirm: Confirmer le mot de passe
+    password_hint: 8 caractères minimum.
+    name: Nom
+    remember: Se souvenir de moi sur cet appareil
+    submit_login: Connexion
+    submit_register: Créer un compte
+    no_account: Pas encore de compte ?
+    has_account: Vous avez déjà un compte ?
+    accept_terms: J’accepte les
+
+legal:
+    version: 'Version {number}'
+    fallback: 'Ce document est affiché en {language} parce qu’il n’existe pas encore de traduction pour la langue de la page.'
+    meta_description: '{title}'
+
+error:
+    home: Retour à l’accueil
+    not_found_title: Page introuvable
+    not_found_body: L’adresse saisie n’existe pas ou a été déplacée.
+    unauthorized_title: Identification requise
+    unauthorized_body: Cette page demande une session active.
+    forbidden_title: Accès refusé
+    forbidden_body: Vous n’avez pas l’autorisation de voir cette page.
+    server_title: Une erreur est survenue
+    server_body: Nous n’avons pas pu terminer la demande. Réessayez dans quelques minutes.

@@ -38,7 +38,7 @@ final class HtmlExceptionPageTest extends WebTestCase
         $client->request('GET', '/_error/500');
 
         self::assertResponseStatusCodeSame(500);
-        self::assertSelectorTextContains('h1', 'Error interno del servidor');
+        self::assertSelectorTextContains('h1', 'Algo salió mal');
         self::assertSelectorExists('a[href="/"]');
     }
 

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Web\Controller;
 
+use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\Enum\LegalDocumentType;
 use App\Entity\LegalDocumentVersion;
 use App\Legal\LegalDocumentPublisher;
 use App\Repository\LegalDocumentRepository;
 use App\Repository\LegalDocumentVersionRepository;
+use App\Web\Service\PublicLanguageResolver;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -23,7 +25,7 @@ final class LegalControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
-    public function testCurrentDocumentUsesLanguageFallback(): void
+    public function testLegacyTermsUrlRedirectsUsingLanguageFallback(): void
     {
         $client = static::createClient();
 
@@ -38,15 +40,24 @@ final class LegalControllerTest extends WebTestCase
         /** @var LegalDocumentVersionRepository $versions */
         $versions = static::getContainer()->get(LegalDocumentVersionRepository::class);
         $published = $versions->findPublished($document);
+        /** @var GeneralSettingsProvider $settingsProvider */
+        $settingsProvider = static::getContainer()->get(GeneralSettingsProvider::class);
+        /** @var PublicLanguageResolver $languages */
+        $languages = static::getContainer()->get(PublicLanguageResolver::class);
+        $locale = $languages->defaultLanguage($settingsProvider->get())->value;
+
+        $client->request('GET', '/legal/terms_of_use?lang=zz');
+
+        self::assertResponseRedirects('/' . $locale . '/terms');
+        $client->followRedirect();
 
         if (!$published instanceof LegalDocumentVersion) {
-            $client->request('GET', '/legal/terms_of_use');
             self::assertResponseStatusCodeSame(404);
 
             return;
         }
 
-        $client->request('GET', '/legal/terms_of_use?lang=zz');
         self::assertResponseIsSuccessful();
+        self::assertSelectorExists('h1');
     }
 }

@@ -1,0 +1,137 @@
+{% extends '@web/base.html.twig' %}
+
+{% block title %}{{ pokemon.name }} · {{ public_site_name() }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block social_images %}
+    {% if og_image %}
+        <meta property="og:image" content="{{ og_image }}">
+        <meta name="twitter:image" content="{{ og_image }}">
+    {% endif %}
+{% endblock %}
+{% block twitter_card %}{% if og_image %}summary_large_image{% else %}summary{% endif %}{% endblock %}
+
+{% block body %}
+    {% set images = pokemon.images %}
+    {% set hero = images|first %}
+    <article class="mx-auto max-w-6xl px-4 py-12">
+        <a class="text-sm font-medium text-brand" href="{{ path('app_public_pokedex', {_locale: app.request.locale}) }}">{{ 'pokemon.back'|trans }}</a>
+        <div class="mt-6 grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+            <div class="overflow-hidden rounded-3xl bg-surface">
+                {% if hero %}
+                    <img src="{{ pokemon_image_url(hero, 'display') }}" alt="{{ hero.description|default(pokemon.name) }}" width="1200" height="1200" class="aspect-square w-full object-contain" fetchpriority="high" decoding="async">
+                {% elseif pokemon.spriteFront %}
+                    <img src="{{ pokemon.spriteFront }}" alt="{{ pokemon.name }}" width="96" height="96" class="aspect-square w-full object-contain p-16" fetchpriority="high" decoding="async">
+                {% else %}
+                    <div class="grid aspect-square place-items-center text-6xl font-extrabold text-brand" aria-hidden="true">{{ pokemon.name|first|upper }}</div>
+                {% endif %}
+            </div>
+            <div>
+                <p class="text-sm font-medium text-muted">
+                    {% if pokemon.listOrder is not null %}
+                        {{ 'pokemon.number'|trans({number: '%04d'|format(pokemon.listOrder)}) }}
+                    {% else %}
+                        {{ 'pokemon.entry'|trans }}
+                    {% endif %}
+                </p>
+                <h1 class="mt-2 text-5xl font-extrabold tracking-tight">{{ pokemon.name }}</h1>
+                {% if pokemon.type %}
+                    <p class="mt-4 inline-flex rounded-full bg-surface px-3 py-1 text-sm font-medium text-brand">{{ pokemon.type.name|capitalize }}</p>
+                {% endif %}
+                <dl class="mt-8 grid grid-cols-2 gap-4">
+                    <div class="rounded-3xl bg-surface p-4">
+                        <dt class="text-sm font-medium text-muted">{{ 'pokemon.height'|trans }}</dt>
+                        <dd class="mt-1 text-xl font-semibold">{{ 'pokemon.height_value'|trans({value: '%.1f'|format(pokemon.height / 10)}) }}</dd>
+                    </div>
+                    <div class="rounded-3xl bg-surface p-4">
+                        <dt class="text-sm font-medium text-muted">{{ 'pokemon.weight'|trans }}</dt>
+                        <dd class="mt-1 text-xl font-semibold">{{ 'pokemon.weight_value'|trans({value: '%.1f'|format(pokemon.weight / 10)}) }}</dd>
+                    </div>
+                </dl>
+                <div class="mt-8">
+                    <h2 class="text-sm font-medium text-muted">{{ 'pokemon.about'|trans }}</h2>
+                    {% if pokemon.description %}
+                        <p class="mt-3 whitespace-pre-line leading-7">{{ pokemon.description }}</p>
+                    {% else %}
+                        <p class="mt-3 leading-7 text-muted">{{ 'pokemon.description_empty'|trans }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <section class="mt-14" aria-labelledby="stats-title">
+            <h2 id="stats-title" class="text-2xl font-semibold">{{ 'pokemon.stats'|trans }}</h2>
+            <ul class="mt-6 space-y-4">
+                {% for stat in [
+                    {label: 'pokemon.hp'|trans, value: pokemon.healthPoints},
+                    {label: 'pokemon.attack'|trans, value: pokemon.attack},
+                    {label: 'pokemon.defense'|trans, value: pokemon.defense},
+                    {label: 'pokemon.speed'|trans, value: pokemon.speed}
+                ] %}
+                    <li>
+                        <div class="flex items-baseline justify-between gap-4">
+                            <span class="text-sm font-medium">{{ stat.label }}</span>
+                            <span class="text-sm font-semibold">{{ stat.value is null ? '—' : stat.value }}</span>
+                        </div>
+                        <div class="mt-2 h-2 overflow-hidden rounded-full bg-surface" aria-hidden="true">
+                            <div class="h-full rounded-full bg-brand" style="width: {{ stat.value is null ? 0 : min(100, (stat.value / 255 * 100)|round) }}%"></div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        {% if pokemon.spriteFront or pokemon.spriteBack %}
+            <section class="mt-14" aria-labelledby="sprites-title">
+                <h2 id="sprites-title" class="text-2xl font-semibold">{{ 'pokemon.sprites'|trans }}</h2>
+                <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+                    {% if pokemon.spriteFront %}
+                        <li class="rounded-3xl bg-surface p-6 text-center">
+                            <img src="{{ pokemon.spriteFront }}" alt="{{ 'pokemon.sprite_front'|trans({name: pokemon.name}) }}" width="96" height="96" class="mx-auto" loading="lazy" decoding="async">
+                            <p class="mt-3 text-sm font-medium text-muted">{{ 'pokemon.sprite_front_label'|trans }}</p>
+                        </li>
+                    {% endif %}
+                    {% if pokemon.spriteBack %}
+                        <li class="rounded-3xl bg-surface p-6 text-center">
+                            <img src="{{ pokemon.spriteBack }}" alt="{{ 'pokemon.sprite_back'|trans({name: pokemon.name}) }}" width="96" height="96" class="mx-auto" loading="lazy" decoding="async">
+                            <p class="mt-3 text-sm font-medium text-muted">{{ 'pokemon.sprite_back_label'|trans }}</p>
+                        </li>
+                    {% endif %}
+                </ul>
+            </section>
+        {% endif %}
+
+        <section class="mt-14" aria-labelledby="gallery-title" data-controller="gallery">
+            <h2 id="gallery-title" class="text-2xl font-semibold">{{ 'pokemon.gallery'|trans }}</h2>
+            {% if images is empty %}
+                <p class="mt-4 text-muted">{{ 'pokemon.gallery_empty'|trans }}</p>
+            {% else %}
+                <ul class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3">
+                    {% for image in images %}
+                        <li>
+                            <button
+                                type="button"
+                                class="block w-full overflow-hidden rounded-3xl bg-surface"
+                                data-action="gallery#open"
+                                data-gallery-src-param="{{ pokemon_image_url(image, 'display') }}"
+                                data-gallery-alt-param="{{ image.description|default(pokemon.name) }}"
+                            >
+                                <img src="{{ pokemon_image_url(image, 'thumb') }}" alt="{{ image.description|default(pokemon.name) }}" width="400" height="400" class="aspect-square w-full object-contain" loading="lazy" decoding="async">
+                                <span class="sr-only">{{ 'pokemon.open_image'|trans }}</span>
+                            </button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <dialog class="gallery-dialog" data-gallery-target="dialog" data-action="click->gallery#backdrop close->gallery#clear">
+                <div class="p-4">
+                    <div class="flex justify-end">
+                        <button class="btn btn-secondary" type="button" data-action="gallery#close">{{ 'pokemon.close'|trans }}</button>
+                    </div>
+                    <img data-gallery-target="image" alt="" width="1200" height="1200" class="mt-4 max-h-[70vh] w-full object-contain">
+                    <p class="mt-3 text-sm font-medium text-muted" data-gallery-target="caption"></p>
+                </div>
+            </dialog>
+        </section>
+    </article>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends '@web/base.html.twig' %}
+
+{% set filters = {} %}
+{% if page.query %}
+    {% set filters = filters|merge({q: page.query}) %}
+{% endif %}
+{% if page.typeId %}
+    {% set filters = filters|merge({type: page.typeId}) %}
+{% endif %}
+
+{% block title %}{{ 'listing.title'|trans }} · {{ public_site_name() }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block extra_meta %}
+    {% if page.hasPrevious %}
+        <link rel="prev" href="{{ url('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge(page.page > 2 ? {page: page.page - 1} : {})) }}">
+    {% endif %}
+    {% if page.hasNext %}
+        <link rel="next" href="{{ url('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge({page: page.page + 1})) }}">
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    <div class="mx-auto max-w-6xl px-4 py-12">
+        <h1 class="text-4xl font-extrabold tracking-tight">{{ 'listing.title'|trans }}</h1>
+        <p class="mt-3 max-w-2xl text-muted">{{ 'listing.intro'|trans }}</p>
+
+        <form class="mt-8 grid gap-3 rounded-3xl bg-surface p-4 md:grid-cols-[1fr_16rem_auto] md:items-end" method="get" action="{{ path('app_public_pokedex', {_locale: app.request.locale}) }}" role="search">
+            <div>
+                <label class="text-sm font-medium" for="pokemon-q">{{ 'listing.search_label'|trans }}</label>
+                <input id="pokemon-q" class="field mt-2" type="search" name="q" value="{{ page.query }}" placeholder="{{ 'listing.search_placeholder'|trans }}">
+            </div>
+            <div>
+                <label class="text-sm font-medium" for="pokemon-type">{{ 'listing.type_label'|trans }}</label>
+                <select id="pokemon-type" class="field mt-2" name="type">
+                    <option value="">{{ 'listing.type_all'|trans }}</option>
+                    {% for type in types %}
+                        <option value="{{ type.id }}" {% if page.typeId == type.id %}selected{% endif %}>{{ type.name|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="btn btn-primary h-12" type="submit">{{ 'listing.submit'|trans }}</button>
+        </form>
+
+        <p class="mt-8 text-sm font-medium text-muted">{{ 'listing.results'|trans({count: page.total}) }}</p>
+
+        {% if page.pokemons is empty %}
+            <p class="mt-6 rounded-3xl bg-surface px-6 py-10 text-muted">{{ 'listing.empty'|trans }}</p>
+        {% else %}
+            <ul class="mt-6 grid gap-5 sm:grid-cols-3 lg:grid-cols-4">
+                {% for pokemon in page.pokemons %}
+                    {% set cover = page.covers[pokemon.id]|default(null) %}
+                    <li>
+                        <a class="block overflow-hidden rounded-3xl bg-white ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:ring-brand" href="{{ path('app_public_pokemon', {_locale: app.request.locale, id: pokemon.id}) }}">
+                            {% if cover %}
+                                <img src="{{ pokemon_image_url(cover, 'thumb') }}" alt="{{ cover.description|default(pokemon.name) }}" width="400" height="400" class="aspect-square w-full bg-surface object-contain" loading="lazy" decoding="async">
+                            {% elseif pokemon.spriteFront %}
+                                <img src="{{ pokemon.spriteFront }}" alt="{{ pokemon.name }}" width="96" height="96" class="aspect-square w-full bg-surface object-contain p-8" loading="lazy" decoding="async">
+                            {% else %}
+                                <div class="grid aspect-square place-items-center bg-surface text-3xl font-extrabold text-brand" aria-hidden="true">{{ pokemon.name|first|upper }}</div>
+                            {% endif %}
+                            <div class="p-5">
+                                <p class="text-sm font-medium text-muted">
+                                    {% if pokemon.listOrder is not null %}
+                                        {{ 'pokemon.number'|trans({number: '%04d'|format(pokemon.listOrder)}) }}
+                                    {% endif %}
+                                    {% if pokemon.type %}
+                                        <span class="text-brand">{{ pokemon.type.name|capitalize }}</span>
+                                    {% endif %}
+                                </p>
+                                <h2 class="mt-1 text-xl font-semibold">{{ pokemon.name }}</h2>
+                            </div>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if page.pageCount > 1 %}
+            <nav class="mt-10 flex flex-wrap items-center gap-2" aria-label="{{ 'listing.pagination'|trans }}">
+                {% if page.hasPrevious %}
+                    <a class="btn btn-secondary" href="{{ path('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge(page.page > 2 ? {page: page.page - 1} : {})) }}">{{ 'listing.previous'|trans }}</a>
+                {% endif %}
+                {% for number in 1..page.pageCount %}
+                    {% if number == page.page or (number >= page.page - 2 and number <= page.page + 2) or number == 1 or number == page.pageCount %}
+                        <a class="btn {{ number == page.page ? 'btn-primary' : 'btn-secondary' }}" href="{{ path('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge(number > 1 ? {page: number} : {})) }}" {% if number == page.page %}aria-current="page"{% endif %}>{{ number }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if page.hasNext %}
+                    <a class="btn btn-secondary" href="{{ path('app_public_pokedex', {_locale: app.request.locale}|merge(filters)|merge({page: page.page + 1})) }}">{{ 'listing.next'|trans }}</a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    </div>
+{% endblock %}

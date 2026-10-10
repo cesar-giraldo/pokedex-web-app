@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('es') }}">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="robots" content="noindex">
+        <title>{% block title %}Error{% endblock %}</title>
+        {% block stylesheets %}{% endblock %}
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('web') }}{% endblock %}
+        {% endblock %}
+    </head>
+    <body>
+        <main id="contenido">
+            {% block body %}{% endblock %}
+        </main>
+    </body>
+</html>
