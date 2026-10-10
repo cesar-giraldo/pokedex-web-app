@@ -23,12 +23,11 @@ final class PublicSitemapBuilder
         'app_public_pokedex',
         'app_public_about',
         'app_public_contact',
-        'app_public_privacy',
-        'app_public_terms',
     ];
 
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly PublicLegalAvailability $legalAvailability,
     ) {
     }
 
@@ -44,7 +43,7 @@ final class PublicSitemapBuilder
 
         $entries = [];
 
-        foreach (self::PAGES as $route) {
+        foreach ($this->pages() as $route) {
             $entries[] = $this->entry(
                 $locales,
                 $defaultLocale,
@@ -70,6 +69,25 @@ final class PublicSitemapBuilder
             {$body}
             </urlset>
             XML;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function pages(): array
+    {
+        $pages = self::PAGES;
+        $legal = $this->legalAvailability->links();
+
+        if ($legal['privacy']) {
+            $pages[] = 'app_public_privacy';
+        }
+
+        if ($legal['terms']) {
+            $pages[] = 'app_public_terms';
+        }
+
+        return $pages;
     }
 
     /**

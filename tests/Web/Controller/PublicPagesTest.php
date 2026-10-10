@@ -155,6 +155,21 @@ final class PublicPagesTest extends WebTestCase
         $sitemap = (string) $client->getResponse()->getContent();
         self::assertStringContainsString('/' . $locale . '/pokemon', $sitemap);
         self::assertStringContainsString('xhtml:link', $sitemap);
+        /** @var LegalDocumentVersionRepository $versions */
+        $versions = static::getContainer()->get(LegalDocumentVersionRepository::class);
+        $published = $versions->findPublishedDocumentTypes();
+
+        if (in_array(LegalDocumentType::PrivacyPolicy, $published, true)) {
+            self::assertStringContainsString('/' . $locale . '/privacy', $sitemap);
+        } else {
+            self::assertStringNotContainsString('/' . $locale . '/privacy', $sitemap);
+        }
+
+        if (in_array(LegalDocumentType::TermsOfUse, $published, true)) {
+            self::assertStringContainsString('/' . $locale . '/terms', $sitemap);
+        } else {
+            self::assertStringNotContainsString('/' . $locale . '/terms', $sitemap);
+        }
     }
 
     public function testFooterLegalSectionMatchesPublishedDocuments(): void
