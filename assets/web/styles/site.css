@@ -257,3 +257,47 @@ dialog.gallery-dialog {
 dialog.gallery-dialog::backdrop {
     background: rgb(0 0 0 / 72%);
 }
+
+.page-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: #fff;
+}
+
+.page-loader[hidden] {
+    display: none;
+}
+
+.page-loader-ring {
+    width: 4rem;
+    height: 4rem;
+    border: 4px solid var(--color-brand);
+    border-top-color: transparent;
+    border-radius: 999px;
+    animation: page-loader-spin 0.7s linear infinite;
+}
+
+.page-loader-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-brand);
+}
+
+@keyframes page-loader-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-loader-ring {
+        animation: none;
+        border-top-color: var(--color-brand);
+    }
+}

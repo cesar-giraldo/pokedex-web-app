@@ -1,6 +1,7 @@
 site:
     name_fallback: PokeDex
     skip_to_content: Skip to content
+    loading: Loading
 
 seo:
     default_description: 'Explore the {name} Pokédex.'

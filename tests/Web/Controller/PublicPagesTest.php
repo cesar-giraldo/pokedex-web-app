@@ -60,6 +60,25 @@ final class PublicPagesTest extends WebTestCase
         }
     }
 
+    public function testPublicLayoutKeepsThePageVisibleUntilTheLoaderRuns(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        /** @var TranslatorInterface $translator */
+        $translator = static::getContainer()->get(TranslatorInterface::class);
+        /** @var LocaleSwitcher $localeSwitcher */
+        $localeSwitcher = static::getContainer()->get(LocaleSwitcher::class);
+        $loading = $localeSwitcher->runWithLocale(
+            $locale,
+            static fn (): string => $translator->trans('site.loading'),
+        );
+
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('body[data-controller="page-loader"] #page-loader[hidden]');
+        self::assertSelectorTextContains('#page-loader', $loading);
+    }
+
     public function testDisabledLocaleRedirectsToTheDefaultLanguage(): void
     {
         $client = static::createClient();

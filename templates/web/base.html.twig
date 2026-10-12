@@ -49,7 +49,11 @@
             <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
         {% endif %}
     </head>
-    <body>
+    <body data-controller="page-loader">
+        <div id="page-loader" class="page-loader" data-turbo-permanent hidden role="status" aria-live="polite">
+            <div class="page-loader-ring" aria-hidden="true"></div>
+            <p class="page-loader-label">{{ 'site.loading'|trans }}</p>
+        </div>
         <a class="skip-link" href="#contenido">{{ 'site.skip_to_content'|trans }}</a>
         {% include '@web/partials/_header.html.twig' %}
         <main id="contenido">
