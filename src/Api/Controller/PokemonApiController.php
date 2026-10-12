@@ -13,7 +13,7 @@ use const JSON_UNESCAPED_UNICODE;
 
 class PokemonApiController extends AbstractController
 {
-    #[Route('/pokemones', name: 'api_pokemons_list', methods: ['GET'])]
+    #[Route('/pokemon', name: 'api_pokemons_list', methods: ['GET'])]
     public function list(PokemonRepository $pokemonRepository): JsonResponse
     {
         $pokemones = $pokemonRepository->findPokemonsQueryBuilder(null, 'p.listOrder', 'asc')->getQuery()->getResult();

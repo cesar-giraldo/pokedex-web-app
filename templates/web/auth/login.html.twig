@@ -1,0 +1,36 @@
+{% extends '@web/base.html.twig' %}
+
+{% block title %}{{ 'auth.login_title'|trans }} · {{ public_site_name() }}{% endblock %}
+{% block meta_description %}{{ 'auth.login_description'|trans }}{% endblock %}
+{% block robots %}noindex, follow{% endblock %}
+
+{% block body %}
+    <div class="bg-surface px-4 py-16">
+        <div class="mx-auto max-w-md rounded-3xl bg-white p-8 ring-1 ring-black/5">
+            <h1 class="text-3xl font-extrabold tracking-tight">{{ 'auth.login_title'|trans }}</h1>
+            <p class="mt-2 text-sm leading-6 text-muted">{{ 'auth.login_description'|trans }}</p>
+            {% if submitted %}
+                <p class="mt-6 rounded-2xl bg-surface px-4 py-3 text-sm font-medium" role="status">{{ 'auth.unavailable'|trans }}</p>
+            {% endif %}
+            <form class="mt-8 space-y-4" method="post">
+                <div>
+                    <label class="text-sm font-medium" for="login-email">{{ 'auth.email'|trans }}</label>
+                    <input id="login-email" class="field mt-2" type="email" name="email" autocomplete="email" required>
+                </div>
+                <div>
+                    <label class="text-sm font-medium" for="login-password">{{ 'auth.password'|trans }}</label>
+                    <input id="login-password" class="field mt-2" type="password" name="password" autocomplete="current-password" required minlength="8">
+                </div>
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="remember" class="h-4 w-4 accent-brand">
+                    {{ 'auth.remember'|trans }}
+                </label>
+                <button class="btn btn-primary w-full" type="submit">{{ 'auth.submit_login'|trans }}</button>
+            </form>
+            <p class="mt-6 text-sm text-muted">
+                {{ 'auth.no_account'|trans }}
+                <a class="font-semibold text-brand" href="{{ path('app_public_register', {_locale: app.request.locale}) }}">{{ 'nav.register'|trans }}</a>
+            </p>
+        </div>
+    </div>
+{% endblock %}

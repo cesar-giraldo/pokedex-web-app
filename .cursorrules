@@ -24,6 +24,7 @@
 - Use repositories for database queries and keep entities focused on state and invariants.
 - For external integrations such as the PokeAPI client, isolate HTTP logic in services or dedicated classes.
 - When relevant, use Symfony MakerBundle to scaffold entities, commands, forms, and CRUD boilerplate.
+- Write every URL path and query parameter in English. Locale prefixes (`/es`, `/en`, `/pt`, `/fr`) stay as language codes. Do not put Spanish or other translated words in route paths, slugs, or query parameter names. Page copy is translated; the URL is not.
 
 ## Frontend / Asset Conventions
 - Prefer Twig templates plus Stimulus controllers over introducing a separate frontend framework.

@@ -10,6 +10,8 @@ use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 use function in_array;
+use function mb_strtolower;
+use function trim;
 
 /**
  * @extends ServiceEntityRepository<Pokemon>
@@ -57,5 +59,101 @@ class PokemonRepository extends ServiceEntityRepository
         $qb->orderBy($sort, $direction);
 
         return $qb;
+    }
+
+    public function countPublic(string $name, ?int $typeId): int
+    {
+        return (int) $this->publicQuery($name, $typeId)
+            ->select('COUNT(p.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @return list<Pokemon>
+     */
+    public function findPublicPage(string $name, ?int $typeId, int $offset, int $limit): array
+    {
+        /** @var list<Pokemon> $pokemons */
+        $pokemons = $this->publicQuery($name, $typeId)
+            ->leftJoin('p.type', 't')
+            ->addSelect('t')
+            ->addOrderBy('CASE WHEN p.listOrder IS NULL THEN 1 ELSE 0 END', 'ASC')
+            ->addOrderBy('p.listOrder', 'ASC')
+            ->addOrderBy('p.name', 'ASC')
+            ->setFirstResult(max(0, $offset))
+            ->setMaxResults(max(1, $limit))
+            ->getQuery()
+            ->getResult();
+
+        return $pokemons;
+    }
+
+    public function findVisibleWithMedia(int $id): ?Pokemon
+    {
+        /** @var list<Pokemon> $pokemons */
+        $pokemons = $this->createQueryBuilder('p')
+            ->leftJoin('p.type', 't')
+            ->addSelect('t')
+            ->leftJoin('p.images', 'i')
+            ->addSelect('i')
+            ->andWhere('p.id = :id')
+            ->andWhere('p.isHidden IS NULL OR p.isHidden = false')
+            ->setParameter('id', $id)
+            ->addOrderBy('i.sortOrder', 'ASC')
+            ->addOrderBy('i.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $pokemons[0] ?? null;
+    }
+
+    /**
+     * @return list<array{id: int, name: string}>
+     */
+    public function findPublicIdentities(): array
+    {
+        /** @var list<array{id: int|string, name: string}> $rows */
+        $rows = $this->createQueryBuilder('p')
+            ->select('p.id AS id', 'p.name AS name')
+            ->andWhere('p.isHidden IS NULL OR p.isHidden = false')
+            ->addOrderBy('CASE WHEN p.listOrder IS NULL THEN 1 ELSE 0 END', 'ASC')
+            ->addOrderBy('p.listOrder', 'ASC')
+            ->addOrderBy('p.name', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $identities = [];
+
+        foreach ($rows as $row) {
+            $identities[] = [
+                'id' => (int) $row['id'],
+                'name' => $row['name'],
+            ];
+        }
+
+        return $identities;
+    }
+
+    private function publicQuery(string $name, ?int $typeId): QueryBuilder
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->andWhere('p.isHidden IS NULL OR p.isHidden = false');
+
+        $name = trim($name);
+
+        if ('' !== $name) {
+            $queryBuilder
+                ->andWhere('LOWER(p.name) LIKE :publicName')
+                ->setParameter('publicName', '%' . mb_strtolower($name) . '%');
+        }
+
+        if (null !== $typeId && $typeId > 0) {
+            $queryBuilder
+                ->andWhere('p.type = :publicTypeId')
+                ->setParameter('publicTypeId', $typeId);
+        }
+
+        return $queryBuilder;
     }
 }

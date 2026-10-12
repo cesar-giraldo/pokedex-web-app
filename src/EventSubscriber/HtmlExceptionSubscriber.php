@@ -15,6 +15,11 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Throwable;
 use Twig\Environment;
 
+use function htmlspecialchars;
+
+use const ENT_HTML5;
+use const ENT_QUOTES;
+
 /**
  * Renders custom HTML error pages for non-API requests in production only.
  * In dev and test, Symfony keeps the debug exception page for easier troubleshooting.
@@ -59,13 +64,31 @@ final class HtmlExceptionSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $event->setResponse(new Response(
-            $this->twig->render($template, [
+        try {
+            $html = $this->twig->render($template, [
                 'status_code' => $statusCode,
                 'status_text' => Response::$statusTexts[$statusCode] ?? 'Error',
-            ]),
-            $statusCode,
-        ));
+            ]);
+        } catch (Throwable) {
+            $html = $this->fallbackHtml($statusCode);
+        }
+
+        $event->setResponse(new Response($html, $statusCode));
+    }
+
+    private function fallbackHtml(int $statusCode): string
+    {
+        $title = htmlspecialchars(
+            Response::$statusTexts[$statusCode] ?? 'Error',
+            ENT_QUOTES | ENT_HTML5,
+            'UTF-8',
+        );
+
+        return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>'
+            . $title
+            . '</title></head><body><h1>'
+            . $title
+            . '</h1></body></html>';
     }
 
     private function isApiRequest(Request $request): bool

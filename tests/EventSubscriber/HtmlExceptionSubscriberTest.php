@@ -88,6 +88,21 @@ final class HtmlExceptionSubscriberTest extends TestCase
         self::assertFalse($event->hasResponse());
     }
 
+    public function testFallsBackToStaticHtmlWhenRenderingFails(): void
+    {
+        $twig = $this->createMock(Environment::class);
+        $twig->method('render')->willThrowException(new RuntimeException('Database is down'));
+
+        $subscriber = new HtmlExceptionSubscriber($twig, 'prod');
+        $event = $this->createExceptionEvent(new RuntimeException('Database is down'), '/es');
+
+        $subscriber->onKernelException($event);
+
+        self::assertTrue($event->hasResponse());
+        self::assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $event->getResponse()->getStatusCode());
+        self::assertStringContainsString('<h1>Internal Server Error</h1>', (string) $event->getResponse()->getContent());
+    }
+
     public function testSkipsCustomPagesOutsideProduction(): void
     {
         $twig = $this->createMock(Environment::class);

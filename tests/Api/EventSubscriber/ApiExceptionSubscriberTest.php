@@ -55,7 +55,7 @@ final class ApiExceptionSubscriberTest extends TestCase
     public static function provideApiExceptionCases(): iterable
     {
         yield 'not found' => [
-            '/api/v1/pokemones/999',
+            '/api/v1/pokemon/999',
             new NotFoundHttpException('Pokemon not found'),
             404,
             'Not Found',
@@ -88,7 +88,7 @@ final class ApiExceptionSubscriberTest extends TestCase
     public function testItHidesInternalErrorDetailsInProduction(): void
     {
         $subscriber = new ApiExceptionSubscriber();
-        $request = Request::create('/api/v1/pokemones');
+        $request = Request::create('/api/v1/pokemon');
         $event = new ExceptionEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
