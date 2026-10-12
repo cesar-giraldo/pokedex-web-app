@@ -54,6 +54,10 @@ final class HomeController extends AbstractController
     {
         $pokemon = $em->getRepository(Pokemon::class)->findOneByName($name);
 
+        if ($pokemon instanceof Pokemon && true === $pokemon->isHidden()) {
+            $pokemon = null;
+        }
+
         $response = [
             'success' => $pokemon instanceof Pokemon,
             'data' => $pokemon ? [

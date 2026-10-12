@@ -17,7 +17,10 @@ use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function in_array;
+use function json_decode;
 use function sprintf;
+
+use const JSON_THROW_ON_ERROR;
 
 #[Group('functional')]
 final class PublicPagesTest extends WebTestCase
@@ -134,6 +137,50 @@ final class PublicPagesTest extends WebTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    public function testInternalSearchHidesPrivateEntries(): void
+    {
+        $client = static::createClient();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        $visible = new Pokemon()
+            ->setName('VisibleSearchMon')
+            ->setHeight(4)
+            ->setWeight(60)
+            ->setHealthPoints(35)
+            ->setSpriteFront('https://example.test/visible.png');
+        $hidden = new Pokemon()
+            ->setName('HiddenSearchMon')
+            ->setHeight(4)
+            ->setWeight(60)
+            ->setIsHidden(true)
+            ->setHealthPoints(99)
+            ->setSpriteFront('https://example.test/hidden.png');
+        $entityManager->persist($visible);
+        $entityManager->persist($hidden);
+        $entityManager->flush();
+        $this->pokemonId = $visible->getId();
+        $this->hiddenPokemonId = $hidden->getId();
+
+        $client->request('GET', '/internal-pokemon-search/VisibleSearchMon');
+        self::assertResponseIsSuccessful();
+        /** @var array{success: bool, data: array{name: string, healthPoints: int|null}|null} $visiblePayload */
+        $visiblePayload = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $visibleData = $visiblePayload['data'];
+        self::assertTrue($visiblePayload['success']);
+        self::assertIsArray($visibleData);
+        self::assertSame('VisibleSearchMon', $visibleData['name']);
+        self::assertSame(35, $visibleData['healthPoints']);
+
+        $client->request('GET', '/internal-pokemon-search/HiddenSearchMon');
+        self::assertResponseIsSuccessful();
+        /** @var array{success: bool, data: mixed, errors: list<string>|null} $hiddenPayload */
+        $hiddenPayload = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertFalse($hiddenPayload['success']);
+        self::assertNull($hiddenPayload['data']);
+        self::assertSame(['Pokemon not found'], $hiddenPayload['errors']);
+    }
+
     public function testLoginPostDoesNotAuthenticate(): void
     {
         $client = static::createClient();
@@ -153,7 +200,7 @@ final class PublicPagesTest extends WebTestCase
         ]);
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('[role="status"]', $expected);
+        self::assertSelectorTextContains('main [role="status"]', $expected);
         self::assertNull($client->getRequest()->getSession()->get('_security_main'));
     }
 
