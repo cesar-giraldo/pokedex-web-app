@@ -268,6 +268,7 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorExists('#profile-new-password-error.field-error');
         self::assertSelectorTextContains('#profile-new-password-error', 'La contraseña debe tener al menos 5 caracteres e incluir letras y números.');
         self::assertSelectorExists('main .alert-error');
+        self::assertSelectorExists('main .alert-error [data-action="alert#dismiss"]');
 
         $infoForm = $client->getCrawler()->filter('form[name="user_profile_info"]')->form();
         $infoForm['user_profile_info[name]'] = str_repeat('A', 51);

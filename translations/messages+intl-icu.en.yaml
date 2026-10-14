@@ -136,6 +136,7 @@ auth:
 
 form:
     processing: Processing...
+    close: Close
 
 account:
     profile_title: Edit profile

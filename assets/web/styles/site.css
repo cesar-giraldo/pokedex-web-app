@@ -121,13 +121,30 @@
     }
 
     .alert-error {
-        background-color: #fef2f2;
-        color: var(--color-danger);
+        border: 1px solid #f04438;
+        background-color: #fecdca;
+        color: #b42318;
     }
 
     .alert-success {
-        background-color: #ecfdf5;
-        color: #065f46;
+        border: 1px solid #12b76a;
+        background-color: #ecfdf3;
+        color: #027a48;
+    }
+
+    .alert-dismiss {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        margin: -0.125rem -0.25rem -0.125rem auto;
+        border-radius: 9999px;
+        padding: 0.25rem;
+        color: inherit;
+    }
+
+    .alert-dismiss:hover {
+        background-color: rgb(0 0 0 / 0.06);
     }
 
     .legal-copy {

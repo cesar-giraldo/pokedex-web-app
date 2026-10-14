@@ -24,6 +24,8 @@ use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
  * Props:
  * - message: texto del aviso (vacío oculta el aviso)
  * - variant: error, success o status
+ *
+ * Incluye un botón con heroicons:x-mark que quita el aviso de la página.
  */
 #[AsTwigComponent(
     name: 'web_alert',

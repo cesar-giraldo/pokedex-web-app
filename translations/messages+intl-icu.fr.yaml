@@ -136,6 +136,7 @@ auth:
 
 form:
     processing: Traitement...
+    close: Fermer
 
 account:
     profile_title: Modifier le profil
