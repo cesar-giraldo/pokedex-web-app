@@ -39,6 +39,8 @@ use function sprintf;
  * - selected: lista de valores preseleccionados
  * - maxSelections: límite opcional de opciones seleccionables
  * - required, disabled: estados del campo
+ * - hideLabel: conserva la etiqueta para lectores de pantalla y la oculta visualmente
+ * - allowWrap: permite que el campo crezca al seleccionar varias opciones
  * - error, help: mensajes de validación y ayuda
  */
 #[AsTwigComponent(
@@ -60,6 +62,10 @@ final class MultiSelectComponent
     public bool $required = false;
 
     public bool $disabled = false;
+
+    public bool $hideLabel = false;
+
+    public bool $allowWrap = false;
 
     public ?string $error = null;
 
@@ -98,7 +104,8 @@ final class MultiSelectComponent
     #[ExposeInTemplate('triggerClasses')]
     public function getTriggerClasses(): string
     {
-        $base = 'shadow-theme-xs mb-2 flex h-11 w-full rounded-lg border py-1.5 pr-3 pl-3 outline-hidden transition dark:bg-gray-900';
+        $base = 'shadow-theme-xs flex w-full rounded-lg border py-1.5 pr-3 pl-3 outline-hidden transition dark:bg-gray-900 '
+            . ($this->allowWrap ? 'min-h-11' : 'mb-2 h-11');
 
         if ($this->disabled) {
             return $base . ' cursor-not-allowed border-gray-100 bg-gray-50 opacity-60 dark:border-gray-800 dark:bg-white/[0.03]';

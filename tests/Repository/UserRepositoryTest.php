@@ -80,6 +80,35 @@ final class UserRepositoryTest extends KernelTestCase
         self::assertContains($client->getNickname(), $nicknames);
     }
 
+    public function testFindBackendUsersQueryBuilderFiltersBySelectedRoles(): void
+    {
+        $repository = $this->getRepository();
+        $admin = $this->createUser('repo-role-admin', UserRole::Admin);
+        $client = $this->createUser('repo-role-client', UserRole::User);
+
+        $userResults = $repository
+            ->findBackendUsersQueryBuilder(null, 'u.createdAt', 'desc', [
+                'roles' => [UserRole::User],
+            ])
+            ->getQuery()
+            ->getResult();
+        $userNicknames = array_map(static fn (User $user): string => $user->getNickname(), $userResults);
+
+        self::assertContains($client->getNickname(), $userNicknames);
+        self::assertNotContains($admin->getNickname(), $userNicknames);
+
+        $combinedResults = $repository
+            ->findBackendUsersQueryBuilder(null, 'u.createdAt', 'desc', [
+                'roles' => [UserRole::Admin, UserRole::User],
+            ])
+            ->getQuery()
+            ->getResult();
+        $combinedNicknames = array_map(static fn (User $user): string => $user->getNickname(), $combinedResults);
+
+        self::assertContains($admin->getNickname(), $combinedNicknames);
+        self::assertContains($client->getNickname(), $combinedNicknames);
+    }
+
     public function testFindBackendUsersQueryBuilderFiltersBySearchTerm(): void
     {
         $repository = $this->getRepository();

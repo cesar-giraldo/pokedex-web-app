@@ -55,6 +55,45 @@ final class UserControllerIndexTest extends WebTestCase
         self::assertSelectorTextContains('tbody', $developer->getNickname());
     }
 
+    public function testAdminCanFilterUserListByOneOrMoreRoles(): void
+    {
+        $client = static::createClient();
+        $this->loginAsAdmin($client);
+        $publicUser = $this->createListedUser('ulpub', UserRole::User, isHidden: false);
+        $operator = $this->createListedUser('ulopr', UserRole::Operator, isHidden: false);
+
+        $client->request('GET', '/admin/users', ['limit' => 'all']);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#admin-user-search-roles-trigger');
+        self::assertSelectorExists('#admin-user-search-roles-listbox [data-value="developer"]');
+        self::assertSelectorExists('#admin-user-search-roles-listbox [data-value="admin"]');
+        self::assertSelectorExists('#admin-user-search-roles-listbox [data-value="operator"]');
+        self::assertSelectorExists('#admin-user-search-roles-listbox [data-value="user"]');
+
+        $client->request('GET', '/admin/users', [
+            'limit' => 'all',
+            'search_user' => [
+                'roles' => [UserRole::User->value, UserRole::Operator->value],
+            ],
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('tbody', $publicUser->getNickname());
+        self::assertSelectorTextContains('tbody', $operator->getNickname());
+
+        $client->request('GET', '/admin/users', [
+            'limit' => 'all',
+            'search_user' => [
+                'roles' => [UserRole::User->value],
+            ],
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('tbody', $publicUser->getNickname());
+        self::assertSelectorTextNotContains('tbody', $operator->getNickname());
+    }
+
     public function testAdminDoesNotSeeHiddenUserInUserList(): void
     {
         $client = static::createClient();

@@ -180,6 +180,38 @@ final class UserFormValidationTest extends KernelTestCase
         self::assertTrue($form->isValid());
     }
 
+    public function testSearchUserAcceptsOneOrMoreRoles(): void
+    {
+        self::bootKernel();
+
+        /** @var FormFactoryInterface $formFactory */
+        $formFactory = static::getContainer()->get(FormFactoryInterface::class);
+        $form = $formFactory->create(SearchUserType::class);
+        $form->submit([
+            'q' => 'ada',
+            'roles' => ['user', 'admin'],
+        ]);
+
+        self::assertTrue($form->isValid());
+        self::assertSame('search_user[roles][]', $form->get('roles')->createView()->vars['full_name']);
+        self::assertSame(['user', 'admin'], $form->get('roles')->getData());
+    }
+
+    public function testSearchUserRejectsUnknownRole(): void
+    {
+        self::bootKernel();
+
+        /** @var FormFactoryInterface $formFactory */
+        $formFactory = static::getContainer()->get(FormFactoryInterface::class);
+        $form = $formFactory->create(SearchUserType::class);
+        $form->submit([
+            'roles' => ['superuser'],
+        ]);
+
+        self::assertFalse($form->isValid());
+        self::assertGreaterThan(0, $form->get('roles')->getErrors(true)->count());
+    }
+
     public function testPokemonEditRejectsNonHttpsSpriteUrl(): void
     {
         self::bootKernel();

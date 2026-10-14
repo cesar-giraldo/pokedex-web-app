@@ -75,7 +75,7 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param array{excludeHidden?: bool} $options
+     * @param array{excludeHidden?: bool, roles?: list<UserRole>} $options
      */
     public function findBackendUsersQueryBuilder(
         ?string $term,
@@ -84,18 +84,7 @@ class UserRepository extends ServiceEntityRepository
         array $options = [],
     ): QueryBuilder {
         $qb = $this->createQueryBuilder('u');
-        $rolesAsText = 'JSON_AS_TEXT(u.roles)';
-
-        $qb->andWhere($qb->expr()->orX(
-            $rolesAsText . ' LIKE :adminRole',
-            $rolesAsText . ' LIKE :developerRole',
-            $rolesAsText . ' LIKE :operatorRole',
-            $rolesAsText . ' LIKE :userRole',
-        ))
-            ->setParameter('adminRole', '%"' . UserRole::Admin->value . '"%')
-            ->setParameter('developerRole', '%"' . UserRole::Developer->value . '"%')
-            ->setParameter('operatorRole', '%"' . UserRole::Operator->value . '"%')
-            ->setParameter('userRole', '%"' . UserRole::User->value . '"%');
+        $this->restrictToRoles($qb, $options['roles'] ?? []);
 
         if ($options['excludeHidden'] ?? false) {
             $qb->andWhere('u.isHidden IS NULL OR u.isHidden = false');
@@ -116,6 +105,27 @@ class UserRepository extends ServiceEntityRepository
         $qb->orderBy($sort, $direction);
 
         return $qb;
+    }
+
+    /**
+     * @param list<UserRole> $roles
+     */
+    private function restrictToRoles(QueryBuilder $qb, array $roles): void
+    {
+        if ([] === $roles) {
+            $roles = UserRole::cases();
+        }
+
+        $rolesAsText = 'JSON_AS_TEXT(u.roles)';
+        $expressions = [];
+
+        foreach ($roles as $index => $role) {
+            $parameter = 'listedRole' . $index;
+            $expressions[] = $rolesAsText . ' LIKE :' . $parameter;
+            $qb->setParameter($parameter, '%"' . $role->value . '"%');
+        }
+
+        $qb->andWhere($qb->expr()->orX(...$expressions));
     }
 
     /**

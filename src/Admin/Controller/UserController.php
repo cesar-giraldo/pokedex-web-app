@@ -38,6 +38,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Throwable;
 
+use function is_array;
 use function is_string;
 use function sprintf;
 
@@ -66,9 +67,13 @@ final class UserController extends AbstractController
         $form->handleRequest($request);
 
         $term = null;
+        $roles = [];
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $term = $data['q'] ?? null;
+            if (is_array($data)) {
+                $term = $data['q'] ?? null;
+                $roles = $this->selectedSearchRoles($data['roles'] ?? []);
+            }
         }
 
         $sort = $request->query->get('sort', 'u.createdAt');
@@ -82,6 +87,7 @@ final class UserController extends AbstractController
             $direction,
             [
                 'excludeHidden' => !($isDeveloper && $showHiddenUsers),
+                'roles' => $roles,
             ],
         );
 
@@ -448,6 +454,32 @@ final class UserController extends AbstractController
         }
 
         return $options;
+    }
+
+    /**
+     * @return list<UserRole>
+     */
+    private function selectedSearchRoles(mixed $roles): array
+    {
+        if (!is_array($roles)) {
+            return [];
+        }
+
+        $selectedRoles = [];
+
+        foreach ($roles as $role) {
+            if (!is_string($role)) {
+                continue;
+            }
+
+            $enumRole = UserRole::tryFrom($role);
+
+            if (null !== $enumRole) {
+                $selectedRoles[] = $enumRole;
+            }
+        }
+
+        return $selectedRoles;
     }
 
     /**
