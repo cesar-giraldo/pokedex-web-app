@@ -18,6 +18,9 @@ nav:
     register: Create account
     menu: Menu
     language: Language
+    profile: Edit profile
+    favorites: Favorites
+    logout: Log out
 
 footer:
     tagline: A clear, fast Pokédex that is easy to browse.
@@ -114,11 +117,13 @@ contact:
 auth:
     unavailable: This feature is not available yet.
     login_title: Log in
-    login_description: Sign in with your email to continue. Access is not active yet.
+    login_description: Sign in with your nickname and password to continue.
     register_title: Create account
     register_description: Create an account to save your progress. Registration is not active yet.
+    nickname: Nickname
     email: Email
     password: Password
+    no_public_access: You do not have access to this section.
     password_confirm: Confirm password
     password_hint: At least 8 characters.
     name: Name
@@ -128,6 +133,42 @@ auth:
     no_account: No account yet?
     has_account: Already have an account?
     accept_terms: I accept the
+
+account:
+    profile_title: Edit profile
+    profile_description: Update your details, photo, and password.
+    profile_meta: Update your personal information.
+    info_title: Personal information
+    security_title: Password
+    lastname: Last name
+    country: Country
+    cellphone: Mobile number
+    timezone: Time zone
+    locale: Regional language
+    time_format: Time format
+    avatar: Profile photo
+    remove_avatar: Remove profile photo
+    save: Save changes
+    current_password: Current password
+    new_password: New password
+    confirm_password: Confirm password
+    save_password: Update password
+    info_saved: Your personal information was updated.
+    password_saved: Your password was updated.
+    info_error: Your profile could not be updated. Try again.
+    password_error: Your password could not be updated. Try again.
+    review_fields: Check the highlighted fields.
+    select_country: Select a country
+    select_timezone: Select a time zone
+    select_locale: Select a regional language
+    select_time_format: Select a time format
+    show_password: Show password
+    hide_password: Hide password
+
+favorites:
+    title: Favorites
+    meta_description: Your favorite Pokémon.
+    body: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet.
 
 legal:
     version: 'Version {number}'

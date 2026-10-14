@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Admin\Security;
 
-use App\Admin\Security\UserChecker;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use App\Security\AccountStatusUserChecker;
 use DateTime;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -16,11 +16,11 @@ use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusExce
 #[Group('unit')]
 final class UserCheckerTest extends TestCase
 {
-    private UserChecker $userChecker;
+    private AccountStatusUserChecker $userChecker;
 
     protected function setUp(): void
     {
-        $this->userChecker = new UserChecker();
+        $this->userChecker = new AccountStatusUserChecker();
     }
 
     public function testBlocksUnconfirmedAccount(): void
@@ -28,7 +28,7 @@ final class UserCheckerTest extends TestCase
         $user = $this->createUser(UserStatus::UnconfirmedAccount);
 
         $this->expectException(CustomUserMessageAccountStatusException::class);
-        $this->expectExceptionMessage('Debes confirmar tu cuenta antes de iniciar sesión.');
+        $this->expectExceptionMessage('account_unconfirmed');
 
         $this->userChecker->checkPreAuth($user);
     }
@@ -39,7 +39,7 @@ final class UserCheckerTest extends TestCase
         $user->setNoLoginUntil(new DateTime('+30 minutes'));
 
         $this->expectException(CustomUserMessageAccountStatusException::class);
-        $this->expectExceptionMessage('Has superado el número de intentos permitidos. Debes esperar 30 minutos');
+        $this->expectExceptionMessage('login_temporarily_blocked_other');
 
         $this->userChecker->checkPreAuth($user);
     }

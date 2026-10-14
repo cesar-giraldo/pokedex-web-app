@@ -219,6 +219,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return UserRole::fromStoredValues($this->roles);
     }
 
+    public function hasAssignedRole(UserRole $role): bool
+    {
+        return in_array($role, $this->getApplicationRoles(), true);
+    }
+
     /**
      * @param list<UserRole> $roles
      */

@@ -181,27 +181,22 @@ final class PublicPagesTest extends WebTestCase
         self::assertSame(['Pokemon not found'], $hiddenPayload['errors']);
     }
 
-    public function testLoginPostDoesNotAuthenticate(): void
+    public function testLoginPostDoesNotAuthenticateUnknownNickname(): void
     {
         $client = static::createClient();
         $locale = $this->defaultLocale();
-        /** @var TranslatorInterface $translator */
-        $translator = static::getContainer()->get(TranslatorInterface::class);
-        /** @var LocaleSwitcher $localeSwitcher */
-        $localeSwitcher = static::getContainer()->get(LocaleSwitcher::class);
-        $expected = $localeSwitcher->runWithLocale(
-            $locale,
-            static fn (): string => $translator->trans('auth.unavailable'),
-        );
+        $crawler = $client->request('GET', '/' . $locale . '/login');
+        $form = $crawler->filter('form')->form();
+        $form['_username'] = 'missing-user';
+        $form['_password'] = 'secret-secret';
+        $client->submit($form);
 
-        $client->request('POST', '/' . $locale . '/login', [
-            'email' => 'ada@example.com',
-            'password' => 'secret-secret',
-        ]);
-
-        self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('main [role="status"]', $expected);
+        self::assertResponseRedirects('/' . $locale . '/login');
+        $client->followRedirect();
+        self::assertSelectorNotExists('main [role="status"]');
+        self::assertSelectorExists('main [role="alert"]');
         self::assertNull($client->getRequest()->getSession()->get('_security_main'));
+        self::assertNull($client->getRequest()->getSession()->get('_security_public'));
     }
 
     public function testSeoFilesAdvertiseThePublicSite(): void

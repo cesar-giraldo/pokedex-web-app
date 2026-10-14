@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Security;
+namespace App\Security;
 
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusExce
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-final class UserChecker implements UserCheckerInterface
+final class AccountStatusUserChecker implements UserCheckerInterface
 {
     public function checkPreAuth(UserInterface $user, ?TokenInterface $token = null): void
     {
@@ -20,7 +20,12 @@ final class UserChecker implements UserCheckerInterface
         }
 
         if ($user->isLoginTemporarilyBlocked()) {
-            throw new CustomUserMessageAccountStatusException($user->loginTemporaryLockMessage());
+            $minutes = max($user->getRemainingLoginLockMinutes(), 1);
+
+            throw new CustomUserMessageAccountStatusException(
+                1 === $minutes ? 'login_temporarily_blocked_one' : 'login_temporarily_blocked_other',
+                ['%minutes%' => $minutes],
+            );
         }
 
         if (!$user->getStatus()->allowsBackendLogin()) {

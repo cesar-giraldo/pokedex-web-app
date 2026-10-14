@@ -1,0 +1,28 @@
+<div>
+    <label class="text-sm font-medium" for="{{ id }}">{{ label }}</label>
+    <input
+        id="{{ id }}"
+        name="{{ name }}"
+        type="{{ type }}"
+        value="{{ value }}"
+        class="field mt-2"
+        autocomplete="{{ autocomplete }}"
+        {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+        {% if maxLength > 0 %}maxlength="{{ maxLength }}"{% endif %}
+        {% if minLength > 0 %}minlength="{{ minLength }}"{% endif %}
+        {% if required %}required{% endif %}
+        {% if disabled %}disabled{% endif %}
+        {% if error %}
+            aria-invalid="true"
+            aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %}"
+        {% elseif help %}
+            aria-describedby="{{ id }}-help"
+        {% endif %}
+    >
+    {% if error %}
+        <p id="{{ id }}-error" class="field-error" role="alert">{{ error }}</p>
+    {% endif %}
+    {% if help %}
+        <p id="{{ id }}-help" class="mt-2 text-sm text-muted">{{ help }}</p>
+    {% endif %}
+</div>

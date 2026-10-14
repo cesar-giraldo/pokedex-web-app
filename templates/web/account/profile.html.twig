@@ -1,0 +1,198 @@
+{% extends '@web/base.html.twig' %}
+
+{% from '@web/macros/form.html.twig' import field_error %}
+
+{% block title %}{{ 'account.profile_title'|trans }} · {{ public_site_name() }}{% endblock %}
+{% block meta_description %}{{ 'account.profile_meta'|trans }}{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+
+{% block body %}
+    <div class="bg-surface px-4 py-16">
+        <div class="mx-auto max-w-2xl space-y-8">
+            <header>
+                <h1 class="text-3xl font-extrabold tracking-tight">{{ 'account.profile_title'|trans }}</h1>
+                <p class="mt-2 text-sm leading-6 text-muted">{{ 'account.profile_description'|trans }}</p>
+            </header>
+
+            <div class="space-y-3">
+                {% for message in app.flashes('success') %}
+                    <twig:web_alert variant="success" message="{{ message|trans }}" />
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <twig:web_alert variant="error" message="{{ message|trans }}" />
+                {% endfor %}
+            </div>
+
+            <section class="rounded-3xl bg-white p-8 ring-1 ring-black/5" aria-labelledby="profile-info-title">
+                <h2 id="profile-info-title" class="text-xl font-bold">{{ 'account.info_title'|trans }}</h2>
+                {% if user.profileImagePath %}
+                    <img
+                        class="mt-6 h-24 w-24 rounded-full object-cover"
+                        src="{{ path('app_public_profile_avatar', {_locale: app.request.locale}) }}"
+                        alt="{{ 'account.avatar'|trans }}"
+                        width="96"
+                        height="96"
+                    >
+                {% endif %}
+                {{ form_start(infoForm, { attr: { class: 'mt-6 space-y-4', 'data-turbo': 'false' } }) }}
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <twig:web_text_input
+                            label="{{ 'auth.name'|trans }}"
+                            name="{{ infoForm.name.vars.full_name }}"
+                            id="profile-name"
+                            value="{{ infoForm.name.vars.value }}"
+                            autocomplete="given-name"
+                            :maxLength="form_field_max_length(infoForm.name)"
+                            :required="true"
+                            error="{{ field_error(infoForm.name) }}"
+                        />
+                        <twig:web_text_input
+                            label="{{ 'account.lastname'|trans }}"
+                            name="{{ infoForm.lastname.vars.full_name }}"
+                            id="profile-lastname"
+                            value="{{ infoForm.lastname.vars.value }}"
+                            autocomplete="family-name"
+                            :maxLength="form_field_max_length(infoForm.lastname)"
+                            :required="true"
+                            error="{{ field_error(infoForm.lastname) }}"
+                        />
+                    </div>
+                    <twig:web_text_input
+                        label="{{ 'auth.email'|trans }}"
+                        name="{{ infoForm.email.vars.full_name }}"
+                        id="profile-email"
+                        type="email"
+                        value="{{ infoForm.email.vars.value }}"
+                        autocomplete="email"
+                        :maxLength="form_field_max_length(infoForm.email)"
+                        :required="true"
+                        error="{{ field_error(infoForm.email) }}"
+                    />
+                    <twig:web_text_input
+                        label="{{ 'auth.nickname'|trans }}"
+                        name="{{ infoForm.nickname.vars.full_name }}"
+                        id="profile-nickname"
+                        value="{{ infoForm.nickname.vars.value }}"
+                        autocomplete="username"
+                        :maxLength="form_field_max_length(infoForm.nickname)"
+                        :required="true"
+                        error="{{ field_error(infoForm.nickname) }}"
+                    />
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <twig:web_select
+                            label="{{ 'account.country'|trans }}"
+                            name="{{ infoForm.countryCode.vars.full_name }}"
+                            id="profile-country"
+                            placeholder="{{ 'account.select_country'|trans }}"
+                            :options="countryOptions"
+                            selected="{{ infoForm.countryCode.vars.data is not null ? infoForm.countryCode.vars.data : '' }}"
+                            :required="true"
+                            error="{{ field_error(infoForm.countryCode) }}"
+                        />
+                        <twig:web_text_input
+                            label="{{ 'account.cellphone'|trans }}"
+                            name="{{ infoForm.cellphone.vars.full_name }}"
+                            id="profile-cellphone"
+                            value="{{ infoForm.cellphone.vars.value }}"
+                            autocomplete="tel"
+                            :maxLength="form_field_max_length(infoForm.cellphone)"
+                            :required="true"
+                            error="{{ field_error(infoForm.cellphone) }}"
+                        />
+                    </div>
+                    <twig:web_select
+                        label="{{ 'account.timezone'|trans }}"
+                        name="{{ infoForm.timezone.vars.full_name }}"
+                        id="profile-timezone"
+                        placeholder="{{ 'account.select_timezone'|trans }}"
+                        :options="timezoneOptions"
+                        selected="{{ infoForm.timezone.vars.value }}"
+                        :required="true"
+                        error="{{ field_error(infoForm.timezone) }}"
+                    />
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <twig:web_select
+                            label="{{ 'account.locale'|trans }}"
+                            name="{{ infoForm.locale.vars.full_name }}"
+                            id="profile-locale"
+                            placeholder="{{ 'account.select_locale'|trans }}"
+                            :options="localeOptions"
+                            selected="{{ infoForm.locale.vars.data ? infoForm.locale.vars.data.value : '' }}"
+                            :required="true"
+                            error="{{ field_error(infoForm.locale) }}"
+                        />
+                        <twig:web_select
+                            label="{{ 'account.time_format'|trans }}"
+                            name="{{ infoForm.timeFormat.vars.full_name }}"
+                            id="profile-time-format"
+                            placeholder="{{ 'account.select_time_format'|trans }}"
+                            :options="timeFormatOptions"
+                            selected="{{ infoForm.timeFormat.vars.data ? infoForm.timeFormat.vars.data.value : '' }}"
+                            :required="true"
+                            error="{{ field_error(infoForm.timeFormat) }}"
+                        />
+                    </div>
+                    <twig:web_file_input
+                        label="{{ 'account.avatar'|trans }}"
+                        name="{{ infoForm.profileImage.vars.full_name }}"
+                        id="profile-avatar"
+                        accept="image/jpeg,image/png,image/webp"
+                        error="{{ field_error(infoForm.profileImage) }}"
+                    />
+                    {% if infoForm.removeProfileImage is defined %}
+                        <twig:web_checkbox
+                            label="{{ 'account.remove_avatar'|trans }}"
+                            name="{{ infoForm.removeProfileImage.vars.full_name }}"
+                            id="profile-remove-avatar"
+                            value="{{ infoForm.removeProfileImage.vars.value }}"
+                            :checked="infoForm.removeProfileImage.vars.checked"
+                        />
+                    {% endif %}
+                    {{ form_widget(infoForm._token) }}
+                    <twig:web_submit_button label="{{ 'account.save'|trans }}" />
+                {{ form_end(infoForm, { render_rest: false }) }}
+            </section>
+
+            <section class="rounded-3xl bg-white p-8 ring-1 ring-black/5" aria-labelledby="profile-password-title">
+                <h2 id="profile-password-title" class="text-xl font-bold">{{ 'account.security_title'|trans }}</h2>
+                {{ form_start(passwordForm, { attr: { class: 'mt-6 space-y-4', 'data-turbo': 'false' } }) }}
+                    <twig:web_password_input
+                        label="{{ 'account.current_password'|trans }}"
+                        name="{{ passwordForm.currentPassword.vars.full_name }}"
+                        id="profile-current-password"
+                        autocomplete="current-password"
+                        showLabel="{{ 'account.show_password'|trans }}"
+                        hideLabel="{{ 'account.hide_password'|trans }}"
+                        :maxLength="form_field_max_length(passwordForm.currentPassword)"
+                        :required="true"
+                        error="{{ field_error(passwordForm.currentPassword) }}"
+                    />
+                    <twig:web_password_input
+                        label="{{ 'account.new_password'|trans }}"
+                        name="{{ passwordForm.plainPassword.vars.full_name }}"
+                        id="profile-new-password"
+                        autocomplete="new-password"
+                        showLabel="{{ 'account.show_password'|trans }}"
+                        hideLabel="{{ 'account.hide_password'|trans }}"
+                        :maxLength="form_field_max_length(passwordForm.plainPassword)"
+                        :required="true"
+                        error="{{ field_error(passwordForm.plainPassword) }}"
+                    />
+                    <twig:web_password_input
+                        label="{{ 'account.confirm_password'|trans }}"
+                        name="{{ passwordForm.confirmPassword.vars.full_name }}"
+                        id="profile-confirm-password"
+                        autocomplete="new-password"
+                        showLabel="{{ 'account.show_password'|trans }}"
+                        hideLabel="{{ 'account.hide_password'|trans }}"
+                        :maxLength="form_field_max_length(passwordForm.confirmPassword)"
+                        :required="true"
+                        error="{{ field_error(passwordForm.confirmPassword) }}"
+                    />
+                    {{ form_widget(passwordForm._token) }}
+                    <twig:web_submit_button label="{{ 'account.save_password'|trans }}" />
+                {{ form_end(passwordForm, { render_rest: false }) }}
+            </section>
+        </div>
+    </div>
+{% endblock %}

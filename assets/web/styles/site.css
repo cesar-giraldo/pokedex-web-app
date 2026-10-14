@@ -55,6 +55,7 @@
     --color-muted: #6a6a6a;
     --color-canvas: #ffffff;
     --color-surface: #f5f5f5;
+    --color-danger: #b91c1c;
 }
 
 @layer base {
@@ -97,6 +98,25 @@
 
     .field {
         @apply w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base text-ink placeholder:text-muted focus:border-brand focus:outline-none;
+    }
+
+    .field[aria-invalid="true"],
+    .field[aria-invalid="true"]:focus {
+        border-color: var(--color-danger);
+    }
+
+    .field-error {
+        @apply mt-2 text-sm font-medium text-danger;
+    }
+
+    .alert-error {
+        background-color: #fef2f2;
+        color: var(--color-danger);
+    }
+
+    .alert-success {
+        background-color: #ecfdf5;
+        color: #065f46;
     }
 
     .legal-copy {

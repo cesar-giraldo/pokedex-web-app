@@ -5,3 +5,9 @@ Account is locked.: La cuenta está bloqueada.
 'Too many failed login attempts, please try again in %minutes% minute.': Demasiados intentos de inicio de sesión. Inténtalo de nuevo en %minutes% minuto.
 'Too many failed login attempts, please try again in %minutes% minutes.': Demasiados intentos de inicio de sesión. Inténtalo de nuevo en %minutes% minutos.
 'Too many failed login attempts, please try again later.': Demasiados intentos de inicio de sesión. Inténtalo de nuevo más tarde.
+account_unconfirmed: Debes confirmar tu cuenta antes de iniciar sesión.
+account_banned: Tu cuenta ha sido suspendida. Contacta al administrador.
+account_inactive: Tu cuenta está inactiva. Contacta al administrador.
+account_login_denied: No puedes iniciar sesión en este momento.
+login_temporarily_blocked_one: Has superado el número de intentos permitidos. Debes esperar %minutes% minuto para volver a intentarlo.
+login_temporarily_blocked_other: Has superado el número de intentos permitidos. Debes esperar %minutes% minutos para volver a intentarlo.

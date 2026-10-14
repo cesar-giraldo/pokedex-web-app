@@ -24,10 +24,37 @@ security:
             # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
+        public:
+            pattern: ^/(es|en|pt|fr)(/|$)
+            lazy: true
+            provider: app_user_provider
+            user_checker: App\Security\AccountStatusUserChecker
+            login_throttling:
+                max_attempts: 10
+                interval: '15 minutes'
+            form_login:
+                login_path: app_public_login
+                check_path: app_public_login
+                enable_csrf: true
+                csrf_token_id: authenticate_public
+                username_parameter: _username
+                password_parameter: _password
+            logout:
+                path: app_public_logout
+                target: app_public_login
+                invalidate_session: false
+                delete_cookies:
+                    PUBLIC_REMEMBERME: { path: '/', samesite: lax }
+            remember_me:
+                name: PUBLIC_REMEMBERME
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                path: /
+                samesite: lax
         main:
             lazy: true
             provider: app_user_provider
-            user_checker: App\Admin\Security\UserChecker
+            user_checker: App\Security\AccountStatusUserChecker
             login_throttling:
                 max_attempts: 10
                 interval: '15 minutes'
@@ -56,6 +83,8 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
+        - { path: ^/(es|en|pt|fr)/profile, roles: PUBLIC_ACCOUNT }
+        - { path: ^/(es|en|pt|fr)/favorites$, roles: PUBLIC_ACCOUNT }
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/(es|en|pt|fr)(/|$), roles: PUBLIC_ACCESS }
         - { path: ^/sitemap\.xml$, roles: PUBLIC_ACCESS }
@@ -84,6 +113,10 @@ when@test:
                 time_cost: 3 # Lowest possible value for argon
                 memory_cost: 10 # Lowest possible value for argon
         firewalls:
+            public:
+                login_throttling:
+                    max_attempts: 1000
+                    interval: '1 minute'
             main:
                 login_throttling:
                     max_attempts: 1000

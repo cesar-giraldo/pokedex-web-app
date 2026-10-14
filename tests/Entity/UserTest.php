@@ -101,12 +101,24 @@ final class UserTest extends TestCase
         self::assertNull($user->getLastLoginIp());
     }
 
-    public function testStatusMessagesAreDefinedInSpanish(): void
+    public function testLoginDeniedMessageUsesTranslationKey(): void
     {
         self::assertSame(
-            'Debes confirmar tu cuenta antes de iniciar sesión.',
+            'account_unconfirmed',
             UserStatus::UnconfirmedAccount->loginDeniedMessage(),
         );
+    }
+
+    public function testHasAssignedRoleChecksStoredRoles(): void
+    {
+        $user = new User()->setApplicationRoles([UserRole::Admin]);
+
+        self::assertFalse($user->hasAssignedRole(UserRole::User));
+
+        $user->addApplicationRole(UserRole::User);
+
+        self::assertTrue($user->hasAssignedRole(UserRole::User));
+        self::assertTrue($user->hasAssignedRole(UserRole::Admin));
     }
 
     public function testNormalizesEmailToLowerCase(): void

@@ -1,0 +1,29 @@
+<div>
+    <label class="text-sm font-medium" for="{{ id }}">{{ label }}</label>
+    <select
+        id="{{ id }}"
+        name="{{ name }}"
+        class="field mt-2"
+        {% if required %}required{% endif %}
+        {% if disabled %}disabled{% endif %}
+        {% if error %}
+            aria-invalid="true"
+            aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %}"
+        {% elseif help %}
+            aria-describedby="{{ id }}-help"
+        {% endif %}
+    >
+        {% if placeholder %}
+            <option value="">{{ placeholder }}</option>
+        {% endif %}
+        {% for value, optionLabel in options %}
+            <option value="{{ value }}" {% if value == selected %}selected{% endif %}>{{ optionLabel }}</option>
+        {% endfor %}
+    </select>
+    {% if error %}
+        <p id="{{ id }}-error" class="field-error" role="alert">{{ error }}</p>
+    {% endif %}
+    {% if help %}
+        <p id="{{ id }}-help" class="mt-2 text-sm text-muted">{{ help }}</p>
+    {% endif %}
+</div>
