@@ -81,6 +81,7 @@ final class PublicAuthenticationTest extends WebTestCase
         $client->followRedirect();
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('.account-menu', 'Ada');
+        self::assertSelectorCount(3, '.account-menu .account-menu-icon');
         self::assertSelectorNotExists('.header-login');
         self::assertNotNull($client->getRequest()->getSession()->get('_security_public'));
     }
