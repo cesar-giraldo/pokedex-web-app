@@ -1,1 +1,11 @@
-<button class="btn btn-primary w-full" type="submit">{{ label }}</button>
+<button
+    type="submit"
+    class="btn btn-primary w-full"
+    data-controller="submit-button"
+    data-submit-button-label-value="{{ label }}"
+    data-submit-button-processing-label-value="{{ processingLabel ?: 'form.processing'|trans }}"
+    data-submit-button-disabled-value="{{ disabled ? 'true' : 'false' }}"
+    {% if id is not empty %}id="{{ id }}"{% endif %}
+    {% if name is not empty %}name="{{ name }}"{% endif %}
+    {% if disabled %}disabled{% endif %}
+>{{ label }}</button>

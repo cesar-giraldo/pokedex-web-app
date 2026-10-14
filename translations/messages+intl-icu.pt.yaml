@@ -134,6 +134,9 @@ auth:
     has_account: Já tem conta?
     accept_terms: Aceito os
 
+form:
+    processing: Processando...
+
 account:
     profile_title: Editar perfil
     profile_description: Atualize seus dados, sua foto e sua senha.

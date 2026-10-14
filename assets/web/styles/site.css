@@ -92,6 +92,17 @@
         @apply bg-brand text-white hover:bg-black;
     }
 
+    .btn:disabled,
+    .btn:disabled:hover {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .btn-primary:disabled,
+    .btn-primary:disabled:hover {
+        background-color: var(--color-brand);
+    }
+
     .btn-secondary {
         @apply bg-white text-ink ring-1 ring-black/10 hover:ring-brand;
     }

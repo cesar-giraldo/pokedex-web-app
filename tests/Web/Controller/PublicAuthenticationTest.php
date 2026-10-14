@@ -226,6 +226,11 @@ final class PublicAuthenticationTest extends WebTestCase
         $client->loginUser($this->reload($nickname), 'public');
 
         $crawler = $client->request('GET', '/' . $locale . '/profile');
+        self::assertSelectorCount(2, '[data-controller="submit-button"]');
+        self::assertSame(
+            $this->trans($locale, 'form.processing'),
+            $crawler->filter('form[name="user_profile_info"] [data-controller="submit-button"]')->attr('data-submit-button-processing-label-value'),
+        );
         $form = $crawler->filter('form[name="user_profile_password"]')->form();
         $form['user_profile_password[currentPassword]'] = self::PASSWORD;
         $form['user_profile_password[plainPassword]'] = 'Secret456';

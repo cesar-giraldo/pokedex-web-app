@@ -134,6 +134,9 @@ auth:
     has_account: Already have an account?
     accept_terms: I accept the
 
+form:
+    processing: Processing...
+
 account:
     profile_title: Edit profile
     profile_description: Update your details, photo, and password.
