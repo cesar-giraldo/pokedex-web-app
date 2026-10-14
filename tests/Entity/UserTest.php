@@ -185,6 +185,17 @@ final class UserTest extends TestCase
         self::assertSame('+57 3001234567', $user->getFormattedPhone());
     }
 
+    public function testPasswordCountsAsUnchangedWhenItMatchesAccountCreation(): void
+    {
+        $user = new User();
+
+        self::assertFalse($user->hasUpdatedPasswordSinceCreation());
+
+        $user->setPasswordUpdatedAt(new DateTime('+1 hour'));
+
+        self::assertTrue($user->hasUpdatedPasswordSinceCreation());
+    }
+
     public function testReturnsPrimaryApplicationRoleByHierarchy(): void
     {
         $user = new User()

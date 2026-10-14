@@ -159,6 +159,8 @@ account:
     new_password: Nueva contraseña
     confirm_password: Confirmar contraseña
     save_password: Actualizar contraseña
+    password_unchanged: No se ha cambiado desde que se creó la cuenta.
+    password_last_updated: 'Última actualización: {date}'
     complete_profile: Debes completar la información de tu perfil para continuar.
     info_saved: Tu información personal se actualizó correctamente.
     password_saved: Tu contraseña se actualizó correctamente.

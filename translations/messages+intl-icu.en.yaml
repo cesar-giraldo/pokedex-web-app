@@ -159,6 +159,8 @@ account:
     new_password: New password
     confirm_password: Confirm password
     save_password: Update password
+    password_unchanged: It has not been changed since the account was created.
+    password_last_updated: 'Last updated: {date}'
     complete_profile: Complete your profile information to continue.
     info_saved: Your personal information was updated.
     password_saved: Your password was updated.

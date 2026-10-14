@@ -159,6 +159,8 @@ account:
     new_password: Nouveau mot de passe
     confirm_password: Confirmer le mot de passe
     save_password: Mettre à jour le mot de passe
+    password_unchanged: Il n’a pas été modifié depuis la création du compte.
+    password_last_updated: 'Dernière mise à jour : {date}'
     complete_profile: Complétez les informations de votre profil pour continuer.
     info_saved: Vos informations personnelles ont été mises à jour.
     password_saved: Votre mot de passe a été mis à jour.

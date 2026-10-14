@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Web\Controller;
 
+use App\Admin\Service\DateTimeFormatter;
 use App\Admin\Service\GeneralSettingsProvider;
 use App\Admin\Service\Storage\UserProfileImageStorage;
 use App\Entity\Enum\UserRole;
@@ -227,9 +228,17 @@ final class PublicAuthenticationTest extends WebTestCase
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('pwd' . bin2hex(random_bytes(3)));
         $this->createUser($nickname, [UserRole::User], UserStatus::Active, 'Ada', 'pwd-' . $nickname . '@example.com', 57, $this->phone());
+        $account = $this->reload($nickname);
+        $createdAt = new DateTime('-2 days');
+        $account->setCreatedAt($createdAt);
+        $account->setPasswordUpdatedAt($createdAt);
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->flush();
         $client->loginUser($this->reload($nickname), 'public');
 
         $crawler = $client->request('GET', '/' . $locale . '/profile');
+        self::assertSelectorTextContains('#profile-password-updated', $this->trans($locale, 'account.password_unchanged'));
         self::assertSelectorTextContains('#profile-avatar-help', $this->trans($locale, 'account.avatar_help'));
         self::assertSelectorNotExists('#profile-remove-avatar');
         self::assertSelectorCount(3, '[data-controller="password-input"]');
@@ -249,9 +258,16 @@ final class PublicAuthenticationTest extends WebTestCase
         $client->followRedirect();
         self::assertSelectorTextContains('main [role="status"]', $this->trans($locale, 'account.password_saved'));
 
+        $updated = $this->reload($nickname);
+        /** @var DateTimeFormatter $dates */
+        $dates = static::getContainer()->get(DateTimeFormatter::class);
+        self::assertSelectorTextContains('#profile-password-updated', $this->trans($locale, 'account.password_last_updated', 'messages', [
+            'date' => $dates->format($updated->getPasswordUpdatedAt(), '—', $updated),
+        ]));
+
         /** @var UserPasswordHasherInterface $hasher */
         $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
-        self::assertTrue($hasher->isPasswordValid($this->reload($nickname), 'Secret456'));
+        self::assertTrue($hasher->isPasswordValid($updated, 'Secret456'));
     }
 
     public function testInvalidFieldsRenderErrorMessages(): void

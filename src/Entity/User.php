@@ -369,6 +369,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function hasUpdatedPasswordSinceCreation(): bool
+    {
+        return $this->passwordUpdatedAt->getTimestamp() !== $this->createdAt->getTimestamp();
+    }
+
     public function getNoLoginUntil(): ?DateTimeInterface
     {
         return $this->noLoginUntil;

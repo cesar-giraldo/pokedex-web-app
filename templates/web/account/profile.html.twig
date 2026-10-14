@@ -168,6 +168,13 @@
 
             <section class="rounded-3xl bg-white p-8 ring-1 ring-black/5" aria-labelledby="profile-password-title">
                 <h2 id="profile-password-title" class="text-xl font-bold">{{ 'account.security_title'|trans }}</h2>
+                <p id="profile-password-updated" class="mt-2 text-sm text-muted">
+                    {% if user.hasUpdatedPasswordSinceCreation %}
+                        {{ 'account.password_last_updated'|trans({date: user.passwordUpdatedAt|app_datetime}) }}
+                    {% else %}
+                        {{ 'account.password_unchanged'|trans }}
+                    {% endif %}
+                </p>
                 {{ form_start(passwordForm, { attr: { class: 'mt-6 space-y-4', 'data-turbo': 'false' } }) }}
                     <twig:web_password_input
                         label="{{ 'account.current_password'|trans }}"
