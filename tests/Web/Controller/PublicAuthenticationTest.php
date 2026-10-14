@@ -228,6 +228,8 @@ final class PublicAuthenticationTest extends WebTestCase
         $crawler = $client->request('GET', '/' . $locale . '/profile');
         self::assertSelectorTextContains('#profile-avatar-help', $this->trans($locale, 'account.avatar_help'));
         self::assertSelectorNotExists('#profile-remove-avatar');
+        self::assertSelectorCount(3, '[data-controller="password-input"]');
+        self::assertSelectorExists('[data-action="click->password-input#toggleVisibility"]');
         self::assertSelectorCount(2, '[data-controller="submit-button"]');
         self::assertSame(
             $this->trans($locale, 'form.processing'),
