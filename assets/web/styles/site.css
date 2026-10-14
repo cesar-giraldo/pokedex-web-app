@@ -276,6 +276,14 @@
         text-underline-offset: 3px;
     }
 
+    .account-menu-chevron {
+        transition: transform 300ms;
+    }
+
+    .account-menu[open] .account-menu-chevron {
+        transform: rotate(180deg);
+    }
+
     .site-summary {
         list-style: none;
     }

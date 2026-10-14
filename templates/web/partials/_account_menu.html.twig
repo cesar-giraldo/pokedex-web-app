@@ -21,7 +21,7 @@
         {{ 'nav.logout'|trans }}
     </a>
 {% else %}
-    <details class="account-menu relative">
+    <details class="account-menu relative" data-controller="account-menu">
         <summary class="flex cursor-pointer list-none items-center gap-2 rounded-full py-1 pr-2 pl-1 text-sm font-semibold text-ink [&::-webkit-details-marker]:hidden">
             {% if app.user.profileImagePath %}
                 <img src="{{ path('app_public_profile_avatar', {_locale: locale}) }}" alt="" width="36" height="36" class="h-9 w-9 rounded-full object-cover">
@@ -29,7 +29,7 @@
                 <span class="grid h-9 w-9 place-items-center rounded-full bg-brand text-sm font-bold text-white" aria-hidden="true">{{ app.user.name|slice(0, 1)|upper }}</span>
             {% endif %}
             <span class="max-w-32 truncate">{{ app.user.name }}</span>
-            {{ ux_icon('heroicons:chevron-down', { class: 'h-4 w-4' }) }}
+            {{ ux_icon('heroicons:chevron-down', { class: 'account-menu-chevron h-4 w-4', 'aria-hidden': 'true' }) }}
         </summary>
         <div class="absolute right-0 z-20 mt-2 w-56 rounded-3xl bg-white p-3 shadow-lg ring-1 ring-black/10">
             <p class="px-2 pb-2 text-sm text-muted">{{ app.user.name }} {{ app.user.lastname }}</p>
