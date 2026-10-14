@@ -112,8 +112,90 @@
     }
 
     .field[aria-invalid="true"],
-    .field[aria-invalid="true"]:focus {
+    .field[aria-invalid="true"]:focus,
+    .file-field[aria-invalid="true"],
+    .file-field[aria-invalid="true"]:focus {
         border-color: var(--color-danger);
+    }
+
+    .file-field {
+        display: block;
+        width: 100%;
+        height: 3rem;
+        overflow: hidden;
+        border-radius: 1rem;
+        border: 1px solid rgb(0 0 0 / 0.1);
+        background: #fff;
+        font-size: 0.875rem;
+        line-height: 3rem;
+        color: var(--color-muted);
+    }
+
+    .file-field:focus {
+        border-color: var(--color-brand);
+        outline: none;
+    }
+
+    .file-field::file-selector-button,
+    .file-field::-webkit-file-upload-button {
+        margin-right: 1rem;
+        height: 3rem;
+        border: 0;
+        border-right: 1px solid rgb(0 0 0 / 0.1);
+        background: #fff;
+        padding: 0 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-ink);
+        cursor: pointer;
+    }
+
+    .toggle {
+        position: relative;
+        display: inline-flex;
+        flex-shrink: 0;
+    }
+
+    .toggle input:focus-visible {
+        outline: none;
+    }
+
+    .toggle input:focus-visible + .toggle-track {
+        outline: 2px solid var(--color-brand);
+        outline-offset: 3px;
+    }
+
+    .toggle-track {
+        display: block;
+        width: 2.75rem;
+        height: 1.5rem;
+        border-radius: 9999px;
+        background: #e5e5e5;
+        transition: background-color 200ms linear;
+    }
+
+    .toggle-knob {
+        position: absolute;
+        top: 0.125rem;
+        left: 0.125rem;
+        height: 1.25rem;
+        width: 1.25rem;
+        border-radius: 9999px;
+        background: #fff;
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.16);
+        transition: transform 200ms linear;
+    }
+
+    .toggle input:checked + .toggle-track {
+        background: var(--color-brand);
+    }
+
+    .toggle input:checked + .toggle-track .toggle-knob {
+        transform: translateX(1.25rem);
+    }
+
+    .toggle input:disabled + .toggle-track {
+        opacity: 0.6;
     }
 
     .field-error {

@@ -150,8 +150,10 @@ account:
     timezone: Zona horaria
     locale: Idioma regional
     time_format: Formato de hora
-    avatar: Foto de perfil
-    remove_avatar: Quitar foto de perfil
+    avatar: Imagen de perfil
+    avatar_help: 'Opcional. JPG, PNG o WebP. Tamaño máximo: 6 MB.'
+    remove_avatar: Eliminar imagen actual
+    remove_avatar_help: Al activarlo se quitará la imagen de perfil al guardar.
     save: Guardar cambios
     current_password: Contraseña actual
     new_password: Nueva contraseña

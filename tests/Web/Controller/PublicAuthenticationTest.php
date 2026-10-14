@@ -226,6 +226,8 @@ final class PublicAuthenticationTest extends WebTestCase
         $client->loginUser($this->reload($nickname), 'public');
 
         $crawler = $client->request('GET', '/' . $locale . '/profile');
+        self::assertSelectorTextContains('#profile-avatar-help', $this->trans($locale, 'account.avatar_help'));
+        self::assertSelectorNotExists('#profile-remove-avatar');
         self::assertSelectorCount(2, '[data-controller="submit-button"]');
         self::assertSame(
             $this->trans($locale, 'form.processing'),
@@ -335,6 +337,11 @@ final class PublicAuthenticationTest extends WebTestCase
         $client->request('GET', '/' . $locale . '/profile/avatar');
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('image/', (string) $client->getResponse()->headers->get('Content-Type'));
+
+        $client->request('GET', '/' . $locale . '/profile');
+        self::assertSelectorExists('#profile-remove-avatar[role="switch"]');
+        self::assertSelectorExists('[data-controller="toggle"]');
+        self::assertSelectorTextContains('#profile-remove-avatar-help', $this->trans($locale, 'account.remove_avatar_help'));
     }
 
     private function submitLogin(KernelBrowser $client, string $locale, string $nickname, string $password): void

@@ -16,7 +16,7 @@
         {{ menu.option_icon('heroicons:heart') }}
         {{ 'nav.favorites'|trans }}
     </a>
-    <a class="btn btn-primary" href="{{ path('app_public_logout', {_locale: locale}) }}">
+    <a class="btn btn-primary" data-turbo-prefetch="false" href="{{ path('app_public_logout', {_locale: locale}) }}">
         {{ menu.option_icon('heroicons:arrow-left-start-on-rectangle') }}
         {{ 'nav.logout'|trans }}
     </a>
@@ -42,7 +42,7 @@
                     {{ menu.option_icon('heroicons:heart') }}
                     {{ 'nav.favorites'|trans }}
                 </a>
-                <a class="flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-surface" href="{{ path('app_public_logout', {_locale: locale}) }}">
+                <a class="flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-surface" data-turbo-prefetch="false" href="{{ path('app_public_logout', {_locale: locale}) }}">
                     {{ menu.option_icon('heroicons:arrow-left-start-on-rectangle') }}
                     {{ 'nav.logout'|trans }}
                 </a>

@@ -19,7 +19,7 @@ use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
  *     :required="false"
  *     :disabled="false"
  *     error="Debes seleccionar un archivo válido."
- *     help="Texto de ayuda opcional."
+ *     help="Opcional. JPG, PNG o WebP. Tamaño máximo: 6 MB."
  * />
  *
  * Props:
