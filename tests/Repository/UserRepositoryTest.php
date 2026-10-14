@@ -61,7 +61,7 @@ final class UserRepositoryTest extends KernelTestCase
         self::assertSame($user->getId(), $found->getId());
     }
 
-    public function testFindBackendUsersQueryBuilderReturnsOnlyBackendUsers(): void
+    public function testFindBackendUsersQueryBuilderIncludesPublicUsers(): void
     {
         $repository = $this->getRepository();
         $developer = $this->createUser('repo-dev', UserRole::Developer);
@@ -77,7 +77,7 @@ final class UserRepositoryTest extends KernelTestCase
 
         self::assertContains($developer->getNickname(), $nicknames);
         self::assertContains($admin->getNickname(), $nicknames);
-        self::assertNotContains($client->getNickname(), $nicknames);
+        self::assertContains($client->getNickname(), $nicknames);
     }
 
     public function testFindBackendUsersQueryBuilderFiltersBySearchTerm(): void

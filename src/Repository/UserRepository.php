@@ -86,12 +86,16 @@ class UserRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('u');
         $rolesAsText = 'JSON_AS_TEXT(u.roles)';
 
-        $qb->andWhere(
-            $rolesAsText . ' LIKE :adminRole OR ' . $rolesAsText . ' LIKE :developerRole OR ' . $rolesAsText . ' LIKE :operatorRole',
-        )
+        $qb->andWhere($qb->expr()->orX(
+            $rolesAsText . ' LIKE :adminRole',
+            $rolesAsText . ' LIKE :developerRole',
+            $rolesAsText . ' LIKE :operatorRole',
+            $rolesAsText . ' LIKE :userRole',
+        ))
             ->setParameter('adminRole', '%"' . UserRole::Admin->value . '"%')
             ->setParameter('developerRole', '%"' . UserRole::Developer->value . '"%')
-            ->setParameter('operatorRole', '%"' . UserRole::Operator->value . '"%');
+            ->setParameter('operatorRole', '%"' . UserRole::Operator->value . '"%')
+            ->setParameter('userRole', '%"' . UserRole::User->value . '"%');
 
         if ($options['excludeHidden'] ?? false) {
             $qb->andWhere('u.isHidden IS NULL OR u.isHidden = false');
