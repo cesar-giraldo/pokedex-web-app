@@ -21,9 +21,14 @@ use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
  *     message="Tu contraseña se actualizó correctamente."
  * />
  *
+ * <twig:web_alert
+ *     variant="warning"
+ *     message="Debes completar la información de tu perfil para continuar."
+ * />
+ *
  * Props:
  * - message: texto del aviso (vacío oculta el aviso)
- * - variant: error, success o status
+ * - variant: error, success, warning o status
  *
  * Incluye un botón con heroicons:x-mark que quita el aviso de la página.
  */

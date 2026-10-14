@@ -159,6 +159,7 @@ account:
     new_password: New password
     confirm_password: Confirm password
     save_password: Update password
+    complete_profile: Complete your profile information to continue.
     info_saved: Your personal information was updated.
     password_saved: Your password was updated.
     info_error: Your profile could not be updated. Try again.

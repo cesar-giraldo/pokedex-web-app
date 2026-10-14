@@ -15,6 +15,9 @@
             </header>
 
             <div class="space-y-3">
+                {% if user.status.value == 'uncomplete_profile_info' %}
+                    <twig:web_alert variant="warning" message="{{ 'account.complete_profile'|trans }}" />
+                {% endif %}
                 {% for message in app.flashes('success') %}
                     <twig:web_alert variant="success" message="{{ message|trans }}" />
                 {% endfor %}

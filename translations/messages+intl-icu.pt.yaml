@@ -159,6 +159,7 @@ account:
     new_password: Nova senha
     confirm_password: Confirmar senha
     save_password: Atualizar senha
+    complete_profile: Complete as informações do seu perfil para continuar.
     info_saved: Suas informações pessoais foram atualizadas.
     password_saved: Sua senha foi atualizada.
     info_error: Não foi possível atualizar seu perfil. Tente de novo.

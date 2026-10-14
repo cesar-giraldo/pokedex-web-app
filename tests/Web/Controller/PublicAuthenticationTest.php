@@ -184,6 +184,8 @@ final class PublicAuthenticationTest extends WebTestCase
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
         $client->followRedirect();
         self::assertSelectorTextContains('h1', $this->trans($locale, 'account.profile_title'));
+        self::assertSelectorExists('main .alert-warning[role="alert"]');
+        self::assertSelectorTextContains('main .alert-warning', $this->trans($locale, 'account.complete_profile'));
 
         $client->request('GET', '/' . $locale);
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
@@ -210,6 +212,8 @@ final class PublicAuthenticationTest extends WebTestCase
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
         $updated = $this->reload($nickname);
         self::assertSame(UserStatus::Active, $updated->getStatus());
+        $client->followRedirect();
+        self::assertSelectorNotExists('main .alert-warning');
 
         $client->request('GET', '/' . $locale . '/favorites');
         self::assertResponseIsSuccessful();
