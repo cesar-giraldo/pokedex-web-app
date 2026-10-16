@@ -1,0 +1,14 @@
+<div class="impersonation-banner">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+        <p class="text-sm font-medium">
+            {{ 'impersonation.viewing_as'|trans({
+                name: app.user.name|title,
+                lastname: app.user.lastname|title,
+                nickname: app.user.nickname,
+            }) }}
+        </p>
+        <a href="{{ path('app_public_impersonation_exit', {_locale: app.request.locale}) }}" data-turbo-prefetch="false" class="text-sm font-semibold underline-offset-2 hover:underline">
+            {{ 'impersonation.exit'|trans }}
+        </a>
+    </div>
+</div>

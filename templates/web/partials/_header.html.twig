@@ -5,7 +5,7 @@
 {% if app.user %}
     {% set is_account_user = app.user.hasAssignedRole(constant('App\\Entity\\Enum\\UserRole::User')) %}
 {% endif %}
-<header class="sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur">
+<header class="border-b border-black/5 bg-white/90 backdrop-blur">
     <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
         <a href="{{ path('app_public_home', {_locale: locale}) }}" class="flex min-w-0 items-center gap-3">
             {% if site_icon %}

@@ -12,6 +12,8 @@ use App\Web\Service\PublicLegalAvailability;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -30,6 +32,7 @@ final class PublicSiteExtension extends AbstractExtension
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly RequestStack $requestStack,
         private readonly TranslatorInterface $translator,
+        private readonly TokenStorageInterface $tokenStorage,
     ) {
     }
 
@@ -46,7 +49,13 @@ final class PublicSiteExtension extends AbstractExtension
             new TwigFunction('public_og_locale', $this->ogLocale(...)),
             new TwigFunction('public_absolute_url', $this->absoluteUrl(...)),
             new TwigFunction('public_legal_links', $this->legalLinks(...)),
+            new TwigFunction('is_public_impersonating', $this->isImpersonating(...)),
         ];
+    }
+
+    public function isImpersonating(): bool
+    {
+        return $this->tokenStorage->getToken() instanceof SwitchUserToken;
     }
 
     public function siteName(): string

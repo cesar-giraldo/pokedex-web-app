@@ -9,6 +9,7 @@ use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Security\PublicUserImpersonator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -18,9 +19,11 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
+use Symfony\Component\Security\Http\Event\LogoutEvent;
 
 use function is_string;
 use function preg_match;
@@ -38,6 +41,7 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         private readonly EntityManagerInterface $entityManager,
         private readonly TokenStorageInterface $tokenStorage,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly PublicUserImpersonator $publicUserImpersonator,
     ) {
     }
 
@@ -46,6 +50,7 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         return [
             LoginFailureEvent::class => 'onLoginFailure',
             LoginSuccessEvent::class => 'onLoginSuccess',
+            LogoutEvent::class => ['onLogout', 100],
             KernelEvents::REQUEST => [
                 ['normalizeLoginNickname', 12],
                 ['guardIncompleteProfile', 7],
@@ -156,6 +161,25 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         ));
     }
 
+    public function onLogout(LogoutEvent $event): void
+    {
+        $request = $event->getRequest();
+
+        if ('security.firewall.map.context.public' !== $request->attributes->get('_firewall_context')) {
+            return;
+        }
+
+        if (!$event->getToken() instanceof SwitchUserToken) {
+            return;
+        }
+
+        $this->publicUserImpersonator->stop($request);
+
+        $event->setResponse(new RedirectResponse(
+            $this->urlGenerator->generate('app_backend_users'),
+        ));
+    }
+
     public function guardIncompleteProfile(RequestEvent $event): void
     {
         if (!$event->isMainRequest()) {
@@ -198,6 +222,10 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         }
 
         if (1 === preg_match(sprintf('#^/(%s)/logout$#', $locale), $path)) {
+            return true;
+        }
+
+        if (1 === preg_match(sprintf('#^/(%s)/impersonation/exit$#', $locale), $path)) {
             return true;
         }
 

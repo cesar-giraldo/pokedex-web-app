@@ -220,6 +220,12 @@
         color: #b54708;
     }
 
+    .impersonation-banner {
+        border-bottom: 1px solid rgb(247 144 9 / 0.3);
+        background-color: #fffaeb;
+        color: #93370d;
+    }
+
     .alert-dismiss {
         display: inline-flex;
         flex-shrink: 0;

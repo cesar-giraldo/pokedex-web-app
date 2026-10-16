@@ -22,6 +22,10 @@ nav:
     favorites: Favoritos
     logout: Cerrar sesión
 
+impersonation:
+    viewing_as: 'Estás viendo la aplicación como {name} {lastname} (@{nickname})'
+    exit: Volver a mi sesión
+
 footer:
     tagline: Un Pokédex claro, rápido y fácil de recorrer.
     explore: Explorar

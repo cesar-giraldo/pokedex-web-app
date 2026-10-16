@@ -25,6 +25,7 @@ use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Security\PublicUserImpersonator;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -98,6 +99,7 @@ final class UserController extends AbstractController
 
         $editableUserIds = [];
         $impersonatableUserIds = [];
+        $webImpersonatableUserIds = [];
 
         foreach ($pagination['entities']->getCurrentPageResults() as $listedUser) {
             if ($listedUser instanceof User && $userManagementPolicy->canEdit($currentUser, $listedUser)) {
@@ -109,6 +111,13 @@ final class UserController extends AbstractController
                 && $impersonationPolicy->canImpersonate($currentUser, $listedUser)
             ) {
                 $impersonatableUserIds[] = $listedUser->getId();
+            }
+
+            if (
+                $listedUser instanceof User
+                && $impersonationPolicy->canImpersonateOnWeb($currentUser, $listedUser)
+            ) {
+                $webImpersonatableUserIds[] = $listedUser->getId();
             }
         }
 
@@ -123,7 +132,39 @@ final class UserController extends AbstractController
             'current_user' => $currentUser,
             'editable_user_ids' => $editableUserIds,
             'impersonatable_user_ids' => $impersonatableUserIds,
+            'web_impersonatable_user_ids' => $webImpersonatableUserIds,
             ...$pagination,
+        ]);
+    }
+
+    #[Route('/users/{id}/impersonate-web', name: 'app_backend_user_impersonate_web', methods: ['POST'], requirements: ['id' => '\d+'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function impersonateOnWeb(
+        User $user,
+        Request $request,
+        ImpersonationPolicy $impersonationPolicy,
+        PublicUserImpersonator $publicUserImpersonator,
+    ): Response {
+        if (!$this->isCsrfTokenValid('impersonate-web-' . $user->getId(), (string) $request->request->get('_token'))) {
+            throw new AccessDeniedHttpException('No tienes permiso para impersonar usuarios.');
+        }
+
+        /** @var User $impersonator */
+        $impersonator = $this->getUser();
+
+        if (!$impersonationPolicy->canImpersonateOnWeb($impersonator, $user)) {
+            throw new AccessDeniedHttpException('No puedes impersonar este usuario.');
+        }
+
+        $publicUserImpersonator->start($request, $impersonator, $user);
+
+        $locale = $user->getLocale()->language()->value;
+        $route = UserStatus::UncompleteProfileInfo === $user->getStatus()
+            ? 'app_public_profile'
+            : 'app_public_home';
+
+        return $this->redirectToRoute($route, [
+            '_locale' => $locale,
         ]);
     }
 

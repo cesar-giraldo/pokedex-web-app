@@ -11,6 +11,9 @@ use App\Security\AccountStatusUserChecker;
 use DateTime;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 
 #[Group('unit')]
@@ -42,6 +45,20 @@ final class UserCheckerTest extends TestCase
         $this->expectExceptionMessage('login_temporarily_blocked_other');
 
         $this->userChecker->checkPreAuth($user);
+    }
+
+    public function testImpersonationSkipsTemporaryLoginLock(): void
+    {
+        $user = $this->createUser(UserStatus::Active);
+        $user->setNoLoginUntil(new DateTime('+30 minutes'));
+        $tokenStorage = new TokenStorage();
+        $originalToken = new UsernamePasswordToken($user, 'main', $user->getRoles());
+        $tokenStorage->setToken(new SwitchUserToken($user, 'public', $user->getRoles(), $originalToken));
+        $checker = new AccountStatusUserChecker($tokenStorage);
+
+        $checker->checkPreAuth($user);
+
+        self::assertTrue($user->isLoginTemporarilyBlocked());
     }
 
     public function testAllowsIncompleteProfileLogin(): void
