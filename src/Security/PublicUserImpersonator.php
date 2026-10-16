@@ -12,6 +12,10 @@ use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * Stores a SwitchUserToken in the public firewall session.
+ * That session must stay on the server, with an HttpOnly cookie.
+ */
 final class PublicUserImpersonator
 {
     public const string FIREWALL = 'public';

@@ -111,6 +111,12 @@
         @apply w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base text-ink placeholder:text-muted focus:border-brand focus:outline-none;
     }
 
+    .field:disabled {
+        cursor: not-allowed;
+        background-color: var(--color-surface);
+        color: var(--color-muted);
+    }
+
     .field[aria-invalid="true"],
     .field[aria-invalid="true"]:focus,
     .file-field[aria-invalid="true"],

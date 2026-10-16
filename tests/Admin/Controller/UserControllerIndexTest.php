@@ -65,6 +65,9 @@ final class UserControllerIndexTest extends WebTestCase
         $client->request('GET', '/admin/users', ['limit' => 'all']);
 
         self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('#admin-user-search-roles-trigger', 'Personal');
+        self::assertSelectorTextContains('tbody', $operator->getNickname());
+        self::assertSelectorTextNotContains('tbody', $publicUser->getNickname());
         self::assertSelectorExists('#admin-user-search-roles-trigger');
         self::assertSelectorExists('#admin-user-search-roles-listbox [data-value="developer"]');
         self::assertSelectorExists('#admin-user-search-roles-listbox [data-value="admin"]');

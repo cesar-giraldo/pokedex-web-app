@@ -156,6 +156,7 @@ account:
     time_format: Formato de hora
     avatar: Imagen de perfil
     avatar_help: 'Opcional. JPG, PNG o WebP. Tamaño máximo: 6 MB.'
+    nickname_readonly: El nickname no se puede cambiar.
     remove_avatar: Eliminar imagen actual
     remove_avatar_help: Al activarlo se quitará la imagen de perfil al guardar.
     save: Guardar cambios

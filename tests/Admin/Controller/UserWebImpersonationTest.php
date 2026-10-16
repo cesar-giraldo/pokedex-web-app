@@ -48,7 +48,7 @@ final class UserWebImpersonationTest extends WebTestCase
         $this->loginAsAdmin($client);
         $publicUser = $this->createUser('wimp', [UserRole::User], UserStatus::Active);
 
-        $crawler = $client->request('GET', '/admin/users', ['limit' => 'all']);
+        $crawler = $client->request('GET', '/admin/users', $this->publicUsersQuery());
 
         self::assertResponseIsSuccessful();
         self::assertSelectorNotExists(sprintf(
@@ -115,7 +115,7 @@ final class UserWebImpersonationTest extends WebTestCase
         $this->loginAsAdmin($client);
         $publicUser = $this->createUser('winc', [UserRole::User], UserStatus::UncompleteProfileInfo);
 
-        $crawler = $client->request('GET', '/admin/users', ['limit' => 'all']);
+        $crawler = $client->request('GET', '/admin/users', $this->publicUsersQuery());
         $form = $crawler->filter(sprintf(
             'form[action$="/%d/impersonate-web"]',
             $publicUser->getId(),
@@ -163,7 +163,7 @@ final class UserWebImpersonationTest extends WebTestCase
         $this->loginAsAdmin($client);
         $publicUser = $this->createUser('wout', [UserRole::User], UserStatus::Active);
 
-        $crawler = $client->request('GET', '/admin/users', ['limit' => 'all']);
+        $crawler = $client->request('GET', '/admin/users', $this->publicUsersQuery());
         $form = $crawler->filter(sprintf(
             'form[action$="/%d/impersonate-web"]',
             $publicUser->getId(),
@@ -184,6 +184,19 @@ final class UserWebImpersonationTest extends WebTestCase
             (string) $client->getResponse()->getContent(),
         );
         self::assertStringContainsString('Ingresar', (string) $client->getResponse()->getContent());
+    }
+
+    /**
+     * @return array{limit: string, search_user: array{roles: list<string>}}
+     */
+    private function publicUsersQuery(): array
+    {
+        return [
+            'limit' => 'all',
+            'search_user' => [
+                'roles' => [UserRole::User->value],
+            ],
+        ];
     }
 
     /**

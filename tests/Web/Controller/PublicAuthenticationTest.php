@@ -17,6 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\DomCrawler\Field\ChoiceFormField;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Translation\LocaleSwitcher;
@@ -82,6 +83,8 @@ final class PublicAuthenticationTest extends WebTestCase
         $client->followRedirect();
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('.account-menu', 'Ada');
+        self::assertSelectorTextContains('.account-menu', 'web-' . $nickname . '@example.com');
+        self::assertSelectorExists('.account-menu .border-b');
         self::assertSelectorExists('.account-menu[data-controller="account-menu"]');
         self::assertSelectorExists('.account-menu .account-menu-chevron');
         self::assertSelectorCount(3, '.account-menu .account-menu-icon');
@@ -99,6 +102,8 @@ final class PublicAuthenticationTest extends WebTestCase
         $this->submitLogin($client, $locale, strtoupper($nickname), self::PASSWORD);
 
         $this->assertRedirectEndsWith($client, '/' . $locale);
+        $client->followRedirect();
+        self::assertSelectorTextContains('.account-menu', '@' . $nickname);
     }
 
     public function testStaffWithoutStoredUserRoleIsRejected(): void
@@ -115,6 +120,75 @@ final class PublicAuthenticationTest extends WebTestCase
         $client->followRedirect();
         self::assertSelectorTextContains('main [role="alert"]', $expected);
         self::assertNull($client->getRequest()->getSession()->get('_security_public'));
+    }
+
+    public function testRejectedStaffLoginClearsTheRememberMeCookie(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        $nickname = $this->rememberNickname('oprm' . bin2hex(random_bytes(2)));
+        $this->createUser($nickname, [UserRole::Operator], UserStatus::Active);
+
+        $crawler = $client->request('GET', '/' . $locale . '/login');
+        $form = $crawler->filter('form')->form();
+        $form['_username'] = $nickname;
+        $form['_password'] = self::PASSWORD;
+        $rememberMe = $form['_remember_me'];
+        self::assertInstanceOf(ChoiceFormField::class, $rememberMe);
+        $rememberMe->tick();
+        $client->submit($form);
+
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/login');
+        $expiresAt = null;
+        foreach ($client->getResponse()->headers->getCookies() as $cookie) {
+            if ('PUBLIC_REMEMBERME' === $cookie->getName()) {
+                $expiresAt = $cookie->getExpiresTime();
+            }
+        }
+        self::assertNotNull($expiresAt);
+        self::assertLessThan(time(), $expiresAt);
+
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testNicknameStaysReadOnlyAndTheSessionRemainsValid(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        $nickname = $this->rememberNickname('nick' . bin2hex(random_bytes(3)));
+        $this->createUser(
+            $nickname,
+            [UserRole::User],
+            UserStatus::Active,
+            'Ada',
+            'nick-' . $nickname . '@example.com',
+            57,
+            $this->phone(),
+        );
+        $client->loginUser($this->reload($nickname), 'public');
+
+        $crawler = $client->request('GET', '/' . $locale . '/profile');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#profile-nickname[disabled]');
+        self::assertSame($nickname, $crawler->filter('#profile-nickname')->attr('value'));
+        self::assertSelectorTextContains('#profile-nickname-help', $this->trans($locale, 'account.nickname_readonly'));
+
+        $form = $crawler->filter('form[name="user_profile_info"]')->form();
+        $values = $form->getPhpValues();
+        $values['user_profile_info']['name'] = 'Nova';
+        $values['user_profile_info']['nickname'] = 'other-nickname';
+        $client->request($form->getMethod(), $form->getUri(), $values, $form->getPhpFiles());
+
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
+        $updated = $this->reload($nickname);
+        self::assertSame($nickname, $updated->getNickname());
+        self::assertSame('Nova', $updated->getName());
+
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#profile-nickname[disabled]');
+        self::assertSame($nickname, $client->getCrawler()->filter('#profile-nickname')->attr('value'));
     }
 
     public function testAccountWithUserRoleBesidesAHigherRoleCanLogIn(): void

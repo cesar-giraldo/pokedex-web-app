@@ -104,7 +104,9 @@
                         value="{{ infoForm.nickname.vars.value }}"
                         autocomplete="username"
                         :maxLength="form_field_max_length(infoForm.nickname)"
-                        :required="true"
+                        :required="not infoForm.nickname.vars.disabled"
+                        :disabled="infoForm.nickname.vars.disabled"
+                        help="{{ infoForm.nickname.vars.disabled ? 'account.nickname_readonly'|trans : '' }}"
                         error="{{ field_error(infoForm.nickname) }}"
                     />
                     <div class="grid gap-4 sm:grid-cols-2">

@@ -24,6 +24,7 @@ use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 use Symfony\Component\Security\Http\Event\LogoutEvent;
+use Symfony\Component\Security\Http\RememberMe\RememberMeHandlerInterface;
 
 use function is_string;
 use function preg_match;
@@ -42,6 +43,7 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         private readonly TokenStorageInterface $tokenStorage,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly PublicUserImpersonator $publicUserImpersonator,
+        private readonly RememberMeHandlerInterface $rememberMeHandler,
     ) {
     }
 
@@ -49,7 +51,11 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
     {
         return [
             LoginFailureEvent::class => 'onLoginFailure',
-            LoginSuccessEvent::class => 'onLoginSuccess',
+            LoginSuccessEvent::class => [
+                ['onLoginSuccess', 0],
+                // RememberMeListener writes the cookie at -64.
+                ['clearRememberMeForRejectedPublicLogin', -65],
+            ],
             LogoutEvent::class => ['onLogout', 100],
             KernelEvents::REQUEST => [
                 ['normalizeLoginNickname', 12],
@@ -159,6 +165,21 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         $event->setResponse(new RedirectResponse(
             $this->urlGenerator->generate('app_public_home', ['_locale' => $locale]),
         ));
+    }
+
+    public function clearRememberMeForRejectedPublicLogin(LoginSuccessEvent $event): void
+    {
+        if (self::FIREWALL !== $event->getFirewallName()) {
+            return;
+        }
+
+        $user = $event->getUser();
+
+        if (!$user instanceof User || $user->hasAssignedRole(UserRole::User)) {
+            return;
+        }
+
+        $this->rememberMeHandler->clearRememberMeCookie();
     }
 
     public function onLogout(LogoutEvent $event): void

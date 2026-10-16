@@ -108,12 +108,18 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
+     * An empty selection keeps the staff directory: roles with backend access.
+     *
      * @param list<UserRole> $roles
      */
     private function restrictToRoles(QueryBuilder $qb, array $roles): void
     {
         if ([] === $roles) {
-            $roles = UserRole::cases();
+            foreach (UserRole::cases() as $role) {
+                if ($role->grantsBackendAccess()) {
+                    $roles[] = $role;
+                }
+            }
         }
 
         $rolesAsText = 'JSON_AS_TEXT(u.roles)';

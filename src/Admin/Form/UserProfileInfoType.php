@@ -43,6 +43,7 @@ final class UserProfileInfoType extends AbstractType
             ])
             ->add('nickname', TextType::class, [
                 'label' => false,
+                'disabled' => !$options['nickname_editable'],
                 'attr' => ['maxlength' => 20],
                 'constraints' => UserFieldConstraints::nickname(),
             ])
@@ -64,7 +65,9 @@ final class UserProfileInfoType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'nickname_editable' => true,
         ]);
+        $resolver->setAllowedTypes('nickname_editable', 'bool');
 
         WorldCountryCodes::configureChoiceKeyOption($resolver);
     }

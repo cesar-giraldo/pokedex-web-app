@@ -8,6 +8,7 @@ use App\Admin\Service\ImpersonationPolicy;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use DateTime;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
@@ -108,6 +109,16 @@ final class ImpersonationPolicyTest extends TestCase
         self::assertFalse($this->policy->canImpersonateOnWeb($admin, $bannedUser));
         self::assertFalse($this->policy->canImpersonateOnWeb($admin, $unconfirmedUser));
         self::assertFalse($this->policy->canImpersonateOnWeb($developer, $backendOnly));
+    }
+
+    public function testWebImpersonationAllowsTemporarilyLockedPublicAccounts(): void
+    {
+        $admin = $this->createUser(1, [UserRole::Admin], UserStatus::Active);
+        $lockedUser = $this->createUser(2, [UserRole::User], UserStatus::Active);
+        $lockedUser->setNoLoginUntil(new DateTime('+30 minutes'));
+
+        self::assertTrue($lockedUser->isLoginTemporarilyBlocked());
+        self::assertTrue($this->policy->canImpersonateOnWeb($admin, $lockedUser));
     }
 
     /**

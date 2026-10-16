@@ -595,12 +595,13 @@ final class UserController extends AbstractController
     }
 
     /**
-     * @return array{country_choice_key: 'name'|'alpha2'|'alpha3'}
+     * @return array{country_choice_key: 'name'|'alpha2'|'alpha3', nickname_editable: false}
      */
     private function buildProfileFormOptions(): array
     {
         return [
             'country_choice_key' => WorldCountryCodes::DEFAULT_CHOICE_KEY,
+            'nickname_editable' => false,
         ];
     }
 

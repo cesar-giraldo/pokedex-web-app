@@ -60,6 +60,7 @@ final class AccountController extends AbstractController
 
         $infoForm = $this->createForm(UserProfileInfoType::class, $user, [
             'country_choice_key' => WorldCountryCodes::DEFAULT_CHOICE_KEY,
+            'nickname_editable' => false,
         ]);
         $passwordForm = $this->createForm(UserProfilePasswordType::class, null, [
             'user' => $user,
