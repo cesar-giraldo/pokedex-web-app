@@ -179,6 +179,29 @@ account:
     show_password: Afficher le mot de passe
     hide_password: Masquer le mot de passe
 
+notifications:
+    title: Notifications
+    meta_description: Vos notifications.
+    open: Notifications
+    close: Fermer les notifications
+    empty: Vous n’avez aucune notification.
+    unread: Non lue.
+    unread_badge: Non lue
+    see_all: Voir toutes les notifications
+    mark_all: Tout marquer comme lu
+    previous: Précédent
+    next: Suivant
+    page: 'Page {page} sur {pages}'
+    pagination: Pagination
+    type:
+        system_info: Système
+        user_created: Utilisateurs
+        user_updated: Utilisateurs
+        database_backup_completed: Base de données
+        database_backup_failed: Base de données
+        pokemons_imported: Pokémon
+        legal_version_published: Légal
+
 favorites:
     title: Favoris
     meta_description: Vos Pokémon favoris.

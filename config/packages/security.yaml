@@ -85,6 +85,7 @@ security:
     access_control:
         - { path: ^/(es|en|pt|fr)/profile, roles: PUBLIC_ACCOUNT }
         - { path: ^/(es|en|pt|fr)/favorites$, roles: PUBLIC_ACCOUNT }
+        - { path: ^/(es|en|pt|fr)/notifications, roles: PUBLIC_ACCOUNT }
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/(es|en|pt|fr)(/|$), roles: PUBLIC_ACCESS }
         - { path: ^/sitemap\.xml$, roles: PUBLIC_ACCESS }

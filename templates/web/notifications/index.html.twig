@@ -1,0 +1,78 @@
+{% extends '@web/base.html.twig' %}
+
+{% block title %}{{ 'notifications.title'|trans }} · {{ public_site_name() }}{% endblock %}
+{% block meta_description %}{{ 'notifications.meta_description'|trans }}{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+
+{% block body %}
+    <div class="bg-surface px-4 py-16">
+        <section class="mx-auto max-w-3xl" aria-labelledby="notifications-title">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <h1 id="notifications-title" class="text-3xl font-extrabold tracking-tight">{{ 'notifications.title'|trans }}</h1>
+                {% if unread_count > 0 %}
+                    <form method="post" action="{{ path('app_public_notifications_read_all', {_locale: app.request.locale}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('notification_mark_all') }}">
+                        <button type="submit" class="btn btn-secondary">
+                            {{ ux_icon('heroicons:check', { class: 'h-5 w-5', 'aria-hidden': 'true' }) }}
+                            {{ 'notifications.mark_all'|trans }}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+
+            <div class="mt-6 overflow-hidden rounded-3xl bg-white ring-1 ring-black/5">
+                <ul class="divide-y divide-black/5">
+                    {% for notification in notifications %}
+                        <li>
+                            <form method="post" action="{{ path('app_public_notification_open', {_locale: app.request.locale, id: notification.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('notification_open') }}">
+                                <button type="submit" class="flex w-full cursor-pointer gap-4 bg-transparent px-5 py-4 text-left transition hover:bg-surface sm:px-6">
+                                    <span class="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface text-brand">
+                                        {% if notification.readAt is null %}
+                                            <span class="absolute top-0 right-0 z-10 h-2.5 w-2.5 rounded-full bg-brand ring-2 ring-white" data-notification-item-unread aria-hidden="true"></span>
+                                        {% endif %}
+                                        {{ ux_icon('heroicons:bell', { class: 'h-5 w-5', 'aria-hidden': 'true' }) }}
+                                    </span>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="flex flex-wrap items-center gap-2">
+                                            <span class="font-semibold text-ink">{{ notification.title }}</span>
+                                            {% if notification.readAt is null %}
+                                                <span class="inline-flex rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand">{{ 'notifications.unread_badge'|trans }}</span>
+                                            {% endif %}
+                                        </span>
+                                        <span class="mt-1 block text-sm text-muted">{{ notification.message }}</span>
+                                        <span class="mt-2 flex items-center gap-2 text-xs text-muted">
+                                            <span>{{ ('notifications.type.' ~ notification.type.value|replace({'.': '_'}))|trans }}</span>
+                                            <span class="h-1 w-1 rounded-full bg-muted" aria-hidden="true"></span>
+                                            <time datetime="{{ notification.createdAt|date('c') }}">{{ notification.createdAt|app_datetime }}</time>
+                                        </span>
+                                    </span>
+                                </button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="px-5 py-10 text-center text-sm text-muted sm:px-6">
+                            {{ 'notifications.empty'|trans }}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                {% if notifications.haveToPaginate %}
+                    <nav class="flex flex-wrap items-center justify-between gap-3 border-t border-black/5 px-5 py-4 sm:px-6" aria-label="{{ 'notifications.pagination'|trans }}">
+                        {% if notifications.hasPreviousPage %}
+                            <a class="btn btn-secondary" href="{{ path('app_public_notifications', {_locale: app.request.locale, page: notifications.previousPage}) }}">{{ 'notifications.previous'|trans }}</a>
+                        {% else %}
+                            <span class="btn btn-secondary pointer-events-none opacity-60" aria-disabled="true">{{ 'notifications.previous'|trans }}</span>
+                        {% endif %}
+                        <p class="text-sm text-muted">{{ 'notifications.page'|trans({page: notifications.currentPage, pages: notifications.nbPages}) }}</p>
+                        {% if notifications.hasNextPage %}
+                            <a class="btn btn-secondary" href="{{ path('app_public_notifications', {_locale: app.request.locale, page: notifications.nextPage}) }}">{{ 'notifications.next'|trans }}</a>
+                        {% else %}
+                            <span class="btn btn-secondary pointer-events-none opacity-60" aria-disabled="true">{{ 'notifications.next'|trans }}</span>
+                        {% endif %}
+                    </nav>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+{% endblock %}
