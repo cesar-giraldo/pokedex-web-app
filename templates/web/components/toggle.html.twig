@@ -1,0 +1,33 @@
+<div data-controller="toggle">
+    <label class="flex items-center gap-3 text-sm font-medium {% if disabled %}cursor-not-allowed text-muted{% else %}cursor-pointer{% endif %}" for="{{ id }}">
+        <span class="toggle">
+            <input
+                id="{{ id }}"
+                name="{{ name }}"
+                type="checkbox"
+                value="{{ value }}"
+                role="switch"
+                class="sr-only"
+                data-toggle-target="input"
+                data-action="change->toggle#sync"
+                {% if checked %}checked{% endif %}
+                {% if required %}required{% endif %}
+                {% if disabled %}disabled{% endif %}
+                {% if error %}
+                    aria-invalid="true"
+                    aria-describedby="{{ id }}-error{% if help %} {{ id }}-help{% endif %}"
+                {% elseif help %}
+                    aria-describedby="{{ id }}-help"
+                {% endif %}
+            >
+            <span class="toggle-track" aria-hidden="true"><span class="toggle-knob"></span></span>
+        </span>
+        {{ label }}
+    </label>
+    {% if error %}
+        <p id="{{ id }}-error" class="field-error" role="alert">{{ error }}</p>
+    {% endif %}
+    {% if help %}
+        <p id="{{ id }}-help" class="mt-2 text-sm text-muted">{{ help }}</p>
+    {% endif %}
+</div>

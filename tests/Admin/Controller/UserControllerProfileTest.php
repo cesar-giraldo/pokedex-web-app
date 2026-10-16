@@ -84,7 +84,6 @@ final class UserControllerProfileTest extends WebTestCase
         $form['user_profile_info[name]'] = 'Updated';
         $form['user_profile_info[lastname]'] = 'Name';
         $form['user_profile_info[email]'] = $updatedEmail;
-        $form['user_profile_info[nickname]'] = $user->getNickname();
         $form['user_profile_info[countryCode]'] = '57';
         $form['user_profile_info[cellphone]'] = $user->getCellphone() ?? '3018001001';
 
@@ -93,6 +92,41 @@ final class UserControllerProfileTest extends WebTestCase
         self::assertResponseRedirects('/admin/profile');
         $client->followRedirect();
         self::assertSelectorTextContains('body', 'Tu información personal se actualizó correctamente.');
+    }
+
+    public function testOwnProfileNicknameCannotBeChanged(): void
+    {
+        $client = static::createClient();
+        $user = $this->loginAsAdmin($client);
+        $nickname = $user->getNickname();
+
+        $crawler = $client->request('GET', '/admin/profile');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#profile-nickname[disabled]');
+        self::assertSelectorTextContains('#profile-nickname-help', 'El nickname no se puede cambiar.');
+
+        $form = $crawler->filter('form[name="user_profile_info"]')->form();
+        $values = $form->getPhpValues();
+        $values['user_profile_info']['name'] = 'Locked';
+        $values['user_profile_info']['nickname'] = 'other-nickname';
+        $client->request($form->getMethod(), $form->getUri(), $values, $form->getPhpFiles());
+
+        self::assertResponseRedirects('/admin/profile');
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        /** @var UserRepository $userRepository */
+        $userRepository = static::getContainer()->get(UserRepository::class);
+        $updatedUser = $userRepository->findOneByNickname($nickname);
+
+        self::assertInstanceOf(User::class, $updatedUser);
+        self::assertSame('Locked', $updatedUser->getName());
+        self::assertSame($nickname, $updatedUser->getNickname());
+
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#profile-nickname[disabled]');
     }
 
     public function testIncompleteProfileBecomesActiveAfterContactInfoIsSaved(): void
@@ -114,7 +148,6 @@ final class UserControllerProfileTest extends WebTestCase
         $form['user_profile_info[name]'] = 'Incomplete';
         $form['user_profile_info[lastname]'] = 'User';
         $form['user_profile_info[email]'] = 'incomplete-' . bin2hex(random_bytes(4)) . '@example.com';
-        $form['user_profile_info[nickname]'] = $nickname;
         $form['user_profile_info[countryCode]'] = '57';
         $form['user_profile_info[cellphone]'] = '3018041001';
 

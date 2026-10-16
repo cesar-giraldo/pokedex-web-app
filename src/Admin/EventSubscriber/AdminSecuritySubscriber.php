@@ -57,6 +57,10 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
 
     public function onLoginFailure(LoginFailureEvent $event): void
     {
+        if ('main' !== $event->getFirewallName()) {
+            return;
+        }
+
         $request = $event->getRequest();
 
         if ('app_admin_login' !== $request->attributes->get('_route')) {
@@ -84,6 +88,10 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
 
     public function onLoginSuccess(LoginSuccessEvent $event): void
     {
+        if ('main' !== $event->getFirewallName()) {
+            return;
+        }
+
         $user = $event->getUser();
 
         if (!$user instanceof User) {
@@ -137,6 +145,12 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
             return;
         }
 
+        $path = $event->getRequest()->getPathInfo();
+
+        if (!str_starts_with($path, '/admin')) {
+            return;
+        }
+
         $user = $this->tokenStorage->getToken()?->getUser();
 
         if (!$user instanceof User) {
@@ -146,8 +160,6 @@ final class AdminSecuritySubscriber implements EventSubscriberInterface
         if (!$user->hasBackendAccess() || UserStatus::UncompleteProfileInfo !== $user->getStatus()) {
             return;
         }
-
-        $path = $event->getRequest()->getPathInfo();
 
         if ($this->isIncompleteProfileAllowedPath($path)) {
             return;

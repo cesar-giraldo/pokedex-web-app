@@ -1,0 +1,13 @@
+Invalid credentials.: Identifiants invalides.
+Invalid CSRF token.: Une erreur s’est produite. Veuillez réessayer.
+Account is disabled.: Le compte est désactivé.
+Account is locked.: Le compte est verrouillé.
+'Too many failed login attempts, please try again in %minutes% minute.': Trop de tentatives de connexion. Réessayez dans %minutes% minute.
+'Too many failed login attempts, please try again in %minutes% minutes.': Trop de tentatives de connexion. Réessayez dans %minutes% minutes.
+'Too many failed login attempts, please try again later.': Trop de tentatives de connexion. Réessayez plus tard.
+account_unconfirmed: Confirmez votre compte avant de vous connecter.
+account_banned: Votre compte a été suspendu. Contactez l’administrateur.
+account_inactive: Votre compte est inactif. Contactez l’administrateur.
+account_login_denied: Vous ne pouvez pas vous connecter pour le moment.
+login_temporarily_blocked_one: Vous avez dépassé le nombre de tentatives autorisées. Attendez %minutes% minute avant de réessayer.
+login_temporarily_blocked_other: Vous avez dépassé le nombre de tentatives autorisées. Attendez %minutes% minutes avant de réessayer.

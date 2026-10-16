@@ -1,0 +1,19 @@
+<div>
+    <label class="flex items-center gap-2 text-sm" for="{{ id }}">
+        <input
+            id="{{ id }}"
+            name="{{ name }}"
+            type="checkbox"
+            value="{{ value }}"
+            class="h-4 w-4 accent-brand"
+            {% if checked %}checked{% endif %}
+            {% if required %}required{% endif %}
+            {% if disabled %}disabled{% endif %}
+            {% if error %}aria-invalid="true" aria-describedby="{{ id }}-error"{% endif %}
+        >
+        {{ label }}
+    </label>
+    {% if error %}
+        <p id="{{ id }}-error" class="field-error" role="alert">{{ error }}</p>
+    {% endif %}
+</div>

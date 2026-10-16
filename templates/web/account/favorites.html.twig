@@ -1,0 +1,14 @@
+{% extends '@web/base.html.twig' %}
+
+{% block title %}{{ 'favorites.title'|trans }} · {{ public_site_name() }}{% endblock %}
+{% block meta_description %}{{ 'favorites.meta_description'|trans }}{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+
+{% block body %}
+    <div class="bg-surface px-4 py-16">
+        <article class="mx-auto max-w-3xl rounded-3xl bg-white p-8 ring-1 ring-black/5">
+            <h1 class="text-3xl font-extrabold tracking-tight">{{ 'favorites.title'|trans }}</h1>
+            <p class="mt-4 text-base leading-7 text-muted">{{ 'favorites.body'|trans }}</p>
+        </article>
+    </div>
+{% endblock %}

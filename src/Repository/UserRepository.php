@@ -75,7 +75,7 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param array{excludeHidden?: bool} $options
+     * @param array{excludeHidden?: bool, roles?: list<UserRole>} $options
      */
     public function findBackendUsersQueryBuilder(
         ?string $term,
@@ -84,14 +84,7 @@ class UserRepository extends ServiceEntityRepository
         array $options = [],
     ): QueryBuilder {
         $qb = $this->createQueryBuilder('u');
-        $rolesAsText = 'JSON_AS_TEXT(u.roles)';
-
-        $qb->andWhere(
-            $rolesAsText . ' LIKE :adminRole OR ' . $rolesAsText . ' LIKE :developerRole OR ' . $rolesAsText . ' LIKE :operatorRole',
-        )
-            ->setParameter('adminRole', '%"' . UserRole::Admin->value . '"%')
-            ->setParameter('developerRole', '%"' . UserRole::Developer->value . '"%')
-            ->setParameter('operatorRole', '%"' . UserRole::Operator->value . '"%');
+        $this->restrictToRoles($qb, $options['roles'] ?? []);
 
         if ($options['excludeHidden'] ?? false) {
             $qb->andWhere('u.isHidden IS NULL OR u.isHidden = false');
@@ -112,6 +105,33 @@ class UserRepository extends ServiceEntityRepository
         $qb->orderBy($sort, $direction);
 
         return $qb;
+    }
+
+    /**
+     * An empty selection keeps the staff directory: roles with backend access.
+     *
+     * @param list<UserRole> $roles
+     */
+    private function restrictToRoles(QueryBuilder $qb, array $roles): void
+    {
+        if ([] === $roles) {
+            foreach (UserRole::cases() as $role) {
+                if ($role->grantsBackendAccess()) {
+                    $roles[] = $role;
+                }
+            }
+        }
+
+        $rolesAsText = 'JSON_AS_TEXT(u.roles)';
+        $expressions = [];
+
+        foreach ($roles as $index => $role) {
+            $parameter = 'listedRole' . $index;
+            $expressions[] = $rolesAsText . ' LIKE :' . $parameter;
+            $qb->setParameter($parameter, '%"' . $role->value . '"%');
+        }
+
+        $qb->andWhere($qb->expr()->orX(...$expressions));
     }
 
     /**

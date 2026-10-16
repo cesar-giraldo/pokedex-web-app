@@ -18,6 +18,13 @@ nav:
     register: Criar conta
     menu: Menu
     language: Idioma
+    profile: Editar perfil
+    favorites: Favoritos
+    logout: Sair
+
+impersonation:
+    viewing_as: 'Você está vendo a aplicação como {name} {lastname} (@{nickname})'
+    exit: Voltar à minha sessão
 
 footer:
     tagline: Uma Pokédex clara, rápida e fácil de percorrer.
@@ -114,11 +121,13 @@ contact:
 auth:
     unavailable: Esta função ainda não está disponível.
     login_title: Entrar
-    login_description: Entre com seu e-mail para continuar. O acesso ainda não está ativo.
+    login_description: Entre com seu nickname e sua senha para continuar.
     register_title: Criar conta
     register_description: Crie uma conta para guardar seu progresso. O cadastro ainda não está ativo.
+    nickname: Nickname
     email: E-mail
     password: Senha
+    no_public_access: Você não tem acesso a esta seção.
     password_confirm: Confirmar senha
     password_hint: Mínimo de 8 caracteres.
     name: Nome
@@ -128,6 +137,52 @@ auth:
     no_account: Não tem conta?
     has_account: Já tem conta?
     accept_terms: Aceito os
+
+form:
+    processing: Processando...
+    close: Fechar
+
+account:
+    profile_title: Editar perfil
+    profile_description: Atualize seus dados, sua foto e sua senha.
+    profile_meta: Atualize suas informações pessoais.
+    info_title: Informações pessoais
+    security_title: Senha
+    lastname: Sobrenome
+    country: País
+    cellphone: Celular
+    timezone: Fuso horário
+    locale: Idioma regional
+    time_format: Formato de hora
+    avatar: Imagem de perfil
+    avatar_help: 'Opcional. JPG, PNG ou WebP. Tamanho máximo: 6 MB.'
+    nickname_readonly: O nickname não pode ser alterado.
+    remove_avatar: Remover imagem atual
+    remove_avatar_help: Ao ativar, a imagem de perfil será removida ao salvar.
+    save: Salvar alterações
+    current_password: Senha atual
+    new_password: Nova senha
+    confirm_password: Confirmar senha
+    save_password: Atualizar senha
+    password_unchanged: Não foi alterada desde a criação da conta.
+    password_last_updated: 'Última atualização: {date}'
+    complete_profile: Complete as informações do seu perfil para continuar.
+    info_saved: Suas informações pessoais foram atualizadas.
+    password_saved: Sua senha foi atualizada.
+    info_error: Não foi possível atualizar seu perfil. Tente de novo.
+    password_error: Não foi possível atualizar sua senha. Tente de novo.
+    review_fields: Revise os campos destacados.
+    select_country: Selecione um país
+    select_timezone: Selecione um fuso horário
+    select_locale: Selecione um idioma regional
+    select_time_format: Selecione um formato de hora
+    show_password: Mostrar senha
+    hide_password: Ocultar senha
+
+favorites:
+    title: Favoritos
+    meta_description: Seus Pokémon favoritos.
+    body: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet.
 
 legal:
     version: 'Versão {number}'

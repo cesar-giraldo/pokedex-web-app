@@ -1,7 +1,11 @@
 {% set locale = app.request.locale %}
 {% set current = app.request.attributes.get('_route') %}
 {% set site_icon = public_icon_url() %}
-<header class="sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur">
+{% set is_account_user = false %}
+{% if app.user %}
+    {% set is_account_user = app.user.hasAssignedRole(constant('App\\Entity\\Enum\\UserRole::User')) %}
+{% endif %}
+<header class="border-b border-black/5 bg-white/90 backdrop-blur">
     <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
         <a href="{{ path('app_public_home', {_locale: locale}) }}" class="flex min-w-0 items-center gap-3">
             {% if site_icon %}
@@ -15,8 +19,12 @@
         <div class="ml-auto hidden items-center gap-6 md:flex">
             {% include '@web/partials/_nav.html.twig' %}
             {% include '@web/partials/_language_switcher.html.twig' %}
-            <a href="{{ path('app_public_login', {_locale: locale}) }}" class="nav-link header-login text-sm font-medium text-ink hover:text-brand" {% if current == 'app_public_login' %}aria-current="page"{% endif %}>{{ 'nav.login'|trans }}</a>
-            <a href="{{ path('app_public_register', {_locale: locale}) }}" class="btn btn-primary">{{ 'nav.register'|trans }}</a>
+            {% if is_account_user %}
+                {% include '@web/partials/_account_menu.html.twig' %}
+            {% else %}
+                <a href="{{ path('app_public_login', {_locale: locale}) }}" class="nav-link header-login text-sm font-medium text-ink hover:text-brand" {% if current == 'app_public_login' %}aria-current="page"{% endif %}>{{ 'nav.login'|trans }}</a>
+                <a href="{{ path('app_public_register', {_locale: locale}) }}" class="btn btn-primary">{{ 'nav.register'|trans }}</a>
+            {% endif %}
         </div>
 
         <details class="relative ml-auto md:hidden">
@@ -29,8 +37,12 @@
                     {% include '@web/partials/_language_switcher.html.twig' with {variant: 'list'} %}
                 </div>
                 <div class="mt-4 flex flex-col gap-2">
-                    <a href="{{ path('app_public_login', {_locale: locale}) }}" class="btn btn-secondary header-login-mobile" {% if current == 'app_public_login' %}aria-current="page"{% endif %}>{{ 'nav.login'|trans }}</a>
-                    <a href="{{ path('app_public_register', {_locale: locale}) }}" class="btn btn-primary">{{ 'nav.register'|trans }}</a>
+                    {% if is_account_user %}
+                        {% include '@web/partials/_account_menu.html.twig' with {variant: 'list'} %}
+                    {% else %}
+                        <a href="{{ path('app_public_login', {_locale: locale}) }}" class="btn btn-secondary header-login-mobile" {% if current == 'app_public_login' %}aria-current="page"{% endif %}>{{ 'nav.login'|trans }}</a>
+                        <a href="{{ path('app_public_register', {_locale: locale}) }}" class="btn btn-primary">{{ 'nav.register'|trans }}</a>
+                    {% endif %}
                 </div>
             </div>
         </details>

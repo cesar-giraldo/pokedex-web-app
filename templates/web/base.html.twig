@@ -55,7 +55,12 @@
             <p class="page-loader-label">{{ 'site.loading'|trans }}</p>
         </div>
         <a class="skip-link" href="#contenido">{{ 'site.skip_to_content'|trans }}</a>
-        {% include '@web/partials/_header.html.twig' %}
+        <div class="sticky top-0 z-40">
+            {% if is_public_impersonating() %}
+                {% include '@web/partials/_impersonation_banner.html.twig' %}
+            {% endif %}
+            {% include '@web/partials/_header.html.twig' %}
+        </div>
         <main id="contenido">
             {% block body %}{% endblock %}
         </main>

@@ -80,7 +80,9 @@
 							:lowercase="true"
 							:minLength="5"
 							:maxLength="form_field_max_length(info_form.nickname)"
-							:required="true"
+							:required="not info_form.nickname.vars.disabled"
+							:disabled="info_form.nickname.vars.disabled"
+							help="{{ info_form.nickname.vars.disabled ? 'El nickname no se puede cambiar.' : '' }}"
 							error="{{ field_error(info_form.nickname) }}"
 						/>
 					</div>

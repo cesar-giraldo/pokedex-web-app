@@ -58,5 +58,11 @@ final class MultiSelectComponentTest extends TestCase
         $disabled->disabled = true;
         $disabled->mount();
         self::assertStringContainsString('cursor-not-allowed', $disabled->getTriggerClasses());
+
+        $wrapped = new MultiSelectComponent();
+        $wrapped->allowWrap = true;
+        $wrapped->mount();
+        self::assertStringContainsString('min-h-11', $wrapped->getTriggerClasses());
+        self::assertStringNotContainsString('mb-2', $wrapped->getTriggerClasses());
     }
 }

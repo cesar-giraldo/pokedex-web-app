@@ -252,6 +252,31 @@ final class AdminSecuritySubscriberTest extends TestCase
         self::assertNull($operator->getLastLoginIp());
     }
 
+    public function testIgnoresLoginsFromThePublicFirewall(): void
+    {
+        $user = $this->createActiveUser();
+        $request = Request::create('/es/login', 'POST');
+        $request->attributes->set('_route', 'app_public_login');
+        $passport = new SelfValidatingPassport(new UserBadge(
+            $user->getUserIdentifier(),
+            static fn (): User => $user,
+        ));
+        $event = new LoginSuccessEvent(
+            $this->createMock(AuthenticatorInterface::class),
+            $passport,
+            $this->createMock(TokenInterface::class),
+            $request,
+            null,
+            'public',
+        );
+
+        $this->entityManager->expects($this->never())->method('flush');
+
+        $this->subscriber->onLoginSuccess($event);
+
+        self::assertNull($event->getResponse());
+    }
+
     public function testRecordsLastLoginForIncompleteProfile(): void
     {
         $user = $this->createActiveUser();

@@ -101,12 +101,24 @@ final class UserTest extends TestCase
         self::assertNull($user->getLastLoginIp());
     }
 
-    public function testStatusMessagesAreDefinedInSpanish(): void
+    public function testLoginDeniedMessageUsesTranslationKey(): void
     {
         self::assertSame(
-            'Debes confirmar tu cuenta antes de iniciar sesión.',
+            'account_unconfirmed',
             UserStatus::UnconfirmedAccount->loginDeniedMessage(),
         );
+    }
+
+    public function testHasAssignedRoleChecksStoredRoles(): void
+    {
+        $user = new User()->setApplicationRoles([UserRole::Admin]);
+
+        self::assertFalse($user->hasAssignedRole(UserRole::User));
+
+        $user->addApplicationRole(UserRole::User);
+
+        self::assertTrue($user->hasAssignedRole(UserRole::User));
+        self::assertTrue($user->hasAssignedRole(UserRole::Admin));
     }
 
     public function testNormalizesEmailToLowerCase(): void
@@ -171,6 +183,17 @@ final class UserTest extends TestCase
             ->setCellphone('3001234567');
 
         self::assertSame('+57 3001234567', $user->getFormattedPhone());
+    }
+
+    public function testPasswordCountsAsUnchangedWhenItMatchesAccountCreation(): void
+    {
+        $user = new User();
+
+        self::assertFalse($user->hasUpdatedPasswordSinceCreation());
+
+        $user->setPasswordUpdatedAt(new DateTime('+1 hour'));
+
+        self::assertTrue($user->hasUpdatedPasswordSinceCreation());
     }
 
     public function testReturnsPrimaryApplicationRoleByHierarchy(): void

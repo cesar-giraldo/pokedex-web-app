@@ -55,6 +55,7 @@
     --color-muted: #6a6a6a;
     --color-canvas: #ffffff;
     --color-surface: #f5f5f5;
+    --color-danger: #b91c1c;
 }
 
 @layer base {
@@ -91,12 +92,159 @@
         @apply bg-brand text-white hover:bg-black;
     }
 
+    .btn:disabled,
+    .btn:disabled:hover {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .btn-primary:disabled,
+    .btn-primary:disabled:hover {
+        background-color: var(--color-brand);
+    }
+
     .btn-secondary {
         @apply bg-white text-ink ring-1 ring-black/10 hover:ring-brand;
     }
 
     .field {
         @apply w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base text-ink placeholder:text-muted focus:border-brand focus:outline-none;
+    }
+
+    .field:disabled {
+        cursor: not-allowed;
+        background-color: var(--color-surface);
+        color: var(--color-muted);
+    }
+
+    .field[aria-invalid="true"],
+    .field[aria-invalid="true"]:focus,
+    .file-field[aria-invalid="true"],
+    .file-field[aria-invalid="true"]:focus {
+        border-color: var(--color-danger);
+    }
+
+    .file-field {
+        display: block;
+        width: 100%;
+        height: 3rem;
+        overflow: hidden;
+        border-radius: 1rem;
+        border: 1px solid rgb(0 0 0 / 0.1);
+        background: #fff;
+        font-size: 0.875rem;
+        line-height: 3rem;
+        color: var(--color-muted);
+    }
+
+    .file-field:focus {
+        border-color: var(--color-brand);
+        outline: none;
+    }
+
+    .file-field::file-selector-button,
+    .file-field::-webkit-file-upload-button {
+        margin-right: 1rem;
+        height: 3rem;
+        border: 0;
+        border-right: 1px solid rgb(0 0 0 / 0.1);
+        background: #fff;
+        padding: 0 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-ink);
+        cursor: pointer;
+    }
+
+    .toggle {
+        position: relative;
+        display: inline-flex;
+        flex-shrink: 0;
+    }
+
+    .toggle input:focus-visible {
+        outline: none;
+    }
+
+    .toggle input:focus-visible + .toggle-track {
+        outline: 2px solid var(--color-brand);
+        outline-offset: 3px;
+    }
+
+    .toggle-track {
+        display: block;
+        width: 2.75rem;
+        height: 1.5rem;
+        border-radius: 9999px;
+        background: #e5e5e5;
+        transition: background-color 200ms linear;
+    }
+
+    .toggle-knob {
+        position: absolute;
+        top: 0.125rem;
+        left: 0.125rem;
+        height: 1.25rem;
+        width: 1.25rem;
+        border-radius: 9999px;
+        background: #fff;
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.16);
+        transition: transform 200ms linear;
+    }
+
+    .toggle input:checked + .toggle-track {
+        background: var(--color-brand);
+    }
+
+    .toggle input:checked + .toggle-track .toggle-knob {
+        transform: translateX(1.25rem);
+    }
+
+    .toggle input:disabled + .toggle-track {
+        opacity: 0.6;
+    }
+
+    .field-error {
+        @apply mt-2 text-sm font-medium text-danger;
+    }
+
+    .alert-error {
+        border: 1px solid #f04438;
+        background-color: #fecdca;
+        color: #b42318;
+    }
+
+    .alert-success {
+        border: 1px solid #12b76a;
+        background-color: #ecfdf3;
+        color: #027a48;
+    }
+
+    .alert-warning {
+        border: 1px solid #f79009;
+        background-color: #fef0c7;
+        color: #b54708;
+    }
+
+    .impersonation-banner {
+        border-bottom: 1px solid rgb(247 144 9 / 0.3);
+        background-color: #fffaeb;
+        color: #93370d;
+    }
+
+    .alert-dismiss {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        margin: -0.125rem -0.25rem -0.125rem auto;
+        border-radius: 9999px;
+        padding: 0.25rem;
+        color: inherit;
+    }
+
+    .alert-dismiss:hover {
+        background-color: rgb(0 0 0 / 0.06);
     }
 
     .legal-copy {
@@ -138,6 +286,14 @@
     .legal-copy a {
         color: var(--color-brand);
         text-underline-offset: 3px;
+    }
+
+    .account-menu-chevron {
+        transition: transform 300ms;
+    }
+
+    .account-menu[open] .account-menu-chevron {
+        transform: rotate(180deg);
     }
 
     .site-summary {

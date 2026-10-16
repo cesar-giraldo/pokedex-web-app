@@ -16,7 +16,7 @@
 	class="relative"
 	{{ attributes }}
 >
-	<label for="{{ id }}-trigger" class="{{ labelClasses }}">
+	<label id="{{ id }}-label" for="{{ id }}-trigger" class="{{ hideLabel ? 'sr-only' : labelClasses }}">
 		{{ label }}
 		{% if required %}
 			<span class="text-error-500" aria-hidden="true">*</span>
@@ -48,6 +48,7 @@
 			aria-haspopup="listbox"
 			aria-expanded="false"
 			aria-controls="{{ id }}-listbox"
+			{% if label is not empty %}aria-labelledby="{{ id }}-label"{% endif %}
 			{% if required %}aria-required="true"{% endif %}
 			{% if disabled %}aria-disabled="true"{% endif %}
 			data-component-multi-select-target="trigger"
@@ -96,8 +97,8 @@
 	</div>
 
 	<template data-component-multi-select-target="tagTemplate">
-		<div class="group flex items-center rounded-full border-[0.7px] border-transparent bg-gray-100 py-1 pr-2 pl-2.5 text-sm text-gray-800 hover:border-gray-200 dark:bg-gray-800 dark:text-white/90 dark:hover:border-gray-800">
-			<span class="max-w-full flex-initial" data-component-multi-select-target="tagLabel"></span>
+		<div class="group flex shrink-0 items-center rounded-full border-[0.7px] border-transparent bg-gray-100 py-1 pr-2 pl-2.5 text-sm text-gray-800 hover:border-gray-200 dark:bg-gray-800 dark:text-white/90 dark:hover:border-gray-800">
+			<span class="whitespace-nowrap" data-component-multi-select-target="tagLabel"></span>
 			<button
 				type="button"
 				class="ml-1 cursor-pointer text-gray-500 group-hover:text-gray-400 dark:text-gray-400"

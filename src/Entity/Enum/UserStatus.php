@@ -23,10 +23,10 @@ enum UserStatus: string
     public function loginDeniedMessage(): string
     {
         return match ($this) {
-            self::UnconfirmedAccount => 'Debes confirmar tu cuenta antes de iniciar sesión.',
-            self::Banned => 'Tu cuenta ha sido suspendida. Contacta al administrador.',
-            self::Inactive => 'Tu cuenta está inactiva. Contacta al administrador.',
-            default => 'No puedes iniciar sesión en este momento.',
+            self::UnconfirmedAccount => 'account_unconfirmed',
+            self::Banned => 'account_banned',
+            self::Inactive => 'account_inactive',
+            default => 'account_login_denied',
         };
     }
 

@@ -18,6 +18,13 @@ nav:
     register: Créer un compte
     menu: Menu
     language: Langue
+    profile: Modifier le profil
+    favorites: Favoris
+    logout: Se déconnecter
+
+impersonation:
+    viewing_as: 'Vous consultez l''application en tant que {name} {lastname} (@{nickname})'
+    exit: Revenir à ma session
 
 footer:
     tagline: Un Pokédex clair, rapide et simple à parcourir.
@@ -114,11 +121,13 @@ contact:
 auth:
     unavailable: Cette fonction n’est pas encore disponible.
     login_title: Connexion
-    login_description: Connectez-vous avec votre e-mail pour continuer. L’accès n’est pas encore actif.
+    login_description: Connectez-vous avec votre pseudo et votre mot de passe pour continuer.
     register_title: Créer un compte
     register_description: Créez un compte pour enregistrer votre progression. L’inscription n’est pas encore active.
+    nickname: Pseudo
     email: E-mail
     password: Mot de passe
+    no_public_access: Vous n’avez pas accès à cette section.
     password_confirm: Confirmer le mot de passe
     password_hint: 8 caractères minimum.
     name: Nom
@@ -128,6 +137,52 @@ auth:
     no_account: Pas encore de compte ?
     has_account: Vous avez déjà un compte ?
     accept_terms: J’accepte les
+
+form:
+    processing: Traitement...
+    close: Fermer
+
+account:
+    profile_title: Modifier le profil
+    profile_description: Mettez à jour vos informations, votre photo et votre mot de passe.
+    profile_meta: Mettez à jour vos informations personnelles.
+    info_title: Informations personnelles
+    security_title: Mot de passe
+    lastname: Nom
+    country: Pays
+    cellphone: Téléphone portable
+    timezone: Fuseau horaire
+    locale: Langue régionale
+    time_format: Format de l’heure
+    avatar: Image de profil
+    avatar_help: 'Facultatif. JPG, PNG ou WebP. Taille maximale : 6 Mo.'
+    nickname_readonly: Le pseudo ne peut pas être modifié.
+    remove_avatar: Supprimer l’image actuelle
+    remove_avatar_help: En l’activant, l’image de profil sera retirée à l’enregistrement.
+    save: Enregistrer
+    current_password: Mot de passe actuel
+    new_password: Nouveau mot de passe
+    confirm_password: Confirmer le mot de passe
+    save_password: Mettre à jour le mot de passe
+    password_unchanged: Il n’a pas été modifié depuis la création du compte.
+    password_last_updated: 'Dernière mise à jour : {date}'
+    complete_profile: Complétez les informations de votre profil pour continuer.
+    info_saved: Vos informations personnelles ont été mises à jour.
+    password_saved: Votre mot de passe a été mis à jour.
+    info_error: Impossible de mettre à jour votre profil. Réessayez.
+    password_error: Impossible de mettre à jour votre mot de passe. Réessayez.
+    review_fields: Vérifiez les champs signalés.
+    select_country: Sélectionnez un pays
+    select_timezone: Sélectionnez un fuseau horaire
+    select_locale: Sélectionnez une langue régionale
+    select_time_format: Sélectionnez un format d’heure
+    show_password: Afficher le mot de passe
+    hide_password: Masquer le mot de passe
+
+favorites:
+    title: Favoris
+    meta_description: Vos Pokémon favoris.
+    body: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet.
 
 legal:
     version: 'Version {number}'
