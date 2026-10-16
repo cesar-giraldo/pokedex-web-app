@@ -11,6 +11,7 @@ use App\Entity\Notification;
 use App\Entity\User;
 use App\Notification\NotificationService;
 use App\Repository\UserRepository;
+use App\Tests\Web\Support\AcceptsPendingLegalDocumentsTrait;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
@@ -25,6 +26,8 @@ use function sprintf;
 #[Group('functional')]
 final class NotificationControllerTest extends WebTestCase
 {
+    use AcceptsPendingLegalDocumentsTrait;
+
     private const string LOCALE = 'es';
 
     /** @var list<int> */
@@ -213,6 +216,7 @@ final class NotificationControllerTest extends WebTestCase
 
     private function login(KernelBrowser $client, User $user): void
     {
+        $this->acceptPendingLegalDocuments($user);
         $nickname = $user->getNickname();
         $entityManager = $this->entityManager();
         $entityManager->clear();

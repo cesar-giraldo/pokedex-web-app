@@ -211,6 +211,11 @@ legal:
     version: 'Version {number}'
     fallback: 'This document is shown in {language} because there is no translation for the page language yet.'
     meta_description: '{title}'
+    accept:
+        meta_description: Review and accept the document to continue.
+        checkbox_required: You must check the box to continue.
+        submit: Accept and continue
+        processing: Recording acceptance...
 
 error:
     home: Back to home

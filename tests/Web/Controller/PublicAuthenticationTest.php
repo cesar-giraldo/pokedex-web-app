@@ -11,6 +11,7 @@ use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Tests\Web\Support\AcceptsPendingLegalDocumentsTrait;
 use App\Web\Service\PublicLanguageResolver;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,6 +34,8 @@ use function tempnam;
 #[Group('functional')]
 final class PublicAuthenticationTest extends WebTestCase
 {
+    use AcceptsPendingLegalDocumentsTrait;
+
     private const string PASSWORD = 'Secret123';
 
     /** @var list<string> */
@@ -289,6 +292,7 @@ final class PublicAuthenticationTest extends WebTestCase
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
         $updated = $this->reload($nickname);
         self::assertSame(UserStatus::Active, $updated->getStatus());
+        $this->acceptPendingLegalDocuments($updated);
         $client->followRedirect();
         self::assertSelectorNotExists('main .alert-warning');
 
@@ -520,6 +524,10 @@ final class PublicAuthenticationTest extends WebTestCase
         $user->setPassword($hasher->hashPassword($user, self::PASSWORD));
         $entityManager->persist($user);
         $entityManager->flush();
+
+        if (UserStatus::Active === $status && $user->hasAssignedRole(UserRole::User)) {
+            $this->acceptPendingLegalDocuments($user);
+        }
 
         return $user;
     }

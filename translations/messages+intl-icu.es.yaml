@@ -211,6 +211,11 @@ legal:
     version: 'Versión {number}'
     fallback: 'Este documento se muestra en {language} porque todavía no hay una traducción para el idioma de la página.'
     meta_description: '{title}'
+    accept:
+        meta_description: Revisa y acepta el documento para continuar.
+        checkbox_required: Debes marcar la casilla para continuar.
+        submit: Aceptar y continuar
+        processing: Registrando aceptación...
 
 error:
     home: Volver al inicio

@@ -95,6 +95,32 @@
         }
     }
 
+    .legal-accept-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+        overflow-y: auto;
+        background: color-mix(in srgb, var(--color-brand) 38%, transparent);
+    }
+
+    .legal-accept-dialog {
+        width: min(48rem, 100%);
+        max-height: calc(100vh - 2rem);
+        overflow: auto;
+    }
+
+    .legal-accept-copy {
+        max-height: 50vh;
+        overflow-y: auto;
+    }
+
+    .legal-accept-copy:focus-visible {
+        outline-width: 1px;
+    }
+
     .skip-link {
         @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-full focus:bg-brand focus:px-4 focus:py-2 focus:font-medium focus:text-white;
     }
