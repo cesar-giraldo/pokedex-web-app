@@ -22,12 +22,25 @@ export default class extends Controller {
     open(event) {
         event.preventDefault();
 
-        const item = event.currentTarget;
-        const index = this.itemTargets.indexOf(item);
+        const index = this.itemTargets.indexOf(event.currentTarget);
         if (index < 0) {
             return;
         }
 
+        this.present(index);
+    }
+
+    openFirst(event) {
+        event.preventDefault();
+
+        if (this.itemTargets.length < 1) {
+            return;
+        }
+
+        this.present(0);
+    }
+
+    present(index) {
         this.currentIndex = index;
         this.showCurrent(() => {
             if (!this.dialogTarget.open) {

@@ -173,6 +173,7 @@ final class PublicPagesTest extends WebTestCase
         $client->request('GET', '/' . $locale . '/pokemon/' . $this->pokemonId);
 
         self::assertResponseIsSuccessful();
+        self::assertSelectorExists('article[data-controller="gallery"] button[data-action="gallery#openFirst"]');
         self::assertSelectorCount(2, '[data-gallery-target="item"]');
         self::assertSelectorExists('[data-gallery-target="item"][data-gallery-alt-param="abc desc"][data-gallery-src-param$="/display"]');
         self::assertSelectorExists('[data-gallery-target="item"][data-gallery-alt-param="description 2"][data-gallery-src-param$="/display"]');

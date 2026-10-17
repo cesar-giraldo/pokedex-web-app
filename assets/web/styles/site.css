@@ -103,7 +103,7 @@
         place-items: center;
         padding: 1rem;
         overflow-y: auto;
-        background: color-mix(in srgb, var(--color-brand) 38%, transparent);
+        background: rgb(0 0 0 / 65%);
     }
 
     .legal-accept-dialog {
@@ -549,7 +549,7 @@ dialog.gallery-dialog {
 }
 
 dialog.gallery-dialog::backdrop {
-    background: rgb(0 0 0 / 72%);
+    background: rgb(0 0 0 / 65%);
 }
 
 .page-loader {
