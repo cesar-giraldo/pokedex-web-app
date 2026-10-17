@@ -21,7 +21,6 @@ use App\Repository\LegalDocumentVersionRepository;
 use App\Repository\UserRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 use function implode;
 use function trim;
@@ -37,7 +36,7 @@ final class LegalDocumentPublisher
         private readonly LegalLanguageResolver $languageResolver,
         private readonly LegalContentSanitizer $contentSanitizer,
         private readonly NotificationService $notificationService,
-        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly LegalAcceptanceLink $acceptanceLink,
     ) {
     }
 
@@ -157,12 +156,12 @@ final class LegalDocumentPublisher
             type: NotificationType::LegalVersionPublished,
             title: (string) $notificationTitle,
             message: (string) $notificationMessage,
-            actionUrl: $this->urlGenerator->generate('app_backend_legal_accept'),
             actor: $actor,
             payload: [
                 'documentType' => $draft->getDocument()->getType()->value,
                 'versionNumber' => $draft->getVersionNumber(),
             ],
+            actionUrlFor: fn (User $recipient): string => $this->acceptanceLink->urlFor($recipient),
         );
     }
 

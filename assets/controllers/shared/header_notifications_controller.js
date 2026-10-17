@@ -1,5 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
-import { useClickOutside } from "stimulus-use";
+import { useClickOutside } from 'stimulus-use';
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
@@ -11,6 +11,7 @@ export default class extends Controller {
 
     static targets = [
         'notificationsDropdown',
+        'toggle',
     ];
 
     initialize() {
@@ -19,6 +20,18 @@ export default class extends Controller {
 
     connect() {
         useClickOutside(this);
+        this.onKeydown = (event) => {
+            if ('Escape' !== event.key || !this.notificationsDropdownOpenValue) {
+                return;
+            }
+
+            this.closeNotificationsDropdown();
+        };
+        window.addEventListener('keydown', this.onKeydown);
+    }
+
+    disconnect() {
+        window.removeEventListener('keydown', this.onKeydown);
     }
 
     clickOutside() {
@@ -34,6 +47,10 @@ export default class extends Controller {
     }
 
     notificationsDropdownOpenValueChanged(newValue) {
+        if (this.hasToggleTarget) {
+            this.toggleTarget.setAttribute('aria-expanded', newValue ? 'true' : 'false');
+        }
+
         if (!this.hasNotificationsDropdownTarget) {
             return;
         }

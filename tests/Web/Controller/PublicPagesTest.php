@@ -7,6 +7,7 @@ namespace App\Tests\Web\Controller;
 use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\Enum\LegalDocumentType;
 use App\Entity\Pokemon;
+use App\Entity\PokemonImage;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\LegalDocumentVersionRepository;
 use App\Web\Service\PublicLanguageResolver;
@@ -135,6 +136,72 @@ final class PublicPagesTest extends WebTestCase
 
         $client->request('GET', '/' . $locale . '/pokemon/' . $this->hiddenPokemonId);
         self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testPokemonGalleryPreviewFitsTheImageAndExposesNavigation(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        /** @var TranslatorInterface $translator */
+        $translator = static::getContainer()->get(TranslatorInterface::class);
+        /** @var LocaleSwitcher $localeSwitcher */
+        $localeSwitcher = static::getContainer()->get(LocaleSwitcher::class);
+        $label = static fn (string $key): string => $localeSwitcher->runWithLocale(
+            $locale,
+            static fn (): string => $translator->trans($key),
+        );
+
+        $pokemon = new Pokemon()
+            ->setName('Gallery Preview Mon')
+            ->setHeight(7)
+            ->setWeight(69)
+            ->setListOrder(9997);
+        $pokemon->addImage(new PokemonImage()
+            ->setImagePath('dev/public/pokemon/images/1/a.jpg')
+            ->setDescription('abc desc')
+            ->setSortOrder(1));
+        $pokemon->addImage(new PokemonImage()
+            ->setImagePath('dev/public/pokemon/images/1/b.jpg')
+            ->setDescription('description 2')
+            ->setSortOrder(2));
+        $entityManager->persist($pokemon);
+        $entityManager->flush();
+        $this->pokemonId = $pokemon->getId();
+
+        $client->request('GET', '/' . $locale . '/pokemon/' . $this->pokemonId);
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('article[data-controller="gallery"] button[data-action="gallery#openFirst"]');
+        self::assertSelectorExists(sprintf(
+            'nav[aria-label="%s"] a[href="/%s/pokemon"]',
+            $label('breadcrumb.label'),
+            $locale,
+        ));
+        self::assertSelectorTextContains(sprintf('nav[aria-label="%s"] [aria-current="page"]', $label('breadcrumb.label')), 'Gallery Preview Mon');
+        self::assertSelectorCount(2, '[data-gallery-target="item"]');
+        self::assertSelectorExists('[data-gallery-target="item"][data-gallery-alt-param="abc desc"][data-gallery-src-param$="/display"]');
+        self::assertSelectorExists('[data-gallery-target="item"][data-gallery-alt-param="description 2"][data-gallery-src-param$="/display"]');
+        self::assertSelectorExists('dialog.gallery-dialog[data-action*="keydown->gallery#keydown"]');
+        self::assertSelectorExists(sprintf(
+            'dialog.gallery-dialog button[data-gallery-target="closeButton"][aria-label="%s"] svg',
+            $label('pokemon.close'),
+        ));
+        self::assertSelectorNotExists('dialog.gallery-dialog button.btn');
+        self::assertSelectorExists(sprintf(
+            'button[data-gallery-target="previousButton"][hidden][aria-label="%s"]',
+            $label('pokemon.previous_image'),
+        ));
+        self::assertSelectorExists(sprintf(
+            'button[data-gallery-target="nextButton"][hidden][aria-label="%s"]',
+            $label('pokemon.next_image'),
+        ));
+        self::assertSelectorExists(sprintf(
+            'dialog.gallery-dialog [data-gallery-target="loader"][hidden][aria-label="%s"] .page-loader-ring',
+            $label('site.loading'),
+        ));
+        self::assertSelectorNotExists('[data-gallery-target="loader"] .page-loader-label');
     }
 
     public function testInternalSearchHidesPrivateEntries(): void

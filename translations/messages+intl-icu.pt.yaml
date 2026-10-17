@@ -22,6 +22,9 @@ nav:
     favorites: Favoritos
     logout: Sair
 
+breadcrumb:
+    label: Trilha de navegação
+
 impersonation:
     viewing_as: 'Você está vendo a aplicação como {name} {lastname} (@{nickname})'
     exit: Voltar à minha sessão
@@ -92,6 +95,8 @@ pokemon:
     gallery_empty: Esta espécie ainda não tem fotos na galeria.
     open_image: Ampliar imagem
     close: Fechar
+    previous_image: Imagem anterior
+    next_image: Imagem seguinte
     meta_fallback: 'Ficha de {name}.'
 
 about:
@@ -179,6 +184,29 @@ account:
     show_password: Mostrar senha
     hide_password: Ocultar senha
 
+notifications:
+    title: Notificações
+    meta_description: As suas notificações.
+    open: Notificações
+    close: Fechar notificações
+    empty: Você não tem notificações.
+    unread: Não lida.
+    unread_badge: Não lida
+    see_all: Ver todas as notificações
+    mark_all: Marcar todas como lidas
+    previous: Anterior
+    next: Seguinte
+    page: 'Página {page} de {pages}'
+    pagination: Paginação
+    type:
+        system_info: Sistema
+        user_created: Usuários
+        user_updated: Usuários
+        database_backup_completed: Base de dados
+        database_backup_failed: Base de dados
+        pokemons_imported: Pokémon
+        legal_version_published: Legal
+
 favorites:
     title: Favoritos
     meta_description: Seus Pokémon favoritos.
@@ -188,6 +216,11 @@ legal:
     version: 'Versão {number}'
     fallback: 'Este documento é exibido em {language} porque ainda não há uma tradução para o idioma da página.'
     meta_description: '{title}'
+    accept:
+        meta_description: Revise e aceite o documento para continuar.
+        checkbox_required: Você precisa marcar a caixa para continuar.
+        submit: Aceitar e continuar
+        processing: Registrando aceitação...
 
 error:
     home: Voltar ao início

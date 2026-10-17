@@ -1,0 +1,16 @@
+<nav aria-label="{{ 'breadcrumb.label'|trans }}">
+    <ol class="flex flex-wrap items-center gap-1.5 text-sm">
+        {% for item in items %}
+            <li class="flex items-center gap-1.5">
+                {% if not loop.first %}
+                    {{ ux_icon('heroicons:chevron-right', { class: 'h-4 w-4 text-muted', 'aria-hidden': 'true' }) }}
+                {% endif %}
+                {% if item.href is defined and item.href %}
+                    <a class="font-medium text-brand hover:underline" href="{{ item.href }}">{{ item.label }}</a>
+                {% else %}
+                    <span class="font-medium text-ink" aria-current="page">{{ item.label }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ol>
+</nav>

@@ -45,6 +45,29 @@ final class NotificationServiceTest extends TestCase
         self::assertFalse($created[0]->isRead());
     }
 
+    public function testNotifyResolvesADifferentUrlPerRecipient(): void
+    {
+        $first = $this->userWithId(1);
+        $second = $this->userWithId(2);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())->method('flush');
+
+        $service = new NotificationService($entityManager, $this->createStub(NotificationRepository::class));
+        $created = $service->notify(
+            recipients: [$first, $second],
+            type: NotificationType::LegalVersionPublished,
+            title: 'Política',
+            message: 'Debes aceptar',
+            actionUrlFor: static fn (User $recipient): string => 1 === $recipient->getId() ? '/es/legal/accept' : '/admin/legal/accept',
+        );
+
+        self::assertSame('/es/legal/accept', $created[0]->getActionUrl());
+        self::assertSame('/admin/legal/accept', $created[1]->getActionUrl());
+        self::assertSame('Política', $created[0]->getTitle());
+        self::assertSame('Debes aceptar', $created[1]->getMessage());
+    }
+
     public function testNotifyRejectsBlankContentAndSkipsFlushWhenNobodyIsTargeted(): void
     {
         $entityManager = $this->createMock(EntityManagerInterface::class);

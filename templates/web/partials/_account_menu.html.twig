@@ -6,7 +6,20 @@
 
 {% import _self as menu %}
 
-{% if variant == 'list' %}
+{% if variant == 'icon' %}
+    <details class="relative" data-controller="account-menu">
+        <summary class="site-summary grid h-11 w-11 cursor-pointer place-items-center overflow-hidden rounded-full text-ink ring-1 ring-black/10 hover:bg-surface hover:text-brand" title="{{ app.user.name }}">
+            {% if app.user.profileImagePath %}
+                <img src="{{ path('app_public_profile_avatar', {_locale: locale}) }}" alt="" width="44" height="44" class="h-11 w-11 rounded-full object-cover">
+            {% else %}
+                {{ ux_icon('heroicons:user', { class: 'h-5 w-5', 'aria-hidden': 'true' }) }}
+            {% endif %}
+        </summary>
+        <div class="absolute -right-[3.25rem] z-20 mt-2 flex w-64 flex-col gap-2 rounded-3xl bg-white p-4 shadow-lg ring-1 ring-black/10">
+            {% include _self with {variant: 'list'} %}
+        </div>
+    </details>
+{% elseif variant == 'list' %}
     <p class="text-sm font-semibold text-ink">{{ app.user.name }} {{ app.user.lastname }}</p>
     <a class="btn btn-secondary" href="{{ path('app_public_profile', {_locale: locale}) }}" {% if current == 'app_public_profile' %}aria-current="page"{% endif %}>
         {{ menu.option_icon('heroicons:user-circle') }}

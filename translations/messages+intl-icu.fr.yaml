@@ -22,6 +22,9 @@ nav:
     favorites: Favoris
     logout: Se déconnecter
 
+breadcrumb:
+    label: Fil d'Ariane
+
 impersonation:
     viewing_as: 'Vous consultez l''application en tant que {name} {lastname} (@{nickname})'
     exit: Revenir à ma session
@@ -92,6 +95,8 @@ pokemon:
     gallery_empty: Cette espèce n’a pas encore de photos dans la galerie.
     open_image: Agrandir l’image
     close: Fermer
+    previous_image: Image précédente
+    next_image: Image suivante
     meta_fallback: 'Fiche de {name}.'
 
 about:
@@ -179,6 +184,29 @@ account:
     show_password: Afficher le mot de passe
     hide_password: Masquer le mot de passe
 
+notifications:
+    title: Notifications
+    meta_description: Vos notifications.
+    open: Notifications
+    close: Fermer les notifications
+    empty: Vous n’avez aucune notification.
+    unread: Non lue.
+    unread_badge: Non lue
+    see_all: Voir toutes les notifications
+    mark_all: Tout marquer comme lu
+    previous: Précédent
+    next: Suivant
+    page: 'Page {page} sur {pages}'
+    pagination: Pagination
+    type:
+        system_info: Système
+        user_created: Utilisateurs
+        user_updated: Utilisateurs
+        database_backup_completed: Base de données
+        database_backup_failed: Base de données
+        pokemons_imported: Pokémon
+        legal_version_published: Légal
+
 favorites:
     title: Favoris
     meta_description: Vos Pokémon favoris.
@@ -188,6 +216,11 @@ legal:
     version: 'Version {number}'
     fallback: 'Ce document est affiché en {language} parce qu’il n’existe pas encore de traduction pour la langue de la page.'
     meta_description: '{title}'
+    accept:
+        meta_description: Lisez et acceptez le document pour continuer.
+        checkbox_required: Vous devez cocher la case pour continuer.
+        submit: Accepter et continuer
+        processing: Enregistrement de l’acceptation...
 
 error:
     home: Retour à l’accueil

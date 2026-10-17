@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Legal;
 
 use App\Entity\Enum\LegalAcceptanceMethod;
+use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserStatus;
 use App\Entity\LegalDocumentVersion;
 use App\Entity\LegalDocumentVersionTranslation;
@@ -74,7 +75,22 @@ final class LegalAcceptanceService
         );
     }
 
-    public function acceptCurrent(User $user, ?string $ipAddress, ?string $userAgent): UserLegalAcceptance
+    public function translationForLocale(User $user, LegalDocumentVersion $version, string $locale): ?LegalDocumentVersionTranslation
+    {
+        $requested = SupportedLanguage::tryFrom($locale);
+
+        if ($requested instanceof SupportedLanguage) {
+            $direct = $version->findTranslation($requested->value);
+
+            if ($direct instanceof LegalDocumentVersionTranslation && $direct->isComplete()) {
+                return $direct;
+            }
+        }
+
+        return $this->translationForUser($user, $version);
+    }
+
+    public function acceptCurrent(User $user, ?string $ipAddress, ?string $userAgent, ?string $locale = null): UserLegalAcceptance
     {
         $version = $this->currentPending($user);
 
@@ -82,7 +98,9 @@ final class LegalAcceptanceService
             throw new LegalPublicationException('No hay documentos pendientes de aceptación.');
         }
 
-        $translation = $this->translationForUser($user, $version);
+        $translation = null !== $locale
+            ? $this->translationForLocale($user, $version, $locale)
+            : $this->translationForUser($user, $version);
 
         if (!$translation instanceof LegalDocumentVersionTranslation) {
             throw new LegalPublicationException('No hay una traducción disponible para aceptar este documento.');

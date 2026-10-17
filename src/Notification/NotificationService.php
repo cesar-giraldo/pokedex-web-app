@@ -9,10 +9,12 @@ use App\Entity\Notification;
 use App\Entity\User;
 use App\Notification\Exception\NotificationAccessDeniedException;
 use App\Repository\NotificationRepository;
+use Closure;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 
+use function is_string;
 use function spl_object_id;
 use function trim;
 
@@ -25,8 +27,9 @@ final class NotificationService
     }
 
     /**
-     * @param User|iterable<User>       $recipients
-     * @param array<string, mixed>|null $payload
+     * @param User|iterable<User>         $recipients
+     * @param array<string, mixed>|null   $payload
+     * @param Closure(User): ?string|null $actionUrlFor URL por destinatario; si está presente, reemplaza a $actionUrl
      *
      * @return list<Notification>
      */
@@ -38,6 +41,7 @@ final class NotificationService
         ?string $actionUrl = null,
         ?User $actor = null,
         ?array $payload = null,
+        ?Closure $actionUrlFor = null,
     ): array {
         $title = trim($title);
         $message = trim($message);
@@ -61,7 +65,7 @@ final class NotificationService
             $seen[$key] = true;
 
             $notification = new Notification($recipient, $type, $title, $message);
-            $notification->setActionUrl($actionUrl);
+            $notification->setActionUrl($this->actionUrlFor($recipient, $actionUrl, $actionUrlFor));
             $notification->setActor($actor);
             $notification->setPayload($payload);
 
@@ -106,6 +110,20 @@ final class NotificationService
     public function markAllAsRead(User $user): void
     {
         $this->notificationRepository->markAllAsRead($user, new DateTime());
+    }
+
+    /**
+     * @param Closure(User): ?string|null $actionUrlFor
+     */
+    private function actionUrlFor(User $recipient, ?string $actionUrl, ?Closure $actionUrlFor): ?string
+    {
+        if (null === $actionUrlFor) {
+            return $actionUrl;
+        }
+
+        $resolved = $actionUrlFor($recipient);
+
+        return is_string($resolved) && '' !== $resolved ? $resolved : null;
     }
 
     /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Twig\Extensions;
+namespace App\Notification\Twig;
 
 use App\Entity\Notification;
 use App\Entity\User;
