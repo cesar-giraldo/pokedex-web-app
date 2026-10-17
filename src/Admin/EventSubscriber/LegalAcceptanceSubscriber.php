@@ -88,7 +88,9 @@ final class LegalAcceptanceSubscriber implements EventSubscriberInterface
             }
         }
 
-        return '/admin/login' === $path;
+        return '/admin/login' === $path
+            || '/admin/settings/general/branding/platform-icon' === $path
+            || 1 === preg_match('#^/admin/media/user-profile/\d+(?:/avatar)?$#', $path);
     }
 
     private function isPublicLegalPath(string $path): bool

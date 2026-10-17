@@ -99,6 +99,7 @@ final class PublicLegalAcceptanceSubscriber implements EventSubscriberInterface
         return 1 === preg_match(sprintf('#^/(%s)/legal/accept$#', $locale), $path)
             || 1 === preg_match(sprintf('#^/(%s)/logout$#', $locale), $path)
             || 1 === preg_match(sprintf('#^/(%s)/impersonation/exit$#', $locale), $path)
+            || 1 === preg_match(sprintf('#^/(%s)/profile/avatar$#', $locale), $path)
             || 1 === preg_match(sprintf('#^/(%s)/notifications/\d+/open$#', $locale), $path);
     }
 

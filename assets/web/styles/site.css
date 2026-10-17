@@ -95,23 +95,6 @@
         }
     }
 
-    .legal-accept-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 50;
-        display: grid;
-        place-items: center;
-        padding: 1rem;
-        overflow-y: auto;
-        background: rgb(0 0 0 / 65%);
-    }
-
-    .legal-accept-dialog {
-        width: min(48rem, 100%);
-        max-height: calc(100vh - 2rem);
-        overflow: auto;
-    }
-
     .legal-accept-copy {
         max-height: 50vh;
         overflow-y: auto;

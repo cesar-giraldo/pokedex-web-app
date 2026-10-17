@@ -6,6 +6,7 @@ namespace App\Web\Controller;
 
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserStatus;
+use App\Entity\LegalDocumentVersionTranslation;
 use App\Entity\User;
 use App\Legal\Exception\LegalPublicationException;
 use App\Legal\LegalAcceptanceService;
@@ -49,9 +50,9 @@ final class LegalAcceptanceController extends AbstractController
             ]);
         }
 
-        $translation = $this->acceptanceService->translationForUser($user, $pending);
+        $translation = $this->acceptanceService->translationForLocale($user, $pending, $request->getLocale());
 
-        if (null === $translation) {
+        if (!$translation instanceof LegalDocumentVersionTranslation) {
             throw $this->createNotFoundException('No hay una traducción disponible para este documento.');
         }
 
@@ -70,6 +71,7 @@ final class LegalAcceptanceController extends AbstractController
                         $user,
                         $request->getClientIp(),
                         $request->headers->get('User-Agent'),
+                        $request->getLocale(),
                     );
                 } catch (LegalPublicationException $exception) {
                     if (!$this->acceptanceService->hasPending($user)) {
@@ -92,6 +94,7 @@ final class LegalAcceptanceController extends AbstractController
         return $this->render('@web/legal/accept.html.twig', [
             'version' => $pending,
             'translation' => $translation,
+            'content_language' => SupportedLanguage::tryFrom($translation->getLanguage()),
             'error' => $error ?? '',
         ]);
     }

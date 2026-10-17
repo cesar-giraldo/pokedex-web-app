@@ -29,6 +29,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use function bin2hex;
 use function count;
 use function random_bytes;
+use function sprintf;
 
 #[Group('functional')]
 final class LegalAcceptanceControllerTest extends WebTestCase
@@ -131,6 +132,10 @@ final class LegalAcceptanceControllerTest extends WebTestCase
         $crawler = $client->followRedirect();
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-legal-accept]');
+        self::assertSelectorNotExists('[role="dialog"]');
+        self::assertSelectorNotExists('.legal-accept-overlay');
+        self::assertSelectorExists(sprintf('a[href="/%s/logout"]', self::LOCALE));
+        self::assertSelectorExists('[data-header-notifications-target="toggle"]');
         self::assertSelectorTextContains('#legal-accept-title', $titles[0]);
 
         $client->submit($crawler->selectButton('Aceptar y continuar')->form());
@@ -198,6 +203,18 @@ final class LegalAcceptanceControllerTest extends WebTestCase
         $location = $client->getResponse()->headers->get('Location');
         self::assertIsString($location);
         self::assertStringNotContainsString('/legal/accept', $location);
+    }
+
+    public function testProfileAvatarRemainsAvailableWhileAcceptanceIsPending(): void
+    {
+        $client = static::createClient();
+        $user = $this->createAccountUser(UserStatus::Active);
+        $this->pendingVersions();
+        $this->login($client, $user);
+
+        $client->request('GET', '/' . self::LOCALE . '/profile/avatar');
+
+        self::assertResponseStatusCodeSame(404);
     }
 
     /**

@@ -192,6 +192,15 @@ final class LegalDocumentControllerTest extends WebTestCase
         $client->request('GET', '/admin/home');
         self::assertResponseRedirects('/admin/legal/accept');
 
+        $developerId = $developer->getId();
+        self::assertNotNull($developerId);
+        $client->request('GET', '/admin/settings/general/branding/platform-icon');
+        self::assertContains($client->getResponse()->getStatusCode(), [200, 404]);
+        $client->request('GET', '/admin/media/user-profile/' . $developerId);
+        self::assertContains($client->getResponse()->getStatusCode(), [200, 404]);
+
+        $client->request('GET', '/admin/home');
+        self::assertResponseRedirects('/admin/legal/accept');
         $crawler = $client->followRedirect();
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'Acepto la política de prueba');
