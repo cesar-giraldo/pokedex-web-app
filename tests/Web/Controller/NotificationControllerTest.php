@@ -4,21 +4,33 @@ declare(strict_types=1);
 
 namespace App\Tests\Web\Controller;
 
+use App\Entity\Enum\LegalDocumentType;
+use App\Entity\Enum\LegalDocumentVersionStatus;
 use App\Entity\Enum\NotificationType;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
+use App\Entity\LegalDocumentVersion;
 use App\Entity\Notification;
 use App\Entity\User;
+use App\Entity\UserLegalAcceptance;
+use App\Legal\LegalDocumentPublisher;
 use App\Notification\NotificationService;
+use App\Repository\GeneralSettingsRepository;
+use App\Repository\LegalDocumentRepository;
+use App\Repository\LegalDocumentVersionRepository;
 use App\Repository\UserRepository;
 use App\Tests\Web\Support\AcceptsPendingLegalDocumentsTrait;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
+use ReflectionProperty;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\DomCrawler\Field\ChoiceFormField;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+use function array_unique;
+use function array_values;
 use function bin2hex;
 use function random_bytes;
 use function sprintf;
@@ -36,13 +48,28 @@ final class NotificationControllerTest extends WebTestCase
     /** @var list<string> */
     private array $nicknames = [];
 
+    /** @var list<int> */
+    private array $publishedVersionIds = [];
+
+    /** @var list<string> */
+    private array $notificationTitles = [];
+
+    private ?int $archivedVersionId = null;
+
     private ?EntityManagerInterface $entityManager = null;
 
     protected function tearDown(): void
     {
-        if (([] !== $this->createdNotificationIds || [] !== $this->nicknames) && static::$booted) {
+        $hasCleanup = [] !== $this->createdNotificationIds
+            || [] !== $this->nicknames
+            || [] !== $this->publishedVersionIds
+            || [] !== $this->notificationTitles
+            || null !== $this->archivedVersionId;
+
+        if ($hasCleanup && static::$booted) {
             /** @var EntityManagerInterface $entityManager */
             $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
             foreach ($this->createdNotificationIds as $notificationId) {
                 $notification = $entityManager->find(Notification::class, $notificationId);
                 if ($notification instanceof Notification) {
@@ -50,7 +77,40 @@ final class NotificationControllerTest extends WebTestCase
                 }
             }
 
+            foreach (array_values(array_unique($this->notificationTitles)) as $title) {
+                $notifications = $entityManager->getRepository(Notification::class)->findBy([
+                    'type' => NotificationType::LegalVersionPublished,
+                    'title' => $title,
+                ]);
+
+                foreach ($notifications as $notification) {
+                    $entityManager->remove($notification);
+                }
+            }
+
             $entityManager->flush();
+
+            foreach (array_values(array_unique($this->publishedVersionIds)) as $versionId) {
+                $version = $entityManager->find(LegalDocumentVersion::class, $versionId);
+
+                if (!$version instanceof LegalDocumentVersion) {
+                    continue;
+                }
+
+                $acceptances = $entityManager->getRepository(UserLegalAcceptance::class)->findBy([
+                    'version' => $version,
+                ]);
+
+                foreach ($acceptances as $acceptance) {
+                    $entityManager->remove($acceptance);
+                }
+
+                $entityManager->flush();
+                $entityManager->remove($version);
+            }
+
+            $entityManager->flush();
+            $this->restoreArchivedVersion($entityManager);
 
             /** @var UserRepository $users */
             $users = static::getContainer()->get(UserRepository::class);
@@ -173,6 +233,48 @@ final class NotificationControllerTest extends WebTestCase
         self::assertSelectorExists('[data-notifications-status="read"]');
     }
 
+    public function testOpeningAnAcceptedLegalNotificationShowsThePublishedVersion(): void
+    {
+        $client = static::createClient();
+        $user = $this->createAccountUser();
+        $this->login($client, $user);
+        $user = $this->reloadUser($user);
+
+        $version = $this->publishPrivacyPolicy($user);
+        $notification = $this->entityManager()->getRepository(Notification::class)->findOneBy([
+            'recipient' => $user,
+            'title' => $this->notificationTitles[0] ?? '',
+        ]);
+        self::assertInstanceOf(Notification::class, $notification);
+        $notificationId = $notification->getId();
+        self::assertNotNull($notificationId);
+        $actionUrl = $notification->getActionUrl();
+        self::assertSame('/' . self::LOCALE . '/legal/accept', $actionUrl);
+
+        $crawler = $client->request('GET', '/' . self::LOCALE . '/legal/accept');
+        self::assertResponseIsSuccessful();
+        $token = $crawler->filter('form[action$="/open"] input[name="_token"]')->attr('value');
+        self::assertIsString($token);
+
+        $openUrl = sprintf('/%s/notifications/%d/open', self::LOCALE, $notificationId);
+        $client->request('POST', $openUrl, ['_token' => $token]);
+        self::assertResponseRedirects($actionUrl);
+
+        $crawler = $client->followRedirect();
+        $form = $crawler->selectButton('Aceptar y continuar')->form();
+        $accepted = $form['accepted'];
+        self::assertInstanceOf(ChoiceFormField::class, $accepted);
+        $accepted->tick();
+        $client->submit($form);
+
+        $client->request('POST', $openUrl, ['_token' => $token]);
+        self::assertResponseRedirects(sprintf('/legal/privacy_policy/%d?lang=es', $version->getVersionNumber()));
+
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', 'Política de prueba');
+    }
+
     public function testUnsafeActionUrlsReturnToTheInbox(): void
     {
         $client = static::createClient();
@@ -246,6 +348,78 @@ final class NotificationControllerTest extends WebTestCase
         $this->entityManager = $this->entityManager();
 
         return $notification;
+    }
+
+    private function publishPrivacyPolicy(User $actor): LegalDocumentVersion
+    {
+        /** @var LegalDocumentPublisher $publisher */
+        $publisher = static::getContainer()->get(LegalDocumentPublisher::class);
+        $publisher->ensureDocuments();
+
+        /** @var LegalDocumentRepository $documents */
+        $documents = static::getContainer()->get(LegalDocumentRepository::class);
+        $document = $documents->findOneByType(LegalDocumentType::PrivacyPolicy);
+        self::assertNotNull($document);
+
+        /** @var LegalDocumentVersionRepository $versions */
+        $versions = static::getContainer()->get(LegalDocumentVersionRepository::class);
+        $current = $versions->findPublished($document);
+        $this->archivedVersionId = $current?->getId();
+
+        /** @var GeneralSettingsRepository $settingsRepository */
+        $settingsRepository = static::getContainer()->get(GeneralSettingsRepository::class);
+        $languages = $settingsRepository->getOrCreateSingleton()->getEnabledLanguages();
+
+        $draft = $publisher->startDraft($document, $actor);
+        $versionId = $draft->getId();
+        self::assertNotNull($versionId);
+        $this->publishedVersionIds[] = $versionId;
+
+        $payload = [];
+        foreach ($languages as $language) {
+            $payload[$language] = [
+                'title' => 'Política de prueba',
+                'contentHtml' => '<p>Contenido de prueba</p>',
+                'acceptanceLabel' => 'Acepto la política de prueba',
+                'summary' => 'Versión de prueba',
+            ];
+        }
+
+        $publisher->updateDraft($draft, $payload);
+        $title = 'Política de prueba ' . $draft->getVersionNumber() . ' ' . bin2hex(random_bytes(4));
+        $this->notificationTitles[] = $title;
+        $publisher->publish($draft, true, $title, 'Debes aceptar el documento de prueba.', $actor);
+
+        return $draft;
+    }
+
+    private function reloadUser(User $user): User
+    {
+        $nickname = $user->getNickname();
+        $this->entityManager()->clear();
+        /** @var UserRepository $users */
+        $users = static::getContainer()->get(UserRepository::class);
+        $reloaded = $users->findOneByNickname($nickname);
+        self::assertInstanceOf(User::class, $reloaded);
+
+        return $reloaded;
+    }
+
+    private function restoreArchivedVersion(EntityManagerInterface $entityManager): void
+    {
+        if (null === $this->archivedVersionId) {
+            return;
+        }
+
+        $version = $entityManager->find(LegalDocumentVersion::class, $this->archivedVersionId);
+
+        if (!$version instanceof LegalDocumentVersion || $version->isPublished()) {
+            return;
+        }
+
+        $status = new ReflectionProperty(LegalDocumentVersion::class, 'status');
+        $status->setValue($version, LegalDocumentVersionStatus::Published);
+        $entityManager->flush();
     }
 
     private function reloadNotification(Notification $notification): Notification

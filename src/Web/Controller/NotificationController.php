@@ -8,6 +8,7 @@ use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserStatus;
 use App\Entity\Notification;
 use App\Entity\User;
+use App\Legal\LegalNotificationDestination;
 use App\Notification\Exception\NotificationAccessDeniedException;
 use App\Notification\NotificationService;
 use App\Repository\NotificationRepository;
@@ -31,6 +32,7 @@ final class NotificationController extends AbstractController
     public function __construct(
         private readonly NotificationService $notificationService,
         private readonly NotificationRepository $notificationRepository,
+        private readonly LegalNotificationDestination $legalNotificationDestination,
     ) {
     }
 
@@ -76,6 +78,12 @@ final class NotificationController extends AbstractController
             $this->notificationService->markAsRead($notification, $viewer);
         } catch (NotificationAccessDeniedException) {
             throw $this->createNotFoundException();
+        }
+
+        $publicUrl = $this->legalNotificationDestination->urlForAcceptedVersion($viewer, $notification);
+
+        if (null !== $publicUrl) {
+            return $this->redirect($publicUrl);
         }
 
         return $this->redirectToAction($notification->getActionUrl(), $request->getLocale());
