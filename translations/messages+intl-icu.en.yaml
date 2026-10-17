@@ -92,6 +92,8 @@ pokemon:
     gallery_empty: This species does not have gallery photos yet.
     open_image: Enlarge image
     close: Close
+    previous_image: Previous image
+    next_image: Next image
     meta_fallback: '{name} entry.'
 
 about:

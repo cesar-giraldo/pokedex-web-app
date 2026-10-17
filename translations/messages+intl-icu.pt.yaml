@@ -92,6 +92,8 @@ pokemon:
     gallery_empty: Esta espécie ainda não tem fotos na galeria.
     open_image: Ampliar imagem
     close: Fechar
+    previous_image: Imagem anterior
+    next_image: Imagem seguinte
     meta_fallback: 'Ficha de {name}.'
 
 about:
