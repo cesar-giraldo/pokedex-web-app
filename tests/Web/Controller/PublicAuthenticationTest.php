@@ -29,6 +29,7 @@ use function imagecreatetruecolor;
 use function imagejpeg;
 use function random_bytes;
 use function random_int;
+use function sprintf;
 use function tempnam;
 
 #[Group('functional')]
@@ -300,6 +301,15 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', $this->trans($locale, 'favorites.title'));
         self::assertSelectorTextContains('main', 'Lorem ipsum dolor sit amet');
+        self::assertSelectorExists(sprintf(
+            'nav[aria-label="%s"] a[href="/%s/pokemon"]',
+            $this->trans($locale, 'breadcrumb.label'),
+            $locale,
+        ));
+        self::assertSelectorTextContains(
+            sprintf('nav[aria-label="%s"] [aria-current="page"]', $this->trans($locale, 'breadcrumb.label')),
+            $this->trans($locale, 'favorites.title'),
+        );
     }
 
     public function testPasswordChangeUpdatesTheHash(): void

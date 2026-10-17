@@ -22,6 +22,9 @@ nav:
     favorites: Favoris
     logout: Se déconnecter
 
+breadcrumb:
+    label: Fil d'Ariane
+
 impersonation:
     viewing_as: 'Vous consultez l''application en tant que {name} {lastname} (@{nickname})'
     exit: Revenir à ma session

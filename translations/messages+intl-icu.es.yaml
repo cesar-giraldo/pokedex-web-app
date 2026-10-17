@@ -22,6 +22,9 @@ nav:
     favorites: Favoritos
     logout: Cerrar sesión
 
+breadcrumb:
+    label: Ruta de navegación
+
 impersonation:
     viewing_as: 'Estás viendo la aplicación como {name} {lastname} (@{nickname})'
     exit: Volver a mi sesión

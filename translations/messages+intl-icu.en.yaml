@@ -22,6 +22,9 @@ nav:
     favorites: Favorites
     logout: Log out
 
+breadcrumb:
+    label: Breadcrumb
+
 impersonation:
     viewing_as: 'You are viewing the application as {name} {lastname} (@{nickname})'
     exit: Return to my session

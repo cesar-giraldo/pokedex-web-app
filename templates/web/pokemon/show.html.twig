@@ -14,8 +14,13 @@
 {% block body %}
     {% set images = pokemon.images %}
     {% set hero = images|first %}
-    <article class="mx-auto max-w-6xl px-4 py-12" data-controller="gallery">
-        <a class="text-sm font-medium text-brand" href="{{ path('app_public_pokedex', {_locale: app.request.locale}) }}">{{ 'pokemon.back'|trans }}</a>
+    <article class="mx-auto max-w-6xl px-4 py-8" data-controller="gallery">
+        {% include '@web/partials/_breadcrumb.html.twig' with {
+            items: [
+                { label: 'nav.pokemon'|trans, href: path('app_public_pokedex', {_locale: app.request.locale}) },
+                { label: pokemon.name },
+            ],
+        } %}
         <div class="mt-6 grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr]">
             <div class="overflow-hidden rounded-3xl bg-surface">
                 {% if hero %}
