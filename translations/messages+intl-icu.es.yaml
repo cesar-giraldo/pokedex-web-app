@@ -222,6 +222,22 @@ legal:
         submit: Aceptar y continuar
         processing: Registrando aceptación...
 
+email:
+    database_backup:
+        completed:
+            subject: El backup de la base de datos está listo
+            heading: Backup de base de datos completado
+            intro: 'Hola {name}, el backup de la base de datos se generó correctamente.'
+            detail: Puedes revisarlo y descargarlo en la configuración general.
+            action: Abrir la configuración general
+        failed:
+            subject: No se pudo generar el backup de la base de datos
+            heading: Falló el backup de base de datos
+            intro: 'Hola {name}, el backup de la base de datos no se completó.'
+            detail: El detalle está en la notificación de la aplicación. En la configuración general puedes revisar el último backup disponible.
+            action: Abrir la configuración general
+        footer: Este mensaje se envió de forma automática.
+
 error:
     home: Volver al inicio
     not_found_title: Página no encontrada

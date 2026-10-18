@@ -139,7 +139,7 @@ class UserRepository extends ServiceEntityRepository
      *
      * @return list<User>
      */
-    public function findByRoles(array $roles): array
+    public function findByRoles(array $roles, ?UserStatus $status = null, bool $excludeHidden = false): array
     {
         if ([] === $roles) {
             return [];
@@ -155,11 +155,20 @@ class UserRepository extends ServiceEntityRepository
             $queryBuilder->setParameter($parameter, '%"' . $role->value . '"%');
         }
 
+        $queryBuilder->andWhere(implode(' OR ', $conditions));
+
+        if (null !== $status) {
+            $queryBuilder
+                ->andWhere('u.status = :status')
+                ->setParameter('status', $status);
+        }
+
+        if ($excludeHidden) {
+            $queryBuilder->andWhere('u.isHidden IS NULL OR u.isHidden = false');
+        }
+
         /** @var list<User> $users */
-        $users = $queryBuilder
-            ->andWhere(implode(' OR ', $conditions))
-            ->getQuery()
-            ->getResult();
+        $users = $queryBuilder->getQuery()->getResult();
 
         return $users;
     }

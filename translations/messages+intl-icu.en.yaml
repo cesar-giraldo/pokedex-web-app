@@ -222,6 +222,22 @@ legal:
         submit: Accept and continue
         processing: Recording acceptance...
 
+email:
+    database_backup:
+        completed:
+            subject: The database backup is ready
+            heading: Database backup completed
+            intro: 'Hello {name}, the database backup was created successfully.'
+            detail: You can review and download it in general settings.
+            action: Open general settings
+        failed:
+            subject: The database backup could not be created
+            heading: Database backup failed
+            intro: 'Hello {name}, the database backup did not finish.'
+            detail: The details are in the in-app notification. In general settings you can review the latest backup available.
+            action: Open general settings
+        footer: This message was sent automatically.
+
 error:
     home: Back to home
     not_found_title: Page not found

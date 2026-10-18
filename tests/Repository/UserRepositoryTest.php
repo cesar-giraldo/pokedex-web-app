@@ -166,6 +166,36 @@ final class UserRepositoryTest extends KernelTestCase
         self::assertContains($hiddenAdmin->getNickname(), $nicknames);
     }
 
+    public function testFindByRolesCanRequireActiveStatusAndExcludeHiddenUsers(): void
+    {
+        $repository = $this->getRepository();
+        $visibleDeveloper = $this->createUser('repo-notify-dev', UserRole::Developer, isHidden: false);
+        $unsetHiddenDeveloper = $this->createUser('repo-notify-null-hidden', UserRole::Developer, isHidden: null);
+        $hiddenDeveloper = $this->createUser('repo-notify-hidden-dev', UserRole::Developer, isHidden: true);
+        $inactiveDeveloper = $this->createUser(
+            'repo-notify-inactive-dev',
+            UserRole::Developer,
+            isHidden: false,
+            status: UserStatus::Inactive,
+        );
+        $activeAdmin = $this->createUser('repo-notify-admin', UserRole::Admin, isHidden: false);
+
+        $results = $repository->findByRoles([UserRole::Developer], UserStatus::Active, excludeHidden: true);
+        $nicknames = array_map(static fn (User $user): string => $user->getNickname(), $results);
+
+        self::assertContains($visibleDeveloper->getNickname(), $nicknames);
+        self::assertContains($unsetHiddenDeveloper->getNickname(), $nicknames);
+        self::assertNotContains($hiddenDeveloper->getNickname(), $nicknames);
+        self::assertNotContains($inactiveDeveloper->getNickname(), $nicknames);
+        self::assertNotContains($activeAdmin->getNickname(), $nicknames);
+
+        $unfiltered = $repository->findByRoles([UserRole::Developer]);
+        $unfilteredNicknames = array_map(static fn (User $user): string => $user->getNickname(), $unfiltered);
+
+        self::assertContains($hiddenDeveloper->getNickname(), $unfilteredNicknames);
+        self::assertContains($inactiveDeveloper->getNickname(), $unfilteredNicknames);
+    }
+
     private function getRepository(): UserRepository
     {
         self::bootKernel();
@@ -184,7 +214,8 @@ final class UserRepositoryTest extends KernelTestCase
         string $name = 'Test',
         string $lastname = 'User',
         string $email = '',
-        bool $isHidden = true,
+        ?bool $isHidden = true,
+        UserStatus $status = UserStatus::Active,
     ): User {
         self::assertNotNull($this->entityManager);
 
@@ -197,7 +228,7 @@ final class UserRepositoryTest extends KernelTestCase
             ->setEmail('' !== $email ? $email : sprintf('%s@example.com', $nickname))
             ->setNickname($nickname)
             ->setApplicationRoles([$role])
-            ->setStatus(UserStatus::Active)
+            ->setStatus($status)
             ->setIsHidden($isHidden);
         $user->setPassword($hasher->hashPassword($user, 'Secret123'));
 

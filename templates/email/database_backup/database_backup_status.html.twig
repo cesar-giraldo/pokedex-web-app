@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {%- if succeeded -%}
+            {{ 'email.database_backup.completed.heading'|trans }}
+        {%- else -%}
+            {{ 'email.database_backup.failed.heading'|trans }}
+        {%- endif -%}
+    </title>
+</head>
+<body style="margin:0;padding:24px;background:#f4f4f5;color:#18181b;font-family:Arial,sans-serif;line-height:1.5;">
+    <article style="max-width:560px;margin:0 auto;padding:24px;background:#ffffff;">
+        {% if succeeded %}
+            <h1 style="margin:0 0 16px;font-size:22px;">{{ 'email.database_backup.completed.heading'|trans }}</h1>
+            <p style="margin:0 0 12px;">{{ 'email.database_backup.completed.intro'|trans({name: recipient_name}) }}</p>
+            <p style="margin:0 0 20px;">{{ 'email.database_backup.completed.detail'|trans }}</p>
+            <p style="margin:0 0 24px;">
+                <a href="{{ settings_url }}">{{ 'email.database_backup.completed.action'|trans }}</a>
+            </p>
+        {% else %}
+            <h1 style="margin:0 0 16px;font-size:22px;">{{ 'email.database_backup.failed.heading'|trans }}</h1>
+            <p style="margin:0 0 12px;">{{ 'email.database_backup.failed.intro'|trans({name: recipient_name}) }}</p>
+            <p style="margin:0 0 20px;">{{ 'email.database_backup.failed.detail'|trans }}</p>
+            <p style="margin:0 0 24px;">
+                <a href="{{ settings_url }}">{{ 'email.database_backup.failed.action'|trans }}</a>
+            </p>
+        {% endif %}
+        <p style="margin:0;font-size:13px;color:#52525b;">{{ 'email.database_backup.footer'|trans }}</p>
+    </article>
+</body>
+</html>

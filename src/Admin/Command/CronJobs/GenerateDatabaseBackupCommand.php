@@ -11,6 +11,9 @@ use App\Admin\Service\DatabaseBackup\DatabaseBackupObjectKeyBuilder;
 use App\Admin\Service\DatabaseBackup\DatabaseBackupUploaderInterface;
 use App\Entity\Enum\NotificationType;
 use App\Entity\Enum\UserRole;
+use App\Entity\Enum\UserStatus;
+use App\Entity\User;
+use App\Notification\Email\DatabaseBackupStatusMailer;
 use App\Notification\NotificationService;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\UserRepository;
@@ -27,16 +30,20 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Throwable;
 
+use function array_map;
 use function bin2hex;
+use function count;
 use function fclose;
 use function file_exists;
 use function flock;
 use function fopen;
+use function implode;
 use function is_dir;
 use function is_resource;
 use function mkdir;
 use function random_bytes;
 use function sprintf;
+use function trim;
 use function unlink;
 
 use const LOCK_EX;
@@ -60,6 +67,7 @@ final class GenerateDatabaseBackupCommand extends Command
         private readonly NotificationService $notificationService,
         private readonly UserRepository $userRepository,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly DatabaseBackupStatusMailer $databaseBackupStatusMailer,
         private readonly LoggerInterface $logger = new NullLogger(),
     ) {
         parent::__construct();
@@ -73,7 +81,7 @@ final class GenerateDatabaseBackupCommand extends Command
             $lockHandle = $this->acquireLock();
         } catch (DatabaseBackupExportException $exception) {
             $io->error($exception->getMessage());
-            $this->notifyDevelopers(NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $exception->getMessage());
+            $this->notifyDevelopers($io, NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $exception->getMessage());
 
             return Command::FAILURE;
         }
@@ -108,19 +116,19 @@ final class GenerateDatabaseBackupCommand extends Command
                     $objectKey,
                 );
                 $io->error($message);
-                $this->notifyDevelopers(NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $message);
+                $this->notifyDevelopers($io, NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $message);
 
                 return Command::FAILURE;
             }
 
             $message = sprintf('El backup se generó y se subió a S3. Clave: %s', $objectKey);
             $io->success(sprintf('Backup almacenado en %s', $objectKey));
-            $this->notifyDevelopers(NotificationType::DatabaseBackupCompleted, 'Backup de base de datos completado', $message);
+            $this->notifyDevelopers($io, NotificationType::DatabaseBackupCompleted, 'Backup de base de datos completado', $message);
 
             return Command::SUCCESS;
         } catch (DatabaseBackupExportException $exception) {
             $io->error($exception->getMessage());
-            $this->notifyDevelopers(NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $exception->getMessage());
+            $this->notifyDevelopers($io, NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $exception->getMessage());
 
             return Command::FAILURE;
         } catch (Throwable $exception) {
@@ -129,7 +137,7 @@ final class GenerateDatabaseBackupCommand extends Command
             ]);
             $message = 'No se pudo generar el backup de la base de datos.';
             $io->error($message);
-            $this->notifyDevelopers(NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $message);
+            $this->notifyDevelopers($io, NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $message);
 
             return Command::FAILURE;
         } finally {
@@ -184,14 +192,29 @@ final class GenerateDatabaseBackupCommand extends Command
         fclose($handle);
     }
 
-    private function notifyDevelopers(NotificationType $type, string $title, string $message): void
+    private function notifyDevelopers(SymfonyStyle $io, NotificationType $type, string $title, string $message): void
     {
         try {
-            $recipients = $this->userRepository->findByRoles([UserRole::Developer]);
-            if ([] === $recipients) {
-                return;
-            }
+            $recipients = $this->userRepository->findByRoles(
+                roles: [UserRole::Developer],
+                status: UserStatus::Active,
+                excludeHidden: true,
+            );
+        } catch (Throwable $exception) {
+            $this->logger->error('No se pudieron cargar los destinatarios del backup.', [
+                'error' => $exception->getMessage(),
+            ]);
 
+            return;
+        }
+
+        $this->logNotificationRecipients($io, $recipients);
+
+        if ([] === $recipients) {
+            return;
+        }
+
+        try {
             $this->notificationService->notify(
                 recipients: $recipients,
                 type: $type,
@@ -204,5 +227,40 @@ final class GenerateDatabaseBackupCommand extends Command
                 'error' => $exception->getMessage(),
             ]);
         }
+
+        try {
+            $this->databaseBackupStatusMailer->notify($recipients, $type);
+        } catch (Throwable $exception) {
+            $this->logger->error('No se pudo enviar el correo del backup.', [
+                'error' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * @param list<User> $recipients
+     */
+    private function logNotificationRecipients(SymfonyStyle $io, array $recipients): void
+    {
+        $names = array_map($this->recipientName(...), $recipients);
+        $count = count($names);
+        $notice = match ($count) {
+            0 => 'No se notificará el backup: no hay developers activos y visibles.',
+            1 => sprintf('Notificando el backup a 1 usuario: %s.', $names[0]),
+            default => sprintf('Notificando el backup a %d usuarios: %s.', $count, implode(', ', $names)),
+        };
+
+        $io->info($notice);
+        $this->logger->info($notice, [
+            'recipients_count' => $count,
+            'recipients' => $names,
+        ]);
+    }
+
+    private function recipientName(User $user): string
+    {
+        $name = trim($user->getName() . ' ' . $user->getLastname());
+
+        return '' !== $name ? $name : $user->getNickname();
     }
 }

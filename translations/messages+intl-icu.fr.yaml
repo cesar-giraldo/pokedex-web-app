@@ -222,6 +222,22 @@ legal:
         submit: Accepter et continuer
         processing: Enregistrement de l’acceptation...
 
+email:
+    database_backup:
+        completed:
+            subject: La sauvegarde de la base de données est prête
+            heading: Sauvegarde de la base de données terminée
+            intro: 'Bonjour {name}, la sauvegarde de la base de données a été créée.'
+            detail: Vous pouvez la consulter et la télécharger dans les paramètres généraux.
+            action: Ouvrir les paramètres généraux
+        failed:
+            subject: La sauvegarde de la base de données n’a pas pu être créée
+            heading: Échec de la sauvegarde de la base de données
+            intro: 'Bonjour {name}, la sauvegarde de la base de données ne s’est pas terminée.'
+            detail: Le détail se trouve dans la notification de l’application. Dans les paramètres généraux, vous pouvez consulter la dernière sauvegarde disponible.
+            action: Ouvrir les paramètres généraux
+        footer: Ce message a été envoyé automatiquement.
+
 error:
     home: Retour à l’accueil
     not_found_title: Page introuvable
