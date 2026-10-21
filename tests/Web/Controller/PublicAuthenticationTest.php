@@ -337,6 +337,9 @@ final class PublicAuthenticationTest extends WebTestCase
 
         $client->request('GET', '/' . $locale . '/favorites');
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
+
+        $client->request('GET', '/' . $locale . '/profile/image/display');
+        self::assertResponseStatusCodeSame(404);
     }
 
     public function testCompletingContactInfoActivatesTheAccount(): void
@@ -405,6 +408,7 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorTextContains('#profile-password-updated', $this->trans($locale, 'account.password_unchanged'));
         self::assertSelectorTextContains('#profile-avatar-help', $this->trans($locale, 'account.avatar_help'));
         self::assertSelectorNotExists('#profile-remove-avatar');
+        self::assertSelectorNotExists('[data-controller="gallery"]');
         self::assertSelectorCount(3, '[data-controller="password-input"]');
         self::assertSelectorExists('[data-action="click->password-input#toggleVisibility"]');
         self::assertSelectorCount(2, '[data-controller="submit-button"]');
@@ -507,9 +511,15 @@ final class PublicAuthenticationTest extends WebTestCase
 
         $client->request('GET', '/' . $locale . '/profile/avatar');
         $this->assertRedirectEndsWith($client, '/' . $locale . '/login');
+        $client->request('GET', '/' . $locale . '/profile/image/display');
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/login');
 
         $client->loginUser($this->reload($nickname), 'public');
         $client->request('GET', '/' . $locale . '/profile/avatar');
+        self::assertResponseStatusCodeSame(404);
+        $client->request('GET', '/' . $locale . '/profile/image/display');
+        self::assertResponseStatusCodeSame(404);
+        $client->request('GET', '/' . $locale . '/profile/image/thumb');
         self::assertResponseStatusCodeSame(404);
 
         $managedUser = $this->reload($nickname);
@@ -524,10 +534,25 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('image/', (string) $client->getResponse()->headers->get('Content-Type'));
 
+        $client->request('GET', '/' . $locale . '/profile/image/display');
+        self::assertResponseIsSuccessful();
+        self::assertSame('image/webp', $client->getResponse()->headers->get('Content-Type'));
+
         $client->request('GET', '/' . $locale . '/profile');
         self::assertSelectorExists('#profile-remove-avatar[role="switch"]');
         self::assertSelectorExists('[data-controller="toggle"]');
         self::assertSelectorTextContains('#profile-remove-avatar-help', $this->trans($locale, 'account.remove_avatar_help'));
+        self::assertSelectorExists(sprintf(
+            'section[data-controller="gallery"] button[data-gallery-target="item"][data-action="gallery#open"][data-gallery-src-param$="/profile/image/display"][aria-label="%s"]',
+            $this->trans($locale, 'account.view_avatar'),
+        ));
+        self::assertSelectorExists(sprintf(
+            'dialog.gallery-dialog[aria-label="%s"] button[data-gallery-target="closeButton"][aria-label="%s"]',
+            $this->trans($locale, 'account.avatar'),
+            $this->trans($locale, 'pokemon.close'),
+        ));
+        self::assertSelectorExists('button[data-gallery-target="previousButton"][hidden]');
+        self::assertSelectorExists('button[data-gallery-target="nextButton"][hidden]');
     }
 
     private function submitLogin(KernelBrowser $client, string $locale, string $nickname, string $password): void

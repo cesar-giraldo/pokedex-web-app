@@ -95,9 +95,19 @@ final class AccountController extends AbstractController
         '/{_locale}/profile/avatar',
         name: 'app_public_profile_avatar',
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
+        defaults: ['variant' => 'avatar'],
         methods: ['GET'],
     )]
-    public function avatar(): Response
+    #[Route(
+        '/{_locale}/profile/image/{variant}',
+        name: 'app_public_profile_image',
+        requirements: [
+            '_locale' => SupportedLanguage::ROUTE_REQUIREMENT,
+            'variant' => 'avatar|display|original',
+        ],
+        methods: ['GET'],
+    )]
+    public function avatar(string $variant): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -107,8 +117,13 @@ final class AccountController extends AbstractController
             throw new NotFoundHttpException();
         }
 
+        $imageVariant = ImageVariant::tryFrom($variant);
+        if (!$imageVariant instanceof ImageVariant || !$imageVariant->isAllowedForProfile()) {
+            throw new NotFoundHttpException();
+        }
+
         try {
-            $stream = $this->profileImageStorage->readStream($profileImagePath, ImageVariant::Avatar);
+            $stream = $this->profileImageStorage->readStream($profileImagePath, $imageVariant);
         } catch (Throwable) {
             throw new NotFoundHttpException();
         }
@@ -127,7 +142,7 @@ final class AccountController extends AbstractController
 
         $response->headers->set(
             'Content-Type',
-            $this->profileImageStorage->resolveMimeType($profileImagePath, ImageVariant::Avatar),
+            $this->profileImageStorage->resolveMimeType($profileImagePath, $imageVariant),
         );
         $response->headers->set('Cache-Control', 'private, max-age=3600');
 

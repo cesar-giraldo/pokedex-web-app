@@ -366,7 +366,7 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
     {
         $locale = SupportedLanguage::ROUTE_REQUIREMENT;
 
-        if (1 === preg_match(sprintf('#^/(%s)/profile(?:/avatar)?$#', $locale), $path)) {
+        if (1 === preg_match(sprintf('#^/(%s)/profile(?:/avatar|/image/(?:avatar|display|original))?$#', $locale), $path)) {
             return true;
         }
 

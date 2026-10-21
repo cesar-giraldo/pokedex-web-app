@@ -182,6 +182,7 @@ account:
     locale: Regional language
     time_format: Time format
     avatar: Profile image
+    view_avatar: View profile image
     avatar_help: 'Optional. JPG, PNG, or WebP. Maximum size: 6 MB.'
     nickname_readonly: The nickname cannot be changed.
     remove_avatar: Remove current image
