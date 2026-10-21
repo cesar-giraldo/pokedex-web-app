@@ -9,6 +9,7 @@ use App\Admin\Service\PokeAPI\PokemonDetails;
 use App\Admin\Service\PokeAPI\PokemonTypeDetails;
 use App\Entity\Enum\NotificationType;
 use App\Entity\Enum\UserRole;
+use App\Entity\Enum\UserStatus;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
 use App\Notification\LocalizedNotificationWriter;
@@ -189,7 +190,11 @@ class SearchStorePokemonsCommand extends Command
     private function notifyDevelopers(int $added): void
     {
         try {
-            $recipients = $this->userRepository->findByRoles([UserRole::Developer]);
+            $recipients = $this->userRepository->findByRoles(
+                roles: [UserRole::Developer],
+                status: UserStatus::Active,
+                excludeHidden: true,
+            );
             if ([] === $recipients) {
                 return;
             }

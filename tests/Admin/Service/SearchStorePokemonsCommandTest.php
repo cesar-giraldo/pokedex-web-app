@@ -11,6 +11,7 @@ use App\Admin\Service\PokeAPI\PokemonDetails;
 use App\Entity\Enum\NotificationType;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
+use App\Entity\Enum\UserStatus;
 use App\Entity\GeneralSettings;
 use App\Entity\Notification;
 use App\Entity\Pokemon;
@@ -135,7 +136,7 @@ final class SearchStorePokemonsCommandTest extends TestCase
         if (!$existing && $write) {
             $users->expects(self::once())
                 ->method('findByRoles')
-                ->with([UserRole::Developer])
+                ->with([UserRole::Developer], UserStatus::Active, true)
                 ->willReturn([$developer ?? $this->developer()]);
         } else {
             $users->expects(self::never())->method('findByRoles');
