@@ -157,6 +157,7 @@ account:
     country: Pays
     cellphone: Téléphone portable
     timezone: Fuseau horaire
+    language: Langue
     locale: Langue régionale
     time_format: Format de l’heure
     avatar: Image de profil
@@ -179,6 +180,7 @@ account:
     review_fields: Vérifiez les champs signalés.
     select_country: Sélectionnez un pays
     select_timezone: Sélectionnez un fuseau horaire
+    select_language: Sélectionnez une langue
     select_locale: Sélectionnez une langue régionale
     select_time_format: Sélectionnez un format d’heure
     show_password: Afficher le mot de passe

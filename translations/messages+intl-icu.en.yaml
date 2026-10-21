@@ -157,6 +157,7 @@ account:
     country: Country
     cellphone: Mobile number
     timezone: Time zone
+    language: Language
     locale: Regional language
     time_format: Time format
     avatar: Profile image
@@ -179,6 +180,7 @@ account:
     review_fields: Check the highlighted fields.
     select_country: Select a country
     select_timezone: Select a time zone
+    select_language: Select a language
     select_locale: Select a regional language
     select_time_format: Select a time format
     show_password: Show password

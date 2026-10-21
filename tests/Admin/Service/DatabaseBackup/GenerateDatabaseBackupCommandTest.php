@@ -10,12 +10,15 @@ use App\Admin\Service\DatabaseBackup\DatabaseBackupExportException;
 use App\Admin\Service\DatabaseBackup\DatabaseBackupFilenameFactory;
 use App\Admin\Service\DatabaseBackup\DatabaseBackupObjectKeyBuilder;
 use App\Admin\Service\DatabaseBackup\DatabaseBackupUploaderInterface;
+use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\Enum\NotificationType;
-use App\Entity\Enum\SupportedLocale;
+use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
+use App\Entity\GeneralSettings;
 use App\Entity\Notification;
 use App\Entity\User;
+use App\Legal\LegalLanguageResolver;
 use App\Notification\Email\DatabaseBackupStatusMailer;
 use App\Notification\Email\TransactionalEmailSender;
 use App\Notification\NotificationService;
@@ -314,7 +317,7 @@ final class GenerateDatabaseBackupCommandTest extends TestCase
             ->setNickname('developer')
             ->setName('Ada')
             ->setEmail('Ada@Example.com')
-            ->setLocale(SupportedLocale::EnglishUnitedStates)
+            ->setPreferredLanguage(SupportedLanguage::English)
             ->setStatus(UserStatus::Active)
             ->setIsHidden(false);
         $property = new ReflectionProperty(User::class, 'id');
@@ -366,10 +369,20 @@ final class GenerateDatabaseBackupCommandTest extends TestCase
             static fn (string $id, array $parameters = [], ?string $domain = null, ?string $locale = null): string => $id . '|' . $locale,
         );
 
+        $repository = $this->createStub(GeneralSettingsRepository::class);
+        $repository->method('findSingleton')->willReturn(
+            GeneralSettings::createWithDefaults()
+                ->setEnabledLanguages(['es', 'en'])
+                ->setWebsiteDefaultLanguage('es'),
+        );
+        $settings = new GeneralSettingsProvider($repository);
+
         return new DatabaseBackupStatusMailer(
             new TransactionalEmailSender($transport, 'test', 'backup@example.com', 'Pokedex', []),
             $translator,
             $urls,
+            new LegalLanguageResolver(),
+            $settings,
         );
     }
 

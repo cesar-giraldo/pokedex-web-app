@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Tests\Notification\Email;
 
+use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\Enum\NotificationType;
 use App\Entity\Enum\SupportedLocale;
+use App\Entity\GeneralSettings;
 use App\Entity\User;
+use App\Legal\LegalLanguageResolver;
 use App\Notification\Email\DatabaseBackupStatusMailer;
 use App\Notification\Email\TransactionalEmailSender;
+use App\Repository\GeneralSettingsRepository;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -128,10 +132,20 @@ final class DatabaseBackupStatusMailerTest extends TestCase
             static fn (string $id, array $parameters = [], ?string $domain = null, ?string $locale = null): string => $id . '|' . $locale,
         );
 
+        $repository = $this->createStub(GeneralSettingsRepository::class);
+        $repository->method('findSingleton')->willReturn(
+            GeneralSettings::createWithDefaults()
+                ->setEnabledLanguages(['es', 'en'])
+                ->setWebsiteDefaultLanguage('es'),
+        );
+        $settings = new GeneralSettingsProvider($repository);
+
         return new DatabaseBackupStatusMailer(
             new TransactionalEmailSender($transport, 'test', 'backup@example.com', 'Pokedex', []),
             $translator,
             $urls,
+            new LegalLanguageResolver(),
+            $settings,
             $logger,
         );
     }
@@ -142,7 +156,8 @@ final class DatabaseBackupStatusMailerTest extends TestCase
             ->setNickname('developer')
             ->setName($name)
             ->setEmail($email)
-            ->setLocale($locale);
+            ->setLocale(SupportedLocale::SpanishColombia)
+            ->setPreferredLanguage($locale->language());
 
         $property = new ReflectionProperty(User::class, 'id');
         $property->setValue($user, $id);

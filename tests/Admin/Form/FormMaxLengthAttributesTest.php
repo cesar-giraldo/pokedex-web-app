@@ -169,6 +169,7 @@ final class FormMaxLengthAttributesTest extends KernelTestCase
             'status' => 'active',
             'applicationRoles' => ['operator'],
             'timezone' => 'America/Bogota',
+            'preferredLanguage' => 'es',
             'locale' => 'es-CO',
             'timeFormat' => '12h',
             'plainPassword' => 'Secret1',

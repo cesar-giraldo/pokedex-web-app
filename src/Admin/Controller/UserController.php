@@ -19,11 +19,14 @@ use App\Admin\Service\ImpersonationPolicy;
 use App\Admin\Service\Storage\UserProfileImageFormHandler;
 use App\Admin\Service\Storage\UserProfileImageUploadException;
 use App\Admin\Service\UserManagementPolicy;
+use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\SupportedLocale;
 use App\Entity\Enum\TimeFormat;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
+use App\Entity\GeneralSettings;
 use App\Entity\User;
+use App\Legal\LegalLanguageResolver;
 use App\Repository\UserRepository;
 use App\Security\PublicUserImpersonator;
 use DateTime;
@@ -52,6 +55,8 @@ final class UserController extends AbstractController
     public function __construct(
         private readonly EffectiveRoleChecker $effectiveRoleChecker,
         private readonly UserProfileImageFormHandler $profileImageFormHandler,
+        private readonly GeneralSettingsProvider $generalSettingsProvider,
+        private readonly LegalLanguageResolver $legalLanguageResolver,
     ) {
     }
 
@@ -158,7 +163,9 @@ final class UserController extends AbstractController
 
         $publicUserImpersonator->start($request, $impersonator, $user);
 
-        $locale = $user->getLocale()->language()->value;
+        $locale = $this->legalLanguageResolver
+            ->preferredForUser($user, $this->generalSettingsProvider->get())
+            ->value;
         $route = UserStatus::UncompleteProfileInfo === $user->getStatus()
             ? 'app_public_profile'
             : 'app_public_home';
@@ -175,16 +182,16 @@ final class UserController extends AbstractController
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
         UserManagementPolicy $userManagementPolicy,
-        GeneralSettingsProvider $generalSettingsProvider,
     ): Response {
         /** @var User $editor */
         $editor = $this->getUser();
 
-        $settings = $generalSettingsProvider->get();
+        $settings = $this->generalSettingsProvider->get();
         $user = new User()
             ->setTimezone($settings->getDefaultTimezone())
             ->setLocale($settings->getDefaultLocale())
             ->setTimeFormat($settings->getDefaultTimeFormat());
+        $user->setPreferredLanguage($this->legalLanguageResolver->preferredForUser($user, $settings));
         $formOptions = $this->buildFormOptions($editor, $userManagementPolicy, true);
 
         $form = $this->createForm(UserCreateType::class, $user, $formOptions);
@@ -259,6 +266,7 @@ final class UserController extends AbstractController
         return $this->render('@admin/users/show.html.twig', [
             'user' => $user,
             'can_edit' => $userManagementPolicy->canEdit($viewer, $user),
+            'preferred_language_label' => $this->preferredLanguageLabel($user),
             'active_menu' => 'user_profile',
             'active_page' => 'user_list',
         ]);
@@ -479,15 +487,19 @@ final class UserController extends AbstractController
      *     show_is_hidden: bool,
      *     assignable_roles: list<UserRole>,
      *     country_choice_key: 'name'|'alpha2'|'alpha3',
+     *     enabled_languages: list<string>,
+     *     website_default_language: string,
      *     default_roles?: list<UserRole>
      * }
      */
     private function buildFormOptions(User $editor, UserManagementPolicy $policy, bool $isCreate): array
     {
+        $settings = $this->generalSettingsProvider->get();
         $options = [
             'show_is_hidden' => $this->effectiveRoleChecker->isGranted('ROLE_DEVELOPER'),
             'assignable_roles' => $policy->getAssignableRoles($editor),
             'country_choice_key' => WorldCountryCodes::DEFAULT_CHOICE_KEY,
+            ...$this->regionalFormOptions($settings),
         ];
 
         if ($isCreate) {
@@ -556,6 +568,7 @@ final class UserController extends AbstractController
             'status_options' => $statusOptions,
             'country_options' => $countryOptions,
             'timezone_options' => IanaTimezones::options(),
+            'language_options' => $this->enabledLanguageOptions(),
             'locale_options' => SupportedLocale::options(),
             'time_format_options' => TimeFormat::options(),
             'show_is_hidden' => $formOptions['show_is_hidden'],
@@ -585,6 +598,8 @@ final class UserController extends AbstractController
             'password_form' => $passwordForm,
             'country_options' => $countryOptions,
             'timezone_options' => IanaTimezones::options(),
+            'language_options' => $this->enabledLanguageOptions(),
+            'preferred_language_label' => $this->preferredLanguageLabel($user),
             'locale_options' => SupportedLocale::options(),
             'time_format_options' => TimeFormat::options(),
             'open_info_modal' => $openInfoModal,
@@ -595,13 +610,19 @@ final class UserController extends AbstractController
     }
 
     /**
-     * @return array{country_choice_key: 'name'|'alpha2'|'alpha3', nickname_editable: false}
+     * @return array{
+     *     country_choice_key: 'name'|'alpha2'|'alpha3',
+     *     nickname_editable: false,
+     *     enabled_languages: list<string>,
+     *     website_default_language: string
+     * }
      */
     private function buildProfileFormOptions(): array
     {
         return [
             'country_choice_key' => WorldCountryCodes::DEFAULT_CHOICE_KEY,
             'nickname_editable' => false,
+            ...$this->regionalFormOptions($this->generalSettingsProvider->get()),
         ];
     }
 
@@ -625,5 +646,37 @@ final class UserController extends AbstractController
         }
 
         $this->addFlash('error', $message);
+    }
+
+    /**
+     * @return array{enabled_languages: list<string>, website_default_language: string}
+     */
+    private function regionalFormOptions(GeneralSettings $settings): array
+    {
+        return [
+            'enabled_languages' => $settings->getEnabledLanguages(),
+            'website_default_language' => $settings->getWebsiteDefaultLanguage(),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function enabledLanguageOptions(): array
+    {
+        $options = [];
+
+        foreach (SupportedLanguage::fromStoredValues($this->generalSettingsProvider->get()->getEnabledLanguages()) as $language) {
+            $options[$language->value] = $language->label();
+        }
+
+        return $options;
+    }
+
+    private function preferredLanguageLabel(User $user): string
+    {
+        return $this->legalLanguageResolver
+            ->preferredForUser($user, $this->generalSettingsProvider->get())
+            ->label();
     }
 }

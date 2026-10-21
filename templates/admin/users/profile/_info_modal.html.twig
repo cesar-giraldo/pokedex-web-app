@@ -130,6 +130,19 @@
 
 					<div class="col-span-2 lg:col-span-1">
 						<twig:component_single_select
+							label="Idioma"
+							name="{{ info_form.preferredLanguage.vars.full_name }}"
+							id="profile-language"
+							placeholder="Seleccione un idioma"
+							:options="language_options"
+							selected="{{ info_form.preferredLanguage.vars.value }}"
+							:required="true"
+							error="{{ field_error(info_form.preferredLanguage) }}"
+						/>
+					</div>
+
+					<div class="col-span-2 lg:col-span-1">
+						<twig:component_single_select
 							label="Locale"
 							name="{{ info_form.locale.vars.full_name }}"
 							id="profile-locale"

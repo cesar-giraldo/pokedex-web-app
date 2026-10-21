@@ -56,7 +56,7 @@ final class UserProfileInfoType extends AbstractType
                 'constraints' => UserFieldConstraints::cellphone(),
             ]);
 
-        $this->addRegionalFields($builder);
+        $this->addRegionalFields($builder, $options);
 
         $this->addProfileImageFields($builder, true);
     }
@@ -70,5 +70,6 @@ final class UserProfileInfoType extends AbstractType
         $resolver->setAllowedTypes('nickname_editable', 'bool');
 
         WorldCountryCodes::configureChoiceKeyOption($resolver);
+        $this->configureRegionalFieldOptions($resolver);
     }
 }

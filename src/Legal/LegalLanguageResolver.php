@@ -16,13 +16,13 @@ final class LegalLanguageResolver
 {
     public function preferredForUser(User $user, GeneralSettings $settings): SupportedLanguage
     {
-        $language = $user->getLocale()->language();
+        $preferred = $user->getPreferredLanguage();
 
-        if (!in_array($language->value, $settings->getEnabledLanguages(), true)) {
-            return $this->defaultLanguage($settings);
+        if ($preferred instanceof SupportedLanguage && in_array($preferred->value, $settings->getEnabledLanguages(), true)) {
+            return $preferred;
         }
 
-        return $language;
+        return $this->enabledDefaultLanguage($settings);
     }
 
     public function preferredFromCode(?string $languageCode, GeneralSettings $settings): SupportedLanguage
@@ -75,5 +75,24 @@ final class LegalLanguageResolver
     public function defaultLanguage(GeneralSettings $settings): SupportedLanguage
     {
         return SupportedLanguage::tryFrom($settings->getWebsiteDefaultLanguage()) ?? SupportedLanguage::Spanish;
+    }
+
+    private function enabledDefaultLanguage(GeneralSettings $settings): SupportedLanguage
+    {
+        $candidate = SupportedLanguage::tryFrom($settings->getWebsiteDefaultLanguage());
+
+        if ($candidate instanceof SupportedLanguage && in_array($candidate->value, $settings->getEnabledLanguages(), true)) {
+            return $candidate;
+        }
+
+        foreach ($settings->getEnabledLanguages() as $languageCode) {
+            $language = SupportedLanguage::tryFrom($languageCode);
+
+            if ($language instanceof SupportedLanguage) {
+                return $language;
+            }
+        }
+
+        return SupportedLanguage::Spanish;
     }
 }

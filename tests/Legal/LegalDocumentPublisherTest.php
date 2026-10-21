@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Legal;
 
 use App\Entity\Enum\LegalDocumentType;
-use App\Entity\Enum\SupportedLocale;
+use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
 use App\Entity\GeneralSettings;
 use App\Entity\LegalDocument;
@@ -62,7 +62,7 @@ final class LegalDocumentPublisherTest extends TestCase
     {
         $account = new User()
             ->setApplicationRoles([UserRole::User])
-            ->setLocale(SupportedLocale::EnglishUnitedStates);
+            ->setPreferredLanguage(SupportedLanguage::English);
         $staff = new User()->setApplicationRoles([UserRole::Operator]);
         $captured = new ArrayObject();
 

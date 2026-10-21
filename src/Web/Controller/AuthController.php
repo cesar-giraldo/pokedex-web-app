@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Web\Controller;
 
+use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use App\Legal\LegalLanguageResolver;
 use App\Web\Form\LoginFormType;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,8 +26,12 @@ final class AuthController extends AbstractController
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
         methods: ['GET', 'POST'],
     )]
-    public function login(Request $request, AuthenticationUtils $authenticationUtils): Response
-    {
+    public function login(
+        Request $request,
+        AuthenticationUtils $authenticationUtils,
+        GeneralSettingsProvider $settings,
+        LegalLanguageResolver $languages,
+    ): Response {
         $user = $this->getUser();
 
         if ($user instanceof User && $user->hasAssignedRole(UserRole::User)) {
@@ -33,7 +39,9 @@ final class AuthController extends AbstractController
                 ? 'app_public_profile'
                 : 'app_public_home';
 
-            return $this->redirectToRoute($route, ['_locale' => $request->getLocale()]);
+            return $this->redirectToRoute($route, [
+                '_locale' => $languages->preferredForUser($user, $settings->get())->value,
+            ]);
         }
 
         $loginForm = $this->createForm(LoginFormType::class, [

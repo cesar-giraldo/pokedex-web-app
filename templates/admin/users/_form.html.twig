@@ -90,6 +90,17 @@
 		/>
 
 		<twig:component_single_select
+			label="Idioma"
+			name="{{ form.preferredLanguage.vars.full_name }}"
+			id="user-language"
+			placeholder="Seleccione un idioma"
+			:options="language_options"
+			selected="{{ form.preferredLanguage.vars.value }}"
+			:required="true"
+			error="{{ field_error(form.preferredLanguage) }}"
+		/>
+
+		<twig:component_single_select
 			label="Locale"
 			name="{{ form.locale.vars.full_name }}"
 			id="user-locale"
@@ -98,6 +109,7 @@
 			selected="{{ form.locale.vars.data ? form.locale.vars.data.value : '' }}"
 			:required="true"
 			error="{{ field_error(form.locale) }}"
+			help="Formato de fecha y hora acorde a la configuración seleccionada."
 		/>
 
 		<twig:component_single_select

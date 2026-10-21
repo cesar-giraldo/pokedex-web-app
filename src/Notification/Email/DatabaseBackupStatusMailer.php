@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Notification\Email;
 
+use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\Enum\NotificationType;
 use App\Entity\User;
+use App\Legal\LegalLanguageResolver;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -24,6 +26,8 @@ final class DatabaseBackupStatusMailer
         private readonly TransactionalEmailSender $sender,
         private readonly TranslatorInterface $translator,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly LegalLanguageResolver $legalLanguageResolver,
+        private readonly GeneralSettingsProvider $generalSettingsProvider,
         private readonly LoggerInterface $logger = new NullLogger(),
     ) {
     }
@@ -55,7 +59,10 @@ final class DatabaseBackupStatusMailer
                 continue;
             }
 
-            $language = $recipient->getLocale()->language();
+            $language = $this->legalLanguageResolver->preferredForUser(
+                $recipient,
+                $this->generalSettingsProvider->get(),
+            );
             $locale = $language->value;
             $recipientName = trim($recipient->getName());
 

@@ -7,9 +7,11 @@ namespace App\Tests\Web\Controller;
 use App\Admin\Service\DateTimeFormatter;
 use App\Admin\Service\GeneralSettingsProvider;
 use App\Admin\Service\Storage\UserProfileImageStorage;
+use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use App\Repository\GeneralSettingsRepository;
 use App\Repository\UserRepository;
 use App\Tests\Web\Support\AcceptsPendingLegalDocumentsTrait;
 use App\Web\Service\PublicLanguageResolver;
@@ -94,6 +96,44 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorCount(3, '.account-menu .account-menu-icon');
         self::assertSelectorNotExists('.header-login');
         self::assertNotNull($client->getRequest()->getSession()->get('_security_public'));
+    }
+
+    public function testLoginAndRootOpenInThePreferredLanguage(): void
+    {
+        $client = static::createClient();
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        /** @var GeneralSettingsRepository $repository */
+        $repository = static::getContainer()->get(GeneralSettingsRepository::class);
+        /** @var GeneralSettingsProvider $settingsProvider */
+        $settingsProvider = static::getContainer()->get(GeneralSettingsProvider::class);
+        $settings = $repository->getOrCreateSingleton();
+        $enabled = $settings->getEnabledLanguages();
+        $default = $settings->getWebsiteDefaultLanguage();
+        $settings->setEnabledLanguages(['es', 'en']);
+        $settings->setWebsiteDefaultLanguage('es');
+        $entityManager->flush();
+        $settingsProvider->resetCache();
+
+        $nickname = $this->rememberNickname('lang' . bin2hex(random_bytes(3)));
+
+        try {
+            $user = $this->createUser($nickname, [UserRole::User], UserStatus::Active);
+            $user->setPreferredLanguage(SupportedLanguage::English);
+            $entityManager->flush();
+
+            $this->submitLogin($client, 'es', $nickname, self::PASSWORD);
+            $this->assertRedirectEndsWith($client, '/en');
+
+            $client->loginUser($this->reload($nickname), 'public');
+            $client->request('GET', '/');
+            $this->assertRedirectEndsWith($client, '/en');
+        } finally {
+            $settings->setEnabledLanguages($enabled);
+            $settings->setWebsiteDefaultLanguage($default);
+            $entityManager->flush();
+            $settingsProvider->resetCache();
+        }
     }
 
     public function testEmailShapedNicknameLogsInFromTheSameTextField(): void

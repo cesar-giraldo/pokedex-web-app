@@ -141,6 +141,16 @@
                         :required="true"
                         error="{{ field_error(infoForm.timezone) }}"
                     />
+                    <twig:web_select
+                        label="{{ 'account.language'|trans }}"
+                        name="{{ infoForm.preferredLanguage.vars.full_name }}"
+                        id="profile-language"
+                        placeholder="{{ 'account.select_language'|trans }}"
+                        :options="languageOptions"
+                        selected="{{ infoForm.preferredLanguage.vars.value }}"
+                        :required="true"
+                        error="{{ field_error(infoForm.preferredLanguage) }}"
+                    />
                     <div class="grid gap-4 sm:grid-cols-2">
                         <twig:web_select
                             label="{{ 'account.locale'|trans }}"

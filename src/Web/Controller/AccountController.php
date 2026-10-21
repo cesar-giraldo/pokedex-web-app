@@ -8,6 +8,7 @@ use App\Admin\Data\IanaTimezones;
 use App\Admin\Data\WorldCountryCodes;
 use App\Admin\Form\UserProfileInfoType;
 use App\Admin\Form\UserProfilePasswordType;
+use App\Admin\Service\GeneralSettingsProvider;
 use App\Admin\Service\Storage\ImageVariant;
 use App\Admin\Service\Storage\UserProfileImageFormHandler;
 use App\Admin\Service\Storage\UserProfileImageStorage;
@@ -17,6 +18,7 @@ use App\Entity\Enum\SupportedLocale;
 use App\Entity\Enum\TimeFormat;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use App\Legal\LegalLanguageResolver;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -44,6 +46,8 @@ final class AccountController extends AbstractController
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly UserProfileImageFormHandler $profileImageFormHandler,
         private readonly UserProfileImageStorage $profileImageStorage,
+        private readonly GeneralSettingsProvider $generalSettingsProvider,
+        private readonly LegalLanguageResolver $legalLanguageResolver,
     ) {
     }
 
@@ -58,9 +62,12 @@ final class AccountController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
+        $settings = $this->generalSettingsProvider->get();
         $infoForm = $this->createForm(UserProfileInfoType::class, $user, [
             'country_choice_key' => WorldCountryCodes::DEFAULT_CHOICE_KEY,
             'nickname_editable' => false,
+            'enabled_languages' => $settings->getEnabledLanguages(),
+            'website_default_language' => $settings->getWebsiteDefaultLanguage(),
         ]);
         $passwordForm = $this->createForm(UserProfilePasswordType::class, null, [
             'user' => $user,
@@ -72,7 +79,7 @@ final class AccountController extends AbstractController
         $locale = $request->getLocale();
 
         if ($infoForm->isSubmitted()) {
-            return $this->handleInfoForm($user, $infoForm, $passwordForm, $locale);
+            return $this->handleInfoForm($user, $infoForm, $passwordForm);
         }
 
         if ($passwordForm->isSubmitted()) {
@@ -126,10 +133,24 @@ final class AccountController extends AbstractController
     }
 
     /**
+     * @return array<string, string>
+     */
+    private function languageOptions(): array
+    {
+        $options = [];
+
+        foreach (SupportedLanguage::fromStoredValues($this->generalSettingsProvider->get()->getEnabledLanguages()) as $language) {
+            $options[$language->value] = $language->label();
+        }
+
+        return $options;
+    }
+
+    /**
      * @param FormInterface<User> $infoForm
      * @param FormInterface<null> $passwordForm
      */
-    private function handleInfoForm(User $user, FormInterface $infoForm, FormInterface $passwordForm, string $locale): Response
+    private function handleInfoForm(User $user, FormInterface $infoForm, FormInterface $passwordForm): Response
     {
         if (!$infoForm->isValid()) {
             $this->addFlash('error', 'account.review_fields');
@@ -164,7 +185,9 @@ final class AccountController extends AbstractController
         $this->addFlash('success', 'account.info_saved');
 
         return $this->redirectToRoute('app_public_profile', [
-            '_locale' => $locale,
+            '_locale' => $this->legalLanguageResolver
+                ->preferredForUser($user, $this->generalSettingsProvider->get())
+                ->value,
         ]);
     }
 
@@ -218,6 +241,7 @@ final class AccountController extends AbstractController
             'passwordForm' => $passwordForm->createView(),
             'countryOptions' => WorldCountryCodes::viewOptions(WorldCountryCodes::DEFAULT_CHOICE_KEY),
             'timezoneOptions' => IanaTimezones::options(),
+            'languageOptions' => $this->languageOptions(),
             'localeOptions' => SupportedLocale::options(),
             'timeFormatOptions' => TimeFormat::options(),
         ]);

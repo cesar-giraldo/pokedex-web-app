@@ -80,7 +80,7 @@ final class UserEditType extends AbstractType
                 'constraints' => UserFieldConstraints::cellphone(),
             ]);
 
-        $this->addRegionalFields($builder);
+        $this->addRegionalFields($builder, $options);
 
         $builder
             ->add('status', EnumType::class, [
@@ -199,6 +199,7 @@ final class UserEditType extends AbstractType
         ]);
 
         WorldCountryCodes::configureChoiceKeyOption($resolver);
+        $this->configureRegionalFieldOptions($resolver);
 
         $resolver->setAllowedTypes('show_is_hidden', 'bool');
         $resolver->setAllowedTypes('assignable_roles', 'array');

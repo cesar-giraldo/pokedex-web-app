@@ -173,6 +173,7 @@ final class UserTest extends TestCase
         self::assertSame(GeneralSettings::DEFAULT_TIMEZONE, $user->getTimezone());
         self::assertSame(GeneralSettings::DEFAULT_LOCALE, $user->getLocale());
         self::assertSame(SupportedLocale::SpanishColombia, $user->getLocale());
+        self::assertNull($user->getPreferredLanguage());
         self::assertSame(TimeFormat::Hour12, $user->getTimeFormat());
     }
 
