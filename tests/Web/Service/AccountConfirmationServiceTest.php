@@ -122,9 +122,14 @@ final class AccountConfirmationServiceTest extends TestCase
         $repository->method('findLatest')->willReturn($previous);
         $repository->method('findUnconsumed')->willReturn([$previous]);
         $sender = $this->createMock(AccountConfirmationCodeSender::class);
-        $sender->expects(self::once())->method('send');
+        $sender->expects(self::once())->method('send')->willReturnCallback(
+            static function () use ($previous): void {
+                self::assertFalse($previous->isConsumed());
+            },
+        );
         $quota = $this->createMock(ResendQuota::class);
-        $quota->method('allow')->willReturn(true);
+        $quota->expects(self::once())->method('hasAllowance')->willReturn(true);
+        $quota->expects(self::once())->method('consume');
         $service = $this->service($repository, $this->manager(), $sender, quota: $quota, environment: 'prod');
 
         self::assertSame(ConfirmationAttempt::Resent, $service->resend($user));
@@ -140,7 +145,8 @@ final class AccountConfirmationServiceTest extends TestCase
         $sender = $this->createMock(AccountConfirmationCodeSender::class);
         $sender->expects(self::never())->method('send');
         $quota = $this->createMock(ResendQuota::class);
-        $quota->expects(self::never())->method('allow');
+        $quota->expects(self::never())->method('hasAllowance');
+        $quota->expects(self::never())->method('consume');
         $service = $this->service($repository, $this->manager(), $sender, quota: $quota, environment: 'prod');
 
         self::assertSame(ConfirmationAttempt::Cooldown, $service->resend($user));
@@ -153,7 +159,8 @@ final class AccountConfirmationServiceTest extends TestCase
         $repository = $this->createMock(AccountConfirmationCodeRepository::class);
         $repository->method('findLatest')->willReturn(null);
         $quota = $this->createMock(ResendQuota::class);
-        $quota->method('allow')->willReturn(false);
+        $quota->method('hasAllowance')->willReturn(false);
+        $quota->expects(self::never())->method('consume');
         $sender = $this->createMock(AccountConfirmationCodeSender::class);
         $sender->expects(self::never())->method('send');
         $service = $this->service($repository, $this->manager(), $sender, quota: $quota);
@@ -161,21 +168,35 @@ final class AccountConfirmationServiceTest extends TestCase
         self::assertSame(ConfirmationAttempt::Limited, $service->resend($user));
     }
 
-    public function testAMailFailureKeepsTheNewCode(): void
+    public function testAMailFailureKeepsThePreviousCodeAndDoesNotSpendQuota(): void
     {
         $user = $this->user();
+        $previous = new AccountConfirmationCode(
+            $user,
+            $this->hasher->hash('111111'),
+            new DateTime('+2 hours'),
+            new DateTime('-2 minutes'),
+        );
         $repository = $this->createMock(AccountConfirmationCodeRepository::class);
-        $repository->method('findLatest')->willReturn(null);
-        $repository->method('findUnconsumed')->willReturn([]);
+        $repository->method('findLatest')->willReturn($previous);
+        $repository->expects(self::never())->method('findUnconsumed');
         $sender = $this->createMock(AccountConfirmationCodeSender::class);
         $sender->method('send')->willThrowException(new RuntimeException('smtp'));
         $quota = $this->createMock(ResendQuota::class);
-        $quota->method('allow')->willReturn(true);
+        $quota->expects(self::once())->method('hasAllowance')->willReturn(true);
+        $quota->expects(self::never())->method('consume');
         $manager = $this->manager();
-        $manager->expects(self::once())->method('flush');
-        $service = $this->service($repository, $manager, $sender, quota: $quota);
+        $manager->expects(self::once())->method('persist');
+        $manager->expects(self::once())->method('remove')->willReturnCallback(
+            static function (object $staged) use ($previous): void {
+                self::assertNotSame($previous, $staged);
+            },
+        );
+        $manager->expects(self::never())->method('flush');
+        $service = $this->service($repository, $manager, $sender, quota: $quota, environment: 'prod');
 
         self::assertSame(ConfirmationAttempt::MailFailed, $service->resend($user));
+        self::assertFalse($previous->isConsumed());
     }
 
     private function service(

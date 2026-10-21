@@ -8,5 +8,7 @@ use App\Entity\User;
 
 interface ResendQuota
 {
-    public function allow(User $user): bool;
+    public function hasAllowance(User $user): bool;
+
+    public function consume(User $user): void;
 }

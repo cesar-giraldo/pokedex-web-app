@@ -546,6 +546,7 @@ final class PublicAuthenticationTest extends WebTestCase
             'section[data-controller="gallery"] button[data-gallery-target="item"][data-action="gallery#open"][data-gallery-src-param$="/profile/image/display"][aria-label="%s"]',
             $this->trans($locale, 'account.view_avatar'),
         ));
+        self::assertSelectorNotExists('section[data-controller="gallery"] button[data-gallery-alt-param]');
         self::assertSelectorExists(sprintf(
             'dialog.gallery-dialog[aria-label="%s"] button[data-gallery-target="closeButton"][aria-label="%s"]',
             $this->trans($locale, 'account.avatar'),

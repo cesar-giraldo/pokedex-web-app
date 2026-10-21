@@ -18,10 +18,18 @@ final class RateLimiterResendQuota implements ResendQuota
     ) {
     }
 
-    public function allow(User $user): bool
+    public function hasAllowance(User $user): bool
     {
-        $key = null !== $user->getId() ? (string) $user->getId() : 'obj-' . spl_object_id($user);
+        return $this->limiter->create($this->key($user))->consume(0)->getRemainingTokens() > 0;
+    }
 
-        return $this->limiter->create($key)->consume()->isAccepted();
+    public function consume(User $user): void
+    {
+        $this->limiter->create($this->key($user))->consume();
+    }
+
+    private function key(User $user): string
+    {
+        return null !== $user->getId() ? (string) $user->getId() : 'obj-' . spl_object_id($user);
     }
 }

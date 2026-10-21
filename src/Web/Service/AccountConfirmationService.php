@@ -118,16 +118,16 @@ final class AccountConfirmationService
             return ConfirmationAttempt::Cooldown;
         }
 
-        if (!$this->resendQuota->allow($user)) {
+        if (!$this->resendQuota->hasAllowance($user)) {
             return ConfirmationAttempt::Limited;
         }
 
-        $plainCode = $this->issue($user);
-        $this->entityManager->flush();
+        [$plainCode, $staged] = $this->stageCode($user);
 
         try {
             $this->codeSender->send($user, $plainCode);
         } catch (Throwable $exception) {
+            $this->entityManager->remove($staged);
             $this->logger->error('No se pudo reenviar el código de confirmación.', [
                 'user_id' => $user->getId(),
                 'exception' => $exception,
@@ -135,6 +135,10 @@ final class AccountConfirmationService
 
             return ConfirmationAttempt::MailFailed;
         }
+
+        $this->consumeOutstanding($user);
+        $this->entityManager->flush();
+        $this->resendQuota->consume($user);
 
         return ConfirmationAttempt::Resent;
     }
@@ -144,6 +148,19 @@ final class AccountConfirmationService
         $codes = $this->codes->findUnconsumed($user);
 
         return $codes[0] ?? null;
+    }
+
+    /**
+     * @return array{string, AccountConfirmationCode}
+     */
+    private function stageCode(User $user): array
+    {
+        $plainCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expiresAt = new DateTime('+' . AccountConfirmationCode::TTL_HOURS . ' hours');
+        $code = new AccountConfirmationCode($user, $this->hasher->hash($plainCode), $expiresAt);
+        $this->entityManager->persist($code);
+
+        return [$plainCode, $code];
     }
 
     private function consumeOutstanding(User $user): void
