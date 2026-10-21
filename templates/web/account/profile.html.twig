@@ -40,12 +40,12 @@
                                 class="h-20 w-20 shrink-0 cursor-zoom-in overflow-hidden rounded-full border border-black/10 p-0"
                                 data-gallery-target="item"
                                 data-action="gallery#open"
-                                data-gallery-src-param="{{ path('app_public_profile_image', {_locale: app.request.locale, variant: 'display'}) }}"
+                                data-gallery-src-param="{{ public_profile_image_url(user, 'display') }}"
                                 aria-label="{{ 'account.view_avatar'|trans }}"
                             >
                                 <img
                                     class="h-full w-full object-cover"
-                                    src="{{ path('app_public_profile_avatar', {_locale: app.request.locale}) }}"
+                                    src="{{ public_profile_image_url(user) }}"
                                     alt=""
                                     width="80"
                                     height="80"

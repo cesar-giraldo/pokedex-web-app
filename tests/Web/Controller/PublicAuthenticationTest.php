@@ -34,6 +34,7 @@ use function imagejpeg;
 use function random_bytes;
 use function random_int;
 use function sprintf;
+use function substr;
 use function tempnam;
 
 #[Group('functional')]
@@ -542,10 +543,18 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorExists('#profile-remove-avatar[role="switch"]');
         self::assertSelectorExists('[data-controller="toggle"]');
         self::assertSelectorTextContains('#profile-remove-avatar-help', $this->trans($locale, 'account.remove_avatar_help'));
-        self::assertSelectorExists(sprintf(
-            'section[data-controller="gallery"] button[data-gallery-target="item"][data-action="gallery#open"][data-gallery-src-param$="/profile/image/display"][aria-label="%s"]',
-            $this->trans($locale, 'account.view_avatar'),
-        ));
+        $profile = $client->getCrawler();
+        $button = $profile->filter('section[data-controller="gallery"] button[data-gallery-target="item"]');
+        self::assertSame(1, $button->count());
+        self::assertSame($this->trans($locale, 'account.view_avatar'), $button->attr('aria-label'));
+        $displaySrc = $button->attr('data-gallery-src-param');
+        $thumbSrc = $button->filter('img')->attr('src');
+        self::assertIsString($displaySrc);
+        self::assertIsString($thumbSrc);
+        self::assertMatchesRegularExpression('#/profile/image/display\?v=[a-f0-9]{16}$#', $displaySrc);
+        self::assertMatchesRegularExpression('#/profile/avatar\?v=[a-f0-9]{16}$#', $thumbSrc);
+        self::assertSame(substr($displaySrc, -16), substr($thumbSrc, -16));
+        self::assertGreaterThanOrEqual(2, $profile->filter('img[src="' . $thumbSrc . '"]')->count());
         self::assertSelectorNotExists('section[data-controller="gallery"] button[data-gallery-alt-param]');
         self::assertSelectorExists(sprintf(
             'dialog.gallery-dialog[aria-label="%s"] button[data-gallery-target="closeButton"][aria-label="%s"]',
