@@ -99,6 +99,8 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorExists('.account-menu .account-menu-chevron');
         self::assertSelectorCount(3, '.account-menu .account-menu-icon');
         self::assertSelectorNotExists('.header-login');
+        self::assertSelectorNotExists('header [data-header-language]');
+        self::assertSelectorExists('footer details summary');
         self::assertNotNull($client->getRequest()->getSession()->get('_security_public'));
     }
 
@@ -332,6 +334,8 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorTextContains('h1', $this->trans($locale, 'account.profile_title'));
         self::assertSelectorExists('main .alert-warning[role="alert"]');
         self::assertSelectorTextContains('main .alert-warning', $this->trans($locale, 'account.complete_profile'));
+        self::assertSelectorExists('header [data-header-language]');
+        self::assertSelectorExists('footer details summary');
 
         $client->request('GET', '/' . $locale);
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
