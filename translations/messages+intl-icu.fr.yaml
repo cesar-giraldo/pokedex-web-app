@@ -208,6 +208,19 @@ notifications:
         database_backup_failed: Base de données
         pokemons_imported: Pokémon
         legal_version_published: Légal
+    snapshot:
+        database_backup:
+            completed:
+                title: Sauvegarde de la base de données terminée
+                message: 'La sauvegarde a été créée et envoyée vers S3. Clé : {key}'
+            failed:
+                title: Échec de la sauvegarde de la base de données
+                detail: 'La sauvegarde de la base de données n’a pas pu être créée. {detail}'
+                metadata: 'Le fichier a été envoyé vers S3, mais les paramètres généraux n’ont pas pu être mis à jour. Clé : {key}'
+                unexpected: La sauvegarde de la base de données n’a pas pu être créée.
+        pokemons_imported:
+            title: '{count, plural, one {# Pokémon a été ajouté} other {# Pokémon ont été ajoutés}}'
+            message: '{count, plural, one {La commande d’importation a enregistré # Pokémon dans la base de données.} other {La commande d’importation a enregistré # Pokémon dans la base de données.}}'
 
 favorites:
     title: Favoris

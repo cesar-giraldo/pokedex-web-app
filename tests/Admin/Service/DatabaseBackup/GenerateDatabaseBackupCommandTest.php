@@ -21,10 +21,12 @@ use App\Entity\User;
 use App\Legal\LegalLanguageResolver;
 use App\Notification\Email\DatabaseBackupStatusMailer;
 use App\Notification\Email\TransactionalEmailSender;
+use App\Notification\LocalizedNotificationWriter;
 use App\Notification\NotificationService;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\NotificationRepository;
 use App\Repository\UserRepository;
+use App\Tests\Notification\Support\CatalogTranslator;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -169,8 +171,9 @@ final class GenerateDatabaseBackupCommandTest extends TestCase
         $notification = $this->captureNotification($this->successfulExporter(), $uploader, $repository, true);
 
         self::assertSame(NotificationType::DatabaseBackupCompleted, $notification->getType());
-        self::assertSame('Backup de base de datos completado', $notification->getTitle());
-        self::assertStringContainsString('se subió a S3', $notification->getMessage());
+        self::assertSame('Database backup completed', $notification->getTitle());
+        self::assertStringContainsString('uploaded to S3. Key: ', $notification->getMessage());
+        self::assertStringContainsString('/private/database-backups/backup-', $notification->getMessage());
         self::assertSame('/admin/settings/general', $notification->getActionUrl());
     }
 
@@ -187,8 +190,8 @@ final class GenerateDatabaseBackupCommandTest extends TestCase
         $notification = $this->captureNotification($exporter, $uploader, $repository, false);
 
         self::assertSame(NotificationType::DatabaseBackupFailed, $notification->getType());
-        self::assertSame('Falló el backup de base de datos', $notification->getTitle());
-        self::assertSame('dump failed', $notification->getMessage());
+        self::assertSame('Database backup failed', $notification->getTitle());
+        self::assertSame('The database backup could not be created. dump failed', $notification->getMessage());
     }
 
     public function testBackupSucceedsWhenStatusEmailFails(): void
@@ -349,13 +352,30 @@ final class GenerateDatabaseBackupCommandTest extends TestCase
             $uploader,
             $repository,
             $cacheDir,
+            $this->notificationWriter($notificationService),
+            $userRepository ?? $this->createStub(UserRepository::class),
+            $urlGenerator ?? $this->createStub(UrlGeneratorInterface::class),
+            $statusMailer,
+        );
+    }
+
+    private function notificationWriter(?NotificationService $notificationService = null): LocalizedNotificationWriter
+    {
+        $repository = $this->createStub(GeneralSettingsRepository::class);
+        $repository->method('findSingleton')->willReturn(
+            GeneralSettings::createWithDefaults()
+                ->setEnabledLanguages(['es', 'en'])
+                ->setWebsiteDefaultLanguage('es'),
+        );
+
+        return new LocalizedNotificationWriter(
             $notificationService ?? new NotificationService(
                 $this->createStub(EntityManagerInterface::class),
                 $this->createStub(NotificationRepository::class),
             ),
-            $userRepository ?? $this->createStub(UserRepository::class),
-            $urlGenerator ?? $this->createStub(UrlGeneratorInterface::class),
-            $statusMailer,
+            CatalogTranslator::create(),
+            new LegalLanguageResolver(),
+            new GeneralSettingsProvider($repository),
         );
     }
 

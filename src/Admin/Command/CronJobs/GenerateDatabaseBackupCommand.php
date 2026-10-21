@@ -14,7 +14,7 @@ use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Notification\Email\DatabaseBackupStatusMailer;
-use App\Notification\NotificationService;
+use App\Notification\LocalizedNotificationWriter;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\UserRepository;
 use DateTimeImmutable;
@@ -64,7 +64,7 @@ final class GenerateDatabaseBackupCommand extends Command
         private readonly GeneralSettingsRepository $generalSettingsRepository,
         #[Autowire('%kernel.cache_dir%')]
         private readonly string $cacheDir,
-        private readonly NotificationService $notificationService,
+        private readonly LocalizedNotificationWriter $notificationWriter,
         private readonly UserRepository $userRepository,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly DatabaseBackupStatusMailer $databaseBackupStatusMailer,
@@ -81,7 +81,13 @@ final class GenerateDatabaseBackupCommand extends Command
             $lockHandle = $this->acquireLock();
         } catch (DatabaseBackupExportException $exception) {
             $io->error($exception->getMessage());
-            $this->notifyDevelopers($io, NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $exception->getMessage());
+            $this->notifyDevelopers(
+                $io,
+                NotificationType::DatabaseBackupFailed,
+                'notifications.snapshot.database_backup.failed.title',
+                'notifications.snapshot.database_backup.failed.detail',
+                ['detail' => $exception->getMessage()],
+            );
 
             return Command::FAILURE;
         }
@@ -116,19 +122,36 @@ final class GenerateDatabaseBackupCommand extends Command
                     $objectKey,
                 );
                 $io->error($message);
-                $this->notifyDevelopers($io, NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $message);
+                $this->notifyDevelopers(
+                    $io,
+                    NotificationType::DatabaseBackupFailed,
+                    'notifications.snapshot.database_backup.failed.title',
+                    'notifications.snapshot.database_backup.failed.metadata',
+                    ['key' => $objectKey],
+                );
 
                 return Command::FAILURE;
             }
 
-            $message = sprintf('El backup se generó y se subió a S3. Clave: %s', $objectKey);
             $io->success(sprintf('Backup almacenado en %s', $objectKey));
-            $this->notifyDevelopers($io, NotificationType::DatabaseBackupCompleted, 'Backup de base de datos completado', $message);
+            $this->notifyDevelopers(
+                $io,
+                NotificationType::DatabaseBackupCompleted,
+                'notifications.snapshot.database_backup.completed.title',
+                'notifications.snapshot.database_backup.completed.message',
+                ['key' => $objectKey],
+            );
 
             return Command::SUCCESS;
         } catch (DatabaseBackupExportException $exception) {
             $io->error($exception->getMessage());
-            $this->notifyDevelopers($io, NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $exception->getMessage());
+            $this->notifyDevelopers(
+                $io,
+                NotificationType::DatabaseBackupFailed,
+                'notifications.snapshot.database_backup.failed.title',
+                'notifications.snapshot.database_backup.failed.detail',
+                ['detail' => $exception->getMessage()],
+            );
 
             return Command::FAILURE;
         } catch (Throwable $exception) {
@@ -137,7 +160,12 @@ final class GenerateDatabaseBackupCommand extends Command
             ]);
             $message = 'No se pudo generar el backup de la base de datos.';
             $io->error($message);
-            $this->notifyDevelopers($io, NotificationType::DatabaseBackupFailed, 'Falló el backup de base de datos', $message);
+            $this->notifyDevelopers(
+                $io,
+                NotificationType::DatabaseBackupFailed,
+                'notifications.snapshot.database_backup.failed.title',
+                'notifications.snapshot.database_backup.failed.unexpected',
+            );
 
             return Command::FAILURE;
         } finally {
@@ -192,8 +220,16 @@ final class GenerateDatabaseBackupCommand extends Command
         fclose($handle);
     }
 
-    private function notifyDevelopers(SymfonyStyle $io, NotificationType $type, string $title, string $message): void
-    {
+    /**
+     * @param array<string, int|string> $parameters
+     */
+    private function notifyDevelopers(
+        SymfonyStyle $io,
+        NotificationType $type,
+        string $titleKey,
+        string $messageKey,
+        array $parameters = [],
+    ): void {
         try {
             $recipients = $this->userRepository->findByRoles(
                 roles: [UserRole::Developer],
@@ -215,11 +251,12 @@ final class GenerateDatabaseBackupCommand extends Command
         }
 
         try {
-            $this->notificationService->notify(
+            $this->notificationWriter->notify(
                 recipients: $recipients,
                 type: $type,
-                title: $title,
-                message: $message,
+                titleKey: $titleKey,
+                messageKey: $messageKey,
+                parameters: $parameters,
                 actionUrl: $this->urlGenerator->generate('app_backend_general_settings'),
             );
         } catch (Throwable $exception) {

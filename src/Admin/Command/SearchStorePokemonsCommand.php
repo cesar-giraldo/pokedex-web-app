@@ -11,7 +11,7 @@ use App\Entity\Enum\NotificationType;
 use App\Entity\Enum\UserRole;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
-use App\Notification\NotificationService;
+use App\Notification\LocalizedNotificationWriter;
 use App\Repository\PokemonRepository;
 use App\Repository\PokemonTypeRepository;
 use App\Repository\UserRepository;
@@ -41,7 +41,7 @@ class SearchStorePokemonsCommand extends Command
         private PokemonRepository $pokemonRepository,
         private PokemonTypeRepository $pokemonTypeRepository,
         private PokeAPIClient $pokeApi,
-        private NotificationService $notificationService,
+        private LocalizedNotificationWriter $notificationWriter,
         private UserRepository $userRepository,
         private UrlGeneratorInterface $urlGenerator,
         private LoggerInterface $logger = new NullLogger(),
@@ -194,18 +194,12 @@ class SearchStorePokemonsCommand extends Command
                 return;
             }
 
-            $title = 1 === $added
-                ? 'Se agregó 1 Pokémon'
-                : sprintf('Se agregaron %d Pokémon', $added);
-            $message = 1 === $added
-                ? 'El comando de importación guardó 1 Pokémon en la base de datos.'
-                : sprintf('El comando de importación guardó %d Pokémon en la base de datos.', $added);
-
-            $this->notificationService->notify(
+            $this->notificationWriter->notify(
                 recipients: $recipients,
                 type: NotificationType::PokemonsImported,
-                title: $title,
-                message: $message,
+                titleKey: 'notifications.snapshot.pokemons_imported.title',
+                messageKey: 'notifications.snapshot.pokemons_imported.message',
+                parameters: ['count' => $added],
                 actionUrl: $this->urlGenerator->generate('app_backend_pokemons'),
             );
         } catch (Throwable $exception) {
