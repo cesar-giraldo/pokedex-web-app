@@ -195,6 +195,7 @@ account:
     password_last_updated: 'Última atualização: {date}'
     complete_profile: Complete as informações do seu perfil para continuar.
     info_saved: Suas informações pessoais foram atualizadas.
+    profile_completed: Seu perfil foi concluído com sucesso. Você já pode usar a plataforma.
     password_saved: Sua senha foi atualizada.
     info_error: Não foi possível atualizar seu perfil. Tente de novo.
     password_error: Não foi possível atualizar sua senha. Tente de novo.
@@ -289,6 +290,12 @@ email:
         heading: Novo usuário na plataforma
         intro: 'Olá {name}, {registered_name} ({email}) confirmou a conta.'
         action: Ver o usuário
+        footer: Esta mensagem foi enviada automaticamente.
+    welcome:
+        subject: Seu perfil está pronto
+        heading: Obrigado por se registrar
+        intro: 'Olá {name}, obrigado por se registrar na plataforma. Seu perfil está pronto e você já pode usá-la.'
+        action: Ir para o início
         footer: Esta mensagem foi enviada automaticamente.
 
 error:

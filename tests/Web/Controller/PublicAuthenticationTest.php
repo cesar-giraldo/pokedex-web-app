@@ -18,7 +18,9 @@ use App\Web\Service\PublicLanguageResolver;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Bundle\FrameworkBundle\Test\MailerAssertionsTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Field\ChoiceFormField;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -38,6 +40,7 @@ use function tempnam;
 final class PublicAuthenticationTest extends WebTestCase
 {
     use AcceptsPendingLegalDocumentsTrait;
+    use MailerAssertionsTrait;
 
     private const string PASSWORD = 'Secret123';
 
@@ -346,16 +349,26 @@ final class PublicAuthenticationTest extends WebTestCase
 
         $crawler = $client->request('GET', '/' . $locale . '/profile');
         $form = $crawler->filter('form[name="user_profile_info"]')->form();
-        $form['user_profile_info[email]'] = 'done-' . bin2hex(random_bytes(3)) . '@example.com';
+        $email = 'done-' . bin2hex(random_bytes(3)) . '@example.com';
+        $form['user_profile_info[email]'] = $email;
         $form['user_profile_info[countryCode]'] = '57';
         $form['user_profile_info[cellphone]'] = $this->phone();
         $client->submit($form);
 
-        $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
+        $this->assertRedirectEndsWith($client, '/' . $locale);
         $updated = $this->reload($nickname);
         self::assertSame(UserStatus::Active, $updated->getStatus());
+        self::assertQueuedEmailCount(1);
+        $message = self::getMailerMessage();
+        self::assertInstanceOf(TemplatedEmail::class, $message);
+        self::assertEmailAddressContains($message, 'To', $email);
+        self::assertEmailSubjectContains($message, $this->trans($locale, 'email.welcome.subject'));
+        self::assertEmailHtmlBodyContains($message, $this->trans($locale, 'email.welcome.heading'));
+        self::assertEmailHtmlBodyContains($message, $this->trans($locale, 'email.welcome.intro', 'messages', ['name' => 'Ada']));
+        self::assertEmailTextBodyContains($message, '/' . $locale);
         $this->acceptPendingLegalDocuments($updated);
         $client->followRedirect();
+        self::assertSelectorTextContains('main [role="status"]', $this->trans($locale, 'account.profile_completed'));
         self::assertSelectorNotExists('main .alert-warning');
 
         $client->request('GET', '/' . $locale . '/favorites');

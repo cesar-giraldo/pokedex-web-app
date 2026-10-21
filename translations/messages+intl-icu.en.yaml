@@ -195,6 +195,7 @@ account:
     password_last_updated: 'Last updated: {date}'
     complete_profile: Complete your profile information to continue.
     info_saved: Your personal information was updated.
+    profile_completed: Your profile was completed successfully. You can now use the platform.
     password_saved: Your password was updated.
     info_error: Your profile could not be updated. Try again.
     password_error: Your password could not be updated. Try again.
@@ -289,6 +290,12 @@ email:
         heading: New user on the platform
         intro: 'Hello {name}, {registered_name} ({email}) confirmed their account.'
         action: View the user
+        footer: This message was sent automatically.
+    welcome:
+        subject: Your profile is ready
+        heading: Thanks for registering
+        intro: 'Hello {name}, thank you for registering on the platform. Your profile is ready and you can start using it.'
+        action: Go to the home page
         footer: This message was sent automatically.
 
 error:

@@ -195,6 +195,7 @@ account:
     password_last_updated: 'Dernière mise à jour : {date}'
     complete_profile: Complétez les informations de votre profil pour continuer.
     info_saved: Vos informations personnelles ont été mises à jour.
+    profile_completed: Votre profil a été complété. Vous pouvez maintenant utiliser la plateforme.
     password_saved: Votre mot de passe a été mis à jour.
     info_error: Impossible de mettre à jour votre profil. Réessayez.
     password_error: Impossible de mettre à jour votre mot de passe. Réessayez.
@@ -289,6 +290,12 @@ email:
         heading: Nouvel utilisateur sur la plateforme
         intro: 'Bonjour {name}, {registered_name} ({email}) a confirmé son compte.'
         action: Voir l’utilisateur
+        footer: Ce message a été envoyé automatiquement.
+    welcome:
+        subject: Votre profil est prêt
+        heading: Merci de vous être inscrit
+        intro: 'Bonjour {name}, merci de vous être inscrit sur la plateforme. Votre profil est prêt et vous pouvez commencer à l’utiliser.'
+        action: Aller à l’accueil
         footer: Ce message a été envoyé automatiquement.
 
 error:

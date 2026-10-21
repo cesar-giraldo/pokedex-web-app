@@ -19,6 +19,7 @@ use App\Entity\Enum\TimeFormat;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Legal\LegalLanguageResolver;
+use App\Notification\Email\WelcomeMailer;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -48,6 +49,7 @@ final class AccountController extends AbstractController
         private readonly UserProfileImageStorage $profileImageStorage,
         private readonly GeneralSettingsProvider $generalSettingsProvider,
         private readonly LegalLanguageResolver $legalLanguageResolver,
+        private readonly WelcomeMailer $welcomeMailer,
     ) {
     }
 
@@ -158,10 +160,10 @@ final class AccountController extends AbstractController
             return $this->renderProfile($user, $infoForm, $passwordForm);
         }
 
-        if (
-            UserStatus::UncompleteProfileInfo === $user->getStatus()
-            && $user->hasCompleteProfileContactInfo()
-        ) {
+        $profileCompleted = UserStatus::UncompleteProfileInfo === $user->getStatus()
+            && $user->hasCompleteProfileContactInfo();
+
+        if ($profileCompleted) {
             $user->setStatus(UserStatus::Active);
         }
 
@@ -182,12 +184,23 @@ final class AccountController extends AbstractController
             return $this->renderProfile($user, $infoForm, $passwordForm);
         }
 
+        $locale = $this->legalLanguageResolver
+            ->preferredForUser($user, $this->generalSettingsProvider->get())
+            ->value;
+
+        if ($profileCompleted) {
+            $this->welcomeMailer->send($user);
+            $this->addFlash('success', 'account.profile_completed');
+
+            return $this->redirectToRoute('app_public_home', [
+                '_locale' => $locale,
+            ]);
+        }
+
         $this->addFlash('success', 'account.info_saved');
 
         return $this->redirectToRoute('app_public_profile', [
-            '_locale' => $this->legalLanguageResolver
-                ->preferredForUser($user, $this->generalSettingsProvider->get())
-                ->value,
+            '_locale' => $locale,
         ]);
     }
 
