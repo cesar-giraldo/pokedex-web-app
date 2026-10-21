@@ -128,13 +128,13 @@ auth:
     login_title: Entrar
     login_description: Entre com seu nickname e sua senha para continuar.
     register_title: Criar conta
-    register_description: Crie uma conta para guardar seu progresso. O cadastro ainda não está ativo.
+    register_description: Crie uma conta para guardar seu progresso.
     nickname: Nickname
     email: E-mail
     password: Senha
     no_public_access: Você não tem acesso a esta seção.
     password_confirm: Confirmar senha
-    password_hint: Mínimo de 8 caracteres.
+    password_hint: Mínimo de 5 caracteres, com letras e números.
     name: Nome
     remember: Lembrar neste dispositivo
     submit_login: Entrar
@@ -142,6 +142,27 @@ auth:
     no_account: Não tem conta?
     has_account: Já tem conta?
     accept_terms: Aceito os
+    accept_privacy: Aceito a
+    accept_and: e a
+    confirm_title: Confirme sua conta
+    confirm_description: Enviamos um código de 6 dígitos para {email}. Ele expira em 2 horas.
+    confirm_code_label: Código de confirmação
+    confirm_digit: Dígito {position} de 6
+    confirm_submit: Continuar
+    confirm_resend: Não recebeu o código?
+    confirm_back: Voltar
+    confirm_mismatch: O código não confere. Tente de novo.
+    confirm_expired: O código expirou. Solicite um novo.
+    confirm_exhausted: Muitas tentativas. Solicite um código novo.
+    confirm_missing: Solicite um código novo.
+    confirm_resent: Enviamos um código novo para o seu e-mail.
+    confirm_cooldown: Espere um momento antes de solicitar outro código.
+    confirm_limited: Você atingiu o limite de reenvios. Tente mais tarde.
+    confirm_mail_failed: Não conseguimos enviar o e-mail. Solicite o código de novo.
+    confirm_resend_invalid: Não conseguimos reenviar o código. Tente de novo.
+    register_unavailable: Não conseguimos criar a conta com esses dados. Se você já tem uma, entre.
+    register_rate_limited: Muitas tentativas de cadastro. Tente mais tarde.
+    register_rejected: Não conseguimos criar a conta. Tente de novo.
 
 form:
     processing: Processando...
@@ -200,6 +221,9 @@ notifications:
     next: Seguinte
     page: 'Página {page} de {pages}'
     pagination: Paginação
+    user_registered:
+        title: Novo usuário na plataforma
+        message: '{name} ({email}) confirmou a conta.'
     type:
         system_info: Sistema
         user_created: Usuários
@@ -251,6 +275,20 @@ email:
             intro: 'Olá {name}, o backup da base de dados não foi concluído.'
             detail: O detalhe está na notificação da aplicação. Na configuração geral você pode revisar o último backup disponível.
             action: Abrir a configuração geral
+        footer: Esta mensagem foi enviada automaticamente.
+    confirmation_code:
+        subject: Seu código para confirmar a conta
+        heading: Confirme sua conta
+        intro: 'Olá {name}, use este código para confirmar sua conta.'
+        expires: O código expira em 2 horas e só pode ser usado uma vez.
+        nickname: 'Seu usuário para entrar é {nickname}.'
+        action: Inserir o código
+        footer: Se você não criou esta conta, ignore esta mensagem.
+    new_user:
+        subject: Um novo usuário confirmou a conta
+        heading: Novo usuário na plataforma
+        intro: 'Olá {name}, {registered_name} ({email}) confirmou a conta.'
+        action: Ver o usuário
         footer: Esta mensagem foi enviada automaticamente.
 
 error:

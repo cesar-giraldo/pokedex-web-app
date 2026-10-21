@@ -4,3 +4,11 @@ services:
     App\Admin\Service\Storage\ObjectStorage:
         arguments:
             $privateMediaStorage: '@test.media.storage'
+
+    App\Web\Validator\DnsRecordLookup:
+        class: App\Tests\Double\PredictableDnsRecordLookup
+
+    App\Tests\Double\CapturingConfirmationCodeSender:
+        decorates: App\Notification\Email\AccountConfirmationCodeMailer
+        arguments:
+            $inner: '@.inner'

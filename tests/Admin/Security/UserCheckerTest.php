@@ -11,6 +11,8 @@ use App\Security\AccountStatusUserChecker;
 use DateTime;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
@@ -59,6 +61,34 @@ final class UserCheckerTest extends TestCase
         $checker->checkPreAuth($user);
 
         self::assertTrue($user->isLoginTemporarilyBlocked());
+    }
+
+    public function testAllowsUnconfirmedUserOnThePublicSite(): void
+    {
+        $stack = new RequestStack();
+        $stack->push(Request::create('/es/login', 'POST'));
+        $checker = new AccountStatusUserChecker(null, $stack);
+        $user = $this->createUser(UserStatus::UnconfirmedAccount);
+        $user->setApplicationRoles([UserRole::User]);
+
+        $checker->checkPreAuth($user);
+        $checker->checkPostAuth($user);
+
+        self::assertSame(UserStatus::UnconfirmedAccount, $user->getStatus());
+    }
+
+    public function testStillBlocksUnconfirmedUserOnAdminLogin(): void
+    {
+        $stack = new RequestStack();
+        $stack->push(Request::create('/admin/login', 'POST'));
+        $checker = new AccountStatusUserChecker(null, $stack);
+        $user = $this->createUser(UserStatus::UnconfirmedAccount);
+        $user->setApplicationRoles([UserRole::User]);
+
+        $this->expectException(CustomUserMessageAccountStatusException::class);
+        $this->expectExceptionMessage('account_unconfirmed');
+
+        $checker->checkPreAuth($user);
     }
 
     public function testAllowsIncompleteProfileLogin(): void

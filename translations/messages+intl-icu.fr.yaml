@@ -128,13 +128,13 @@ auth:
     login_title: Connexion
     login_description: Connectez-vous avec votre pseudo et votre mot de passe pour continuer.
     register_title: Créer un compte
-    register_description: Créez un compte pour enregistrer votre progression. L’inscription n’est pas encore active.
+    register_description: Créez un compte pour enregistrer votre progression.
     nickname: Pseudo
     email: E-mail
     password: Mot de passe
     no_public_access: Vous n’avez pas accès à cette section.
     password_confirm: Confirmer le mot de passe
-    password_hint: 8 caractères minimum.
+    password_hint: 5 caractères minimum, avec des lettres et des chiffres.
     name: Nom
     remember: Se souvenir de moi sur cet appareil
     submit_login: Connexion
@@ -142,6 +142,27 @@ auth:
     no_account: Pas encore de compte ?
     has_account: Vous avez déjà un compte ?
     accept_terms: J’accepte les
+    accept_privacy: J’accepte la
+    accept_and: et la
+    confirm_title: Confirmez votre compte
+    confirm_description: Nous avons envoyé un code à 6 chiffres à {email}. Il expire dans 2 heures.
+    confirm_code_label: Code de confirmation
+    confirm_digit: Chiffre {position} sur 6
+    confirm_submit: Continuer
+    confirm_resend: Vous n’avez pas reçu de code ?
+    confirm_back: Retour
+    confirm_mismatch: Le code ne correspond pas. Réessayez.
+    confirm_expired: Le code a expiré. Demandez-en un nouveau.
+    confirm_exhausted: Trop de tentatives. Demandez un nouveau code.
+    confirm_missing: Demandez un nouveau code.
+    confirm_resent: Nous avons envoyé un nouveau code à votre adresse e-mail.
+    confirm_cooldown: Attendez un moment avant de demander un autre code.
+    confirm_limited: Vous avez atteint la limite de renvois. Réessayez plus tard.
+    confirm_mail_failed: Nous n’avons pas pu envoyer l’e-mail. Demandez le code à nouveau.
+    confirm_resend_invalid: Nous n’avons pas pu renvoyer le code. Réessayez.
+    register_unavailable: Nous n’avons pas pu créer le compte avec ces informations. Si vous en avez déjà un, connectez-vous.
+    register_rate_limited: Trop de tentatives d’inscription. Réessayez plus tard.
+    register_rejected: Nous n’avons pas pu créer le compte. Réessayez.
 
 form:
     processing: Traitement...
@@ -200,6 +221,9 @@ notifications:
     next: Suivant
     page: 'Page {page} sur {pages}'
     pagination: Pagination
+    user_registered:
+        title: Nouvel utilisateur sur la plateforme
+        message: '{name} ({email}) a confirmé son compte.'
     type:
         system_info: Système
         user_created: Utilisateurs
@@ -251,6 +275,20 @@ email:
             intro: 'Bonjour {name}, la sauvegarde de la base de données ne s’est pas terminée.'
             detail: Le détail se trouve dans la notification de l’application. Dans les paramètres généraux, vous pouvez consulter la dernière sauvegarde disponible.
             action: Ouvrir les paramètres généraux
+        footer: Ce message a été envoyé automatiquement.
+    confirmation_code:
+        subject: Votre code de confirmation de compte
+        heading: Confirmez votre compte
+        intro: 'Bonjour {name}, utilisez ce code pour confirmer votre compte.'
+        expires: Le code expire dans 2 heures et ne peut être utilisé qu’une fois.
+        nickname: 'Votre identifiant de connexion est {nickname}.'
+        action: Saisir le code
+        footer: Si vous n’avez pas créé ce compte, ignorez ce message.
+    new_user:
+        subject: Un nouvel utilisateur a confirmé son compte
+        heading: Nouvel utilisateur sur la plateforme
+        intro: 'Bonjour {name}, {registered_name} ({email}) a confirmé son compte.'
+        action: Voir l’utilisateur
         footer: Ce message a été envoyé automatiquement.
 
 error:

@@ -254,7 +254,6 @@ final class PublicAuthenticationTest extends WebTestCase
 
         /** @var list<array{UserStatus, string}> $cases */
         $cases = [
-            [UserStatus::UnconfirmedAccount, 'account_unconfirmed'],
             [UserStatus::Banned, 'account_banned'],
             [UserStatus::Inactive, 'account_inactive'],
         ];
@@ -270,6 +269,28 @@ final class PublicAuthenticationTest extends WebTestCase
             self::assertSelectorTextContains('main [role="alert"]', $this->trans($locale, $messageKey, 'security'));
             self::assertNull($client->getRequest()->getSession()->get('_security_public'));
         }
+    }
+
+    public function testUnconfirmedAccountIsSentToTheConfirmationScreen(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        $nickname = $this->rememberNickname('pend' . bin2hex(random_bytes(2)));
+        $this->createUser($nickname, [UserRole::User], UserStatus::UnconfirmedAccount);
+
+        $this->submitLogin($client, $locale, $nickname, self::PASSWORD);
+
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/account/confirm');
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', $this->trans($locale, 'auth.confirm_title'));
+        self::assertNotNull($client->getRequest()->getSession()->get('_security_public'));
+
+        $client->request('GET', '/' . $locale);
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/account/confirm');
+
+        $client->request('GET', '/' . $locale . '/profile');
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/account/confirm');
     }
 
     public function testTemporaryLockShowsTheTranslatedWaitMessage(): void

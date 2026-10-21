@@ -128,13 +128,13 @@ auth:
     login_title: Log in
     login_description: Sign in with your nickname and password to continue.
     register_title: Create account
-    register_description: Create an account to save your progress. Registration is not active yet.
+    register_description: Create an account to save your progress.
     nickname: Nickname
     email: Email
     password: Password
     no_public_access: You do not have access to this section.
     password_confirm: Confirm password
-    password_hint: At least 8 characters.
+    password_hint: At least 5 characters, including letters and numbers.
     name: Name
     remember: Remember me on this device
     submit_login: Log in
@@ -142,6 +142,27 @@ auth:
     no_account: No account yet?
     has_account: Already have an account?
     accept_terms: I accept the
+    accept_privacy: I accept the
+    accept_and: and the
+    confirm_title: Confirm your account
+    confirm_description: We sent a 6-digit code to {email}. It expires in 2 hours.
+    confirm_code_label: Confirmation code
+    confirm_digit: Digit {position} of 6
+    confirm_submit: Continue
+    confirm_resend: Didn't get a code?
+    confirm_back: Go back
+    confirm_mismatch: The code does not match. Try again.
+    confirm_expired: The code expired. Request a new one.
+    confirm_exhausted: Too many attempts. Request a new code.
+    confirm_missing: Request a new code.
+    confirm_resent: We sent a new code to your email.
+    confirm_cooldown: Wait a moment before requesting another code.
+    confirm_limited: You reached the resend limit. Try again later.
+    confirm_mail_failed: We could not send the email. Request the code again.
+    confirm_resend_invalid: We could not resend the code. Try again.
+    register_unavailable: We could not create the account with these details. If you already have one, log in.
+    register_rate_limited: Too many registration attempts. Try again later.
+    register_rejected: We could not create the account. Try again.
 
 form:
     processing: Processing...
@@ -200,6 +221,9 @@ notifications:
     next: Next
     page: 'Page {page} of {pages}'
     pagination: Pagination
+    user_registered:
+        title: New user on the platform
+        message: '{name} ({email}) confirmed their account.'
     type:
         system_info: System
         user_created: Users
@@ -251,6 +275,20 @@ email:
             intro: 'Hello {name}, the database backup did not finish.'
             detail: The details are in the in-app notification. In general settings you can review the latest backup available.
             action: Open general settings
+        footer: This message was sent automatically.
+    confirmation_code:
+        subject: Your account confirmation code
+        heading: Confirm your account
+        intro: 'Hello {name}, use this code to confirm your account.'
+        expires: The code expires in 2 hours and can only be used once.
+        nickname: 'Your sign-in username is {nickname}.'
+        action: Enter the code
+        footer: If you did not create this account, ignore this message.
+    new_user:
+        subject: A new user confirmed their account
+        heading: New user on the platform
+        intro: 'Hello {name}, {registered_name} ({email}) confirmed their account.'
+        action: View the user
         footer: This message was sent automatically.
 
 error:

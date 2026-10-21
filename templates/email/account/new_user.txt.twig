@@ -1,0 +1,9 @@
+{{ 'email.new_user.heading'|trans }}
+
+{{ 'email.new_user.intro'|trans({name: recipient_name, registered_name: registered_name, email: registered_email}) }}
+
+{% if profile_url %}
+{{ 'email.new_user.action'|trans }}: {{ profile_url }}
+{% endif %}
+
+{{ 'email.new_user.footer'|trans }}

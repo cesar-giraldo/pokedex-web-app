@@ -1,5 +1,7 @@
 {% extends '@web/base.html.twig' %}
 
+{% from '@web/macros/form.html.twig' import field_error %}
+
 {% block title %}{{ 'auth.register_title'|trans }} · {{ public_site_name() }}{% endblock %}
 {% block meta_description %}{{ 'auth.register_description'|trans }}{% endblock %}
 {% block robots %}noindex, follow{% endblock %}
@@ -9,36 +11,129 @@
         <div class="mx-auto max-w-md rounded-3xl bg-white p-8 ring-1 ring-black/5">
             <h1 class="text-3xl font-extrabold tracking-tight">{{ 'auth.register_title'|trans }}</h1>
             <p class="mt-2 text-sm leading-6 text-muted">{{ 'auth.register_description'|trans }}</p>
-            {% if submitted %}
-                <p class="mt-6 rounded-2xl bg-surface px-4 py-3 text-sm font-medium" role="status">{{ 'auth.unavailable'|trans }}</p>
-            {% endif %}
-            <form class="mt-8 space-y-4" method="post">
-                <div>
-                    <label class="text-sm font-medium" for="register-name">{{ 'auth.name'|trans }}</label>
-                    <input id="register-name" class="field mt-2" type="text" name="name" autocomplete="name" required>
+            <div class="mt-6 space-y-3">
+                {% for error in registrationForm.vars.errors %}
+                    <twig:web_alert variant="error" message="{{ error.message }}" />
+                {% endfor %}
+            </div>
+            {{ form_start(registrationForm, {
+                action: path('app_public_register', {_locale: app.request.locale}),
+                method: 'POST',
+                attr: registrationForm.vars.attr|merge({ class: 'mt-8 space-y-4' }),
+            }) }}
+                <twig:web_text_input
+                    label="{{ 'auth.name'|trans }}"
+                    name="{{ registrationForm.name.vars.full_name }}"
+                    id="register-name"
+                    value="{{ registrationForm.name.vars.value }}"
+                    autocomplete="given-name"
+                    :maxLength="form_field_max_length(registrationForm.name)"
+                    :required="true"
+                    error="{{ field_error(registrationForm.name) }}"
+                />
+                <twig:web_text_input
+                    label="{{ 'account.lastname'|trans }}"
+                    name="{{ registrationForm.lastname.vars.full_name }}"
+                    id="register-lastname"
+                    value="{{ registrationForm.lastname.vars.value }}"
+                    autocomplete="family-name"
+                    :maxLength="form_field_max_length(registrationForm.lastname)"
+                    :required="true"
+                    error="{{ field_error(registrationForm.lastname) }}"
+                />
+                <twig:web_text_input
+                    label="{{ 'auth.email'|trans }}"
+                    name="{{ registrationForm.email.vars.full_name }}"
+                    id="register-email"
+                    type="email"
+                    value="{{ registrationForm.email.vars.value }}"
+                    autocomplete="email"
+                    :maxLength="form_field_max_length(registrationForm.email)"
+                    :required="true"
+                    error="{{ field_error(registrationForm.email) }}"
+                />
+                <twig:web_password_input
+                    label="{{ 'auth.password'|trans }}"
+                    name="{{ registrationForm.password.vars.full_name }}"
+                    id="register-password"
+                    autocomplete="new-password"
+                    showLabel="{{ 'account.show_password'|trans }}"
+                    hideLabel="{{ 'account.hide_password'|trans }}"
+                    :maxLength="form_field_max_length(registrationForm.password)"
+                    :required="true"
+                    error="{{ field_error(registrationForm.password) }}"
+                    help="{{ 'auth.password_hint'|trans }}"
+                />
+                <twig:web_password_input
+                    label="{{ 'auth.password_confirm'|trans }}"
+                    name="{{ registrationForm.passwordConfirm.vars.full_name }}"
+                    id="register-password-confirm"
+                    autocomplete="new-password"
+                    showLabel="{{ 'account.show_password'|trans }}"
+                    hideLabel="{{ 'account.hide_password'|trans }}"
+                    :maxLength="form_field_max_length(registrationForm.passwordConfirm)"
+                    :required="true"
+                    error="{{ field_error(registrationForm.passwordConfirm) }}"
+                />
+                {{ form_widget(registrationForm.timezone, { attr: { 'data-registration-preferences-target': 'timezone' } }) }}
+                {{ form_widget(registrationForm.locale, { attr: { 'data-registration-preferences-target': 'locale' } }) }}
+                {{ form_widget(registrationForm.timeFormat, { attr: { 'data-registration-preferences-target': 'timeFormat' } }) }}
+                <div class="sr-only" aria-hidden="true">
+                    <label for="register-fax">Fax</label>
+                    <input
+                        id="register-fax"
+                        name="{{ registrationForm.companyFax.vars.full_name }}"
+                        type="text"
+                        value="{{ registrationForm.companyFax.vars.value }}"
+                        tabindex="-1"
+                        autocomplete="off"
+                    >
                 </div>
-                <div>
-                    <label class="text-sm font-medium" for="register-email">{{ 'auth.email'|trans }}</label>
-                    <input id="register-email" class="field mt-2" type="email" name="email" autocomplete="email" required>
-                </div>
-                <div>
-                    <label class="text-sm font-medium" for="register-password">{{ 'auth.password'|trans }}</label>
-                    <input id="register-password" class="field mt-2" type="password" name="password" autocomplete="new-password" required minlength="8" aria-describedby="register-password-hint">
-                    <p id="register-password-hint" class="mt-2 text-sm text-muted">{{ 'auth.password_hint'|trans }}</p>
-                </div>
-                <div>
-                    <label class="text-sm font-medium" for="register-password-confirm">{{ 'auth.password_confirm'|trans }}</label>
-                    <input id="register-password-confirm" class="field mt-2" type="password" name="password_confirm" autocomplete="new-password" required minlength="8">
-                </div>
-                <label class="flex items-start gap-2 text-sm">
-                    <input type="checkbox" name="terms" class="mt-1 h-4 w-4 accent-brand" required>
-                    <span>
-                        {{ 'auth.accept_terms'|trans }}
-                        <a class="font-semibold text-brand" href="{{ path('app_public_terms', {_locale: app.request.locale}) }}">{{ 'nav.terms'|trans }}</a>
-                    </span>
-                </label>
-                <button class="btn btn-primary w-full" type="submit">{{ 'auth.submit_register'|trans }}</button>
-            </form>
+                {% if legal_documents is not empty %}
+                    {% set terms_document = null %}
+                    {% set privacy_document = null %}
+                    {% for document in legal_documents %}
+                        {% if document.terms %}
+                            {% set terms_document = document %}
+                        {% elseif document.privacy %}
+                            {% set privacy_document = document %}
+                        {% endif %}
+                    {% endfor %}
+                    <div>
+                        <label class="flex items-start gap-2 text-sm" for="register-terms">
+                            <input
+                                id="register-terms"
+                                name="{{ registrationForm.terms.vars.full_name }}"
+                                type="checkbox"
+                                value="{{ registrationForm.terms.vars.value }}"
+                                class="mt-1 h-4 w-4 accent-brand"
+                                {% if registrationForm.terms.vars.checked %}checked{% endif %}
+                                required
+                                {% if field_error(registrationForm.terms) %}aria-invalid="true" aria-describedby="register-terms-error"{% endif %}
+                            >
+                            <span>
+                                {% if terms_document and privacy_document %}
+                                    {{ 'auth.accept_terms'|trans }}
+                                    <a class="font-semibold text-brand" href="{{ path(terms_document.routeName, {_locale: app.request.locale}) }}" target="_blank" rel="noopener noreferrer">{{ 'nav.terms'|trans }}</a>
+                                    {{ 'auth.accept_and'|trans }}
+                                    <a class="font-semibold text-brand" href="{{ path(privacy_document.routeName, {_locale: app.request.locale}) }}" target="_blank" rel="noopener noreferrer">{{ 'nav.privacy'|trans }}</a>.
+                                {% elseif terms_document %}
+                                    {{ 'auth.accept_terms'|trans }}
+                                    <a class="font-semibold text-brand" href="{{ path(terms_document.routeName, {_locale: app.request.locale}) }}" target="_blank" rel="noopener noreferrer">{{ 'nav.terms'|trans }}</a>.
+                                {% elseif privacy_document %}
+                                    {{ 'auth.accept_privacy'|trans }}
+                                    <a class="font-semibold text-brand" href="{{ path(privacy_document.routeName, {_locale: app.request.locale}) }}" target="_blank" rel="noopener noreferrer">{{ 'nav.privacy'|trans }}</a>.
+                                {% endif %}
+                            </span>
+                        </label>
+                        {% if field_error(registrationForm.terms) %}
+                            <p id="register-terms-error" class="field-error" role="alert">{{ field_error(registrationForm.terms) }}</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {{ form_widget(registrationForm._token) }}
+                <twig:web_submit_button label="{{ 'auth.submit_register'|trans }}" />
+            {{ form_end(registrationForm, { render_rest: false }) }}
             <p class="mt-6 text-sm text-muted">
                 {{ 'auth.has_account'|trans }}
                 <a class="font-semibold text-brand" href="{{ path('app_public_login', {_locale: app.request.locale}) }}">{{ 'nav.login'|trans }}</a>
