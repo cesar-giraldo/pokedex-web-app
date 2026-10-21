@@ -9,9 +9,10 @@ use App\Admin\Service\PokeAPI\PokemonDetails;
 use App\Admin\Service\PokeAPI\PokemonTypeDetails;
 use App\Entity\Enum\NotificationType;
 use App\Entity\Enum\UserRole;
+use App\Entity\Enum\UserStatus;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
-use App\Notification\NotificationService;
+use App\Notification\LocalizedNotificationWriter;
 use App\Repository\PokemonRepository;
 use App\Repository\PokemonTypeRepository;
 use App\Repository\UserRepository;
@@ -41,7 +42,7 @@ class SearchStorePokemonsCommand extends Command
         private PokemonRepository $pokemonRepository,
         private PokemonTypeRepository $pokemonTypeRepository,
         private PokeAPIClient $pokeApi,
-        private NotificationService $notificationService,
+        private LocalizedNotificationWriter $notificationWriter,
         private UserRepository $userRepository,
         private UrlGeneratorInterface $urlGenerator,
         private LoggerInterface $logger = new NullLogger(),
@@ -189,23 +190,21 @@ class SearchStorePokemonsCommand extends Command
     private function notifyDevelopers(int $added): void
     {
         try {
-            $recipients = $this->userRepository->findByRoles([UserRole::Developer]);
+            $recipients = $this->userRepository->findByRoles(
+                roles: [UserRole::Developer],
+                status: UserStatus::Active,
+                excludeHidden: true,
+            );
             if ([] === $recipients) {
                 return;
             }
 
-            $title = 1 === $added
-                ? 'Se agregó 1 Pokémon'
-                : sprintf('Se agregaron %d Pokémon', $added);
-            $message = 1 === $added
-                ? 'El comando de importación guardó 1 Pokémon en la base de datos.'
-                : sprintf('El comando de importación guardó %d Pokémon en la base de datos.', $added);
-
-            $this->notificationService->notify(
+            $this->notificationWriter->notify(
                 recipients: $recipients,
                 type: NotificationType::PokemonsImported,
-                title: $title,
-                message: $message,
+                titleKey: 'notifications.snapshot.pokemons_imported.title',
+                messageKey: 'notifications.snapshot.pokemons_imported.message',
+                parameters: ['count' => $added],
                 actionUrl: $this->urlGenerator->generate('app_backend_pokemons'),
             );
         } catch (Throwable $exception) {

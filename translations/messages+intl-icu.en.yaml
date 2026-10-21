@@ -157,6 +157,7 @@ account:
     country: Country
     cellphone: Mobile number
     timezone: Time zone
+    language: Language
     locale: Regional language
     time_format: Time format
     avatar: Profile image
@@ -179,6 +180,7 @@ account:
     review_fields: Check the highlighted fields.
     select_country: Select a country
     select_timezone: Select a time zone
+    select_language: Select a language
     select_locale: Select a regional language
     select_time_format: Select a time format
     show_password: Show password
@@ -206,6 +208,19 @@ notifications:
         database_backup_failed: Database
         pokemons_imported: Pokémon
         legal_version_published: Legal
+    snapshot:
+        database_backup:
+            completed:
+                title: Database backup completed
+                message: 'The backup was created and uploaded to S3. Key: {key}'
+            failed:
+                title: Database backup failed
+                detail: 'The database backup could not be created. {detail}'
+                metadata: 'The file was uploaded to S3 but general settings could not be updated. Key: {key}'
+                unexpected: The database backup could not be created.
+        pokemons_imported:
+            title: '{count, plural, one {# Pokémon was added} other {# Pokémon were added}}'
+            message: '{count, plural, one {The import command saved # Pokémon to the database.} other {The import command saved # Pokémon to the database.}}'
 
 favorites:
     title: Favorites
@@ -221,6 +236,22 @@ legal:
         checkbox_required: You must check the box to continue.
         submit: Accept and continue
         processing: Recording acceptance...
+
+email:
+    database_backup:
+        completed:
+            subject: The database backup is ready
+            heading: Database backup completed
+            intro: 'Hello {name}, the database backup was created successfully.'
+            detail: You can review and download it in general settings.
+            action: Open general settings
+        failed:
+            subject: The database backup could not be created
+            heading: Database backup failed
+            intro: 'Hello {name}, the database backup did not finish.'
+            detail: The details are in the in-app notification. In general settings you can review the latest backup available.
+            action: Open general settings
+        footer: This message was sent automatically.
 
 error:
     home: Back to home

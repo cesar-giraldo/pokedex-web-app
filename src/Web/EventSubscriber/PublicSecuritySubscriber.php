@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Web\EventSubscriber;
 
+use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use App\Legal\LegalLanguageResolver;
 use App\Repository\UserRepository;
 use App\Security\PublicUserImpersonator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -44,6 +46,8 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly PublicUserImpersonator $publicUserImpersonator,
         private readonly RememberMeHandlerInterface $rememberMeHandler,
+        private readonly GeneralSettingsProvider $generalSettingsProvider,
+        private readonly LegalLanguageResolver $legalLanguageResolver,
     ) {
     }
 
@@ -136,7 +140,7 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
 
         $this->entityManager->flush();
 
-        $locale = $this->locale($event->getRequest());
+        $requestLocale = $this->locale($event->getRequest());
 
         if (!$user->hasAssignedRole(UserRole::User)) {
             $session = $event->getRequest()->getSession();
@@ -148,11 +152,15 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
             $this->tokenStorage->setToken(null);
 
             $event->setResponse(new RedirectResponse(
-                $this->urlGenerator->generate('app_public_login', ['_locale' => $locale]),
+                $this->urlGenerator->generate('app_public_login', ['_locale' => $requestLocale]),
             ));
 
             return;
         }
+
+        $locale = $this->legalLanguageResolver
+            ->preferredForUser($user, $this->generalSettingsProvider->get())
+            ->value;
 
         if (UserStatus::UncompleteProfileInfo === $user->getStatus()) {
             $event->setResponse(new RedirectResponse(
@@ -230,7 +238,11 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         }
 
         $event->setResponse(new RedirectResponse(
-            $this->urlGenerator->generate('app_public_profile', ['_locale' => $this->locale($request)]),
+            $this->urlGenerator->generate('app_public_profile', [
+                '_locale' => $this->legalLanguageResolver
+                    ->preferredForUser($user, $this->generalSettingsProvider->get())
+                    ->value,
+            ]),
         ));
     }
 

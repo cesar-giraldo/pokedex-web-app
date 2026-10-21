@@ -6,7 +6,10 @@ namespace App\Web\Controller;
 
 use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\Enum\SupportedLanguage;
+use App\Entity\Enum\UserRole;
 use App\Entity\Pokemon;
+use App\Entity\User;
+use App\Legal\LegalLanguageResolver;
 use App\Web\Service\PublicLanguageResolver;
 use App\Web\Service\PublicPokemonCatalog;
 use App\Web\Service\PublicStructuredData;
@@ -22,6 +25,7 @@ final class HomeController extends AbstractController
     public function __construct(
         private readonly GeneralSettingsProvider $settings,
         private readonly PublicLanguageResolver $languages,
+        private readonly LegalLanguageResolver $legalLanguages,
         private readonly PublicPokemonCatalog $catalog,
         private readonly PublicStructuredData $structuredData,
     ) {
@@ -30,8 +34,14 @@ final class HomeController extends AbstractController
     #[Route('/', name: 'app_home', methods: ['GET'])]
     public function root(): Response
     {
+        $settings = $this->settings->get();
+        $user = $this->getUser();
+        $locale = $user instanceof User && $user->hasAssignedRole(UserRole::User)
+            ? $this->legalLanguages->preferredForUser($user, $settings)->value
+            : $this->languages->defaultLanguage($settings)->value;
+
         return $this->redirectToRoute('app_public_home', [
-            '_locale' => $this->languages->defaultLanguage($this->settings->get())->value,
+            '_locale' => $locale,
         ]);
     }
 

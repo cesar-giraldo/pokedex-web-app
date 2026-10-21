@@ -5,19 +5,27 @@ declare(strict_types=1);
 namespace App\Tests\Admin\Service;
 
 use App\Admin\Command\SearchStorePokemonsCommand;
+use App\Admin\Service\GeneralSettingsProvider;
 use App\Admin\Service\PokeAPI\PokeAPIClient;
 use App\Admin\Service\PokeAPI\PokemonDetails;
 use App\Entity\Enum\NotificationType;
+use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
+use App\Entity\Enum\UserStatus;
+use App\Entity\GeneralSettings;
 use App\Entity\Notification;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
 use App\Entity\User;
+use App\Legal\LegalLanguageResolver;
+use App\Notification\LocalizedNotificationWriter;
 use App\Notification\NotificationService;
+use App\Repository\GeneralSettingsRepository;
 use App\Repository\NotificationRepository;
 use App\Repository\PokemonRepository;
 use App\Repository\PokemonTypeRepository;
 use App\Repository\UserRepository;
+use App\Tests\Notification\Support\CatalogTranslator;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -40,6 +48,16 @@ final class SearchStorePokemonsCommandTest extends TestCase
         self::assertSame('/admin/pokemons', $notification->getActionUrl());
     }
 
+    public function testNotifiesDevelopersInTheirPreferredLanguage(): void
+    {
+        $developer = $this->developer()->setPreferredLanguage(SupportedLanguage::English);
+        $notification = $this->executeImport([['name' => 'bulbasaur']], existing: false, developer: $developer);
+
+        self::assertInstanceOf(Notification::class, $notification);
+        self::assertSame('1 Pokémon was added', $notification->getTitle());
+        self::assertSame('The import command saved 1 Pokémon to the database.', $notification->getMessage());
+    }
+
     public function testDoesNotNotifyWhenNoPokemonIsStored(): void
     {
         $notification = $this->executeImport([['name' => 'bulbasaur']], existing: true);
@@ -57,7 +75,7 @@ final class SearchStorePokemonsCommandTest extends TestCase
     /**
      * @param list<array{name: string}> $listed
      */
-    private function executeImport(array $listed, bool $existing, bool $write = true): ?Notification
+    private function executeImport(array $listed, bool $existing, bool $write = true, ?User $developer = null): ?Notification
     {
         $found = $existing ? new Pokemon() : null;
         $pokemonRepository = new class($found) extends PokemonRepository {
@@ -118,8 +136,8 @@ final class SearchStorePokemonsCommandTest extends TestCase
         if (!$existing && $write) {
             $users->expects(self::once())
                 ->method('findByRoles')
-                ->with([UserRole::Developer])
-                ->willReturn([$this->developer()]);
+                ->with([UserRole::Developer], UserStatus::Active, true)
+                ->willReturn([$developer ?? $this->developer()]);
         } else {
             $users->expects(self::never())->method('findByRoles');
         }
@@ -138,7 +156,7 @@ final class SearchStorePokemonsCommandTest extends TestCase
             $pokemonRepository,
             $typeRepository,
             $api,
-            new NotificationService($notificationManager, $this->createStub(NotificationRepository::class)),
+            $this->notificationWriter($notificationManager),
             $users,
             $urls,
         );
@@ -193,5 +211,22 @@ final class SearchStorePokemonsCommandTest extends TestCase
         $property->setValue($user, 7);
 
         return $user;
+    }
+
+    private function notificationWriter(EntityManagerInterface $entityManager): LocalizedNotificationWriter
+    {
+        $repository = $this->createStub(GeneralSettingsRepository::class);
+        $repository->method('findSingleton')->willReturn(
+            GeneralSettings::createWithDefaults()
+                ->setEnabledLanguages(['es', 'en'])
+                ->setWebsiteDefaultLanguage('es'),
+        );
+
+        return new LocalizedNotificationWriter(
+            new NotificationService($entityManager, $this->createStub(NotificationRepository::class)),
+            CatalogTranslator::create(),
+            new LegalLanguageResolver(),
+            new GeneralSettingsProvider($repository),
+        );
     }
 }

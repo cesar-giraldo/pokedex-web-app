@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Legal;
 
-use App\Entity\Enum\SupportedLocale;
+use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
 use App\Entity\GeneralSettings;
 use App\Entity\User;
@@ -24,7 +24,7 @@ final class LegalAcceptanceLinkTest extends TestCase
     {
         $user = new User()
             ->setApplicationRoles([UserRole::User])
-            ->setLocale(SupportedLocale::EnglishUnitedStates);
+            ->setPreferredLanguage(SupportedLanguage::English);
 
         self::assertSame('/en/legal/accept', $this->link(['es', 'en'], 'es')->urlFor($user));
     }
@@ -33,7 +33,7 @@ final class LegalAcceptanceLinkTest extends TestCase
     {
         $user = new User()
             ->setApplicationRoles([UserRole::User, UserRole::Operator])
-            ->setLocale(SupportedLocale::FrenchFrance);
+            ->setPreferredLanguage(SupportedLanguage::French);
 
         self::assertSame('/es/legal/accept', $this->link(['es'], 'es')->urlFor($user));
     }

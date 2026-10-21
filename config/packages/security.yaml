@@ -26,6 +26,7 @@ security:
             security: false
         public:
             pattern: ^/(es|en|pt|fr)(/|$)
+            context: public
             lazy: true
             provider: app_user_provider
             user_checker: App\Security\AccountStatusUserChecker
@@ -51,6 +52,13 @@ security:
                 lifetime: 604800
                 path: /
                 samesite: lax
+        # `/` no lleva prefijo de idioma. Comparte la sesión `_security_public`.
+        home:
+            pattern: ^/$
+            context: public
+            lazy: true
+            provider: app_user_provider
+            user_checker: App\Security\AccountStatusUserChecker
         main:
             lazy: true
             provider: app_user_provider

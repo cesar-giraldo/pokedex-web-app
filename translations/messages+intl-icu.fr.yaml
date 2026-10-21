@@ -157,6 +157,7 @@ account:
     country: Pays
     cellphone: Téléphone portable
     timezone: Fuseau horaire
+    language: Langue
     locale: Langue régionale
     time_format: Format de l’heure
     avatar: Image de profil
@@ -179,6 +180,7 @@ account:
     review_fields: Vérifiez les champs signalés.
     select_country: Sélectionnez un pays
     select_timezone: Sélectionnez un fuseau horaire
+    select_language: Sélectionnez une langue
     select_locale: Sélectionnez une langue régionale
     select_time_format: Sélectionnez un format d’heure
     show_password: Afficher le mot de passe
@@ -206,6 +208,19 @@ notifications:
         database_backup_failed: Base de données
         pokemons_imported: Pokémon
         legal_version_published: Légal
+    snapshot:
+        database_backup:
+            completed:
+                title: Sauvegarde de la base de données terminée
+                message: 'La sauvegarde a été créée et envoyée vers S3. Clé : {key}'
+            failed:
+                title: Échec de la sauvegarde de la base de données
+                detail: 'La sauvegarde de la base de données n’a pas pu être créée. {detail}'
+                metadata: 'Le fichier a été envoyé vers S3, mais les paramètres généraux n’ont pas pu être mis à jour. Clé : {key}'
+                unexpected: La sauvegarde de la base de données n’a pas pu être créée.
+        pokemons_imported:
+            title: '{count, plural, one {# Pokémon a été ajouté} other {# Pokémon ont été ajoutés}}'
+            message: '{count, plural, one {La commande d’importation a enregistré # Pokémon dans la base de données.} other {La commande d’importation a enregistré # Pokémon dans la base de données.}}'
 
 favorites:
     title: Favoris
@@ -221,6 +236,22 @@ legal:
         checkbox_required: Vous devez cocher la case pour continuer.
         submit: Accepter et continuer
         processing: Enregistrement de l’acceptation...
+
+email:
+    database_backup:
+        completed:
+            subject: La sauvegarde de la base de données est prête
+            heading: Sauvegarde de la base de données terminée
+            intro: 'Bonjour {name}, la sauvegarde de la base de données a été créée.'
+            detail: Vous pouvez la consulter et la télécharger dans les paramètres généraux.
+            action: Ouvrir les paramètres généraux
+        failed:
+            subject: La sauvegarde de la base de données n’a pas pu être créée
+            heading: Échec de la sauvegarde de la base de données
+            intro: 'Bonjour {name}, la sauvegarde de la base de données ne s’est pas terminée.'
+            detail: Le détail se trouve dans la notification de l’application. Dans les paramètres généraux, vous pouvez consulter la dernière sauvegarde disponible.
+            action: Ouvrir les paramètres généraux
+        footer: Ce message a été envoyé automatiquement.
 
 error:
     home: Retour à l’accueil

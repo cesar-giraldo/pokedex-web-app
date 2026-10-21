@@ -9,6 +9,7 @@ use App\Entity\Enum\UserStatus;
 use App\Entity\GeneralSettings;
 use App\Entity\User;
 use App\Legal\LegalDocumentPublisher;
+use App\Legal\LegalLanguageResolver;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -38,6 +39,7 @@ final class CreateInitialDataCommand extends Command
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly LegalDocumentPublisher $legalDocumentPublisher,
+        private readonly LegalLanguageResolver $legalLanguageResolver,
         #[Autowire('%env(default::INITIAL_USER_EMAIL)%')]
         private readonly ?string $initialUserEmail,
         #[Autowire('%env(default::INITIAL_USER_PASSWORD)%')]
@@ -126,7 +128,8 @@ final class CreateInitialDataCommand extends Command
         $user
             ->setTimezone($settings->getDefaultTimezone())
             ->setLocale($settings->getDefaultLocale())
-            ->setTimeFormat($settings->getDefaultTimeFormat());
+            ->setTimeFormat($settings->getDefaultTimeFormat())
+            ->setPreferredLanguage($this->legalLanguageResolver->preferredForUser($user, $settings));
 
         $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
 

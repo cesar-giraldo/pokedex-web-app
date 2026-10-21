@@ -6,6 +6,7 @@ namespace App\Tests\Admin\Form;
 
 use App\Admin\Form\UserEditType;
 use App\Admin\Service\UserManagementPolicy;
+use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
 use App\Entity\User;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
@@ -57,6 +58,7 @@ final class UserEditTypeTest extends KernelTestCase
             'status' => 'active',
             'applicationRoles' => ['operator'],
             'timezone' => 'America/Bogota',
+            'preferredLanguage' => 'es',
             'locale' => 'es-CO',
             'timeFormat' => '12h',
             'plainPassword' => '',
@@ -103,6 +105,7 @@ final class UserEditTypeTest extends KernelTestCase
             'status' => 'active',
             'applicationRoles' => ['operator'],
             'timezone' => 'America/Bogota',
+            'preferredLanguage' => 'es',
             'locale' => 'es-CO',
             'timeFormat' => '12h',
             'plainPassword' => '',
@@ -111,5 +114,54 @@ final class UserEditTypeTest extends KernelTestCase
 
         self::assertTrue($form->isValid(), (string) $form->getErrors(true, false));
         self::assertSame('new-email@example.com', $user->getEmail());
+    }
+
+    public function testEditingStoresThePrefilledLanguageWhenTheUserHadNone(): void
+    {
+        self::bootKernel();
+
+        /** @var FormFactoryInterface $formFactory */
+        $formFactory = static::getContainer()->get(FormFactoryInterface::class);
+        $developer = $this->ensureFunctionalDeveloperUser();
+        $policy = new UserManagementPolicy();
+        $user = new User()
+            ->setName('NoLang')
+            ->setLastname('User')
+            ->setNickname('nolang01')
+            ->setApplicationRoles([UserRole::Operator])
+            ->setCountryCode(57)
+            ->setCellphone('3099010008');
+        $user->setPassword('existing-hash');
+
+        $form = $formFactory->create(UserEditType::class, $user, [
+            'csrf_protection' => false,
+            'show_is_hidden' => false,
+            'assignable_roles' => $policy->getAssignableRoles($developer),
+            'enabled_languages' => ['es', 'fr'],
+            'website_default_language' => 'fr',
+        ]);
+
+        self::assertNull($user->getPreferredLanguage());
+        self::assertSame('fr', $form->get('preferredLanguage')->getData());
+
+        $form->submit([
+            'name' => 'NoLang',
+            'lastname' => 'User',
+            'email' => '',
+            'nickname' => 'nolang01',
+            'countryCode' => '57',
+            'cellphone' => '3099010008',
+            'status' => 'active',
+            'applicationRoles' => ['operator'],
+            'timezone' => 'America/Bogota',
+            'preferredLanguage' => 'fr',
+            'locale' => 'es-CO',
+            'timeFormat' => '12h',
+            'plainPassword' => '',
+            'confirmPassword' => '',
+        ]);
+
+        self::assertTrue($form->isValid(), (string) $form->getErrors(true, false));
+        self::assertSame(SupportedLanguage::French, $user->getPreferredLanguage());
     }
 }

@@ -81,7 +81,13 @@ Database settings are defined **once** in `.env`. Docker Compose and Symfony rea
 | `APP_ENV` | `dev` | Symfony environment |
 | `APP_SECRET` | empty in `.env`, set in `.env.dev` | Session/crypto secret |
 | `MESSENGER_TRANSPORT_DSN` | `doctrine://default?auto_setup=0` | Async queue backed by `messenger_messages` table |
-| `MAILER_DSN` | `null://null` | Mailer (disabled by default) |
+| `MAILER_DSN` | `null://null` | Mailer. `null://null` disables delivery. Development uses `ses+api://…` in `.env.local`. See [`docs/aws/ses.md`](docs/aws/ses.md) |
+| `MAILER_FROM_ADDRESS` | empty | Verified SES sender. Real value in `.env.local` |
+| `MAILER_FROM_NAME` | `Pokedex` | Display name of the sender |
+| `MAILER_REDIRECT_TO` | empty | In `dev`, every message is delivered to these addresses. Required before a message is queued |
+| `AWS_SES_REGION` | `us-east-1` | SES region. Independent from `AWS_REGION` |
+| `AWS_SES_ACCESS_KEY_ID` | empty | IAM access key for the SES sender, not the S3 user |
+| `AWS_SES_SECRET_ACCESS_KEY` | empty | IAM secret for SES (set in `.env.local`) |
 | `AWS_REGION` | `us-east-1` | AWS region for S3 |
 | `AWS_ACCESS_KEY_ID` | empty | IAM access key for application S3 user |
 | `AWS_SECRET_ACCESS_KEY` | empty | IAM secret key (set in `.env.local`) |
@@ -195,6 +201,8 @@ docker compose exec php php bin/console app:generate-database-backup
 ```
 
 Developers can review and download the latest backup from **Admin → Configuración General**. Admins can download the same file at `/admin/database-backup/download` (no listing UI).
+
+On success and on failure the command also emails every Developer who is active, is not hidden, and has an address. The message links to general settings and does not include the S3 object key. Delivery is asynchronous: the Messenger worker must be running. In development, SES only receives the addresses in `MAILER_REDIRECT_TO`.
 
 Frontend / assets
 -----------------

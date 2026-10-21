@@ -13,6 +13,7 @@ Este directorio contiene la documentación interna del **Pokedex Web App**.
 | Pruebas automatizadas (unit / integration / functional) | [testing.md](./testing.md) |
 | Entender motores de BD (PostgreSQL / MySQL) y variables `DATABASE_*` | [symfony_guide/08-database-engines.md](./symfony_guide/08-database-engines.md) |
 | Autenticación del panel admin (login, roles, bloqueos, throttling) | [security/autenticacion-admin.md](./security/autenticacion-admin.md) |
+| Configurar Amazon SES (sandbox, IAM y dominio futuro) | [aws/ses.md](./aws/ses.md) |
 
 ## Estructura de `docs/`
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\SupportedLocale;
 use App\Entity\Enum\TimeFormat;
 use App\Entity\Enum\UserRole;
@@ -98,6 +99,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(enumType: SupportedLocale::class, length: 16, options: ['default' => 'es-CO'])]
     private SupportedLocale $locale = GeneralSettings::DEFAULT_LOCALE;
+
+    #[ORM\Column(enumType: SupportedLanguage::class, length: 2, nullable: true)]
+    private ?SupportedLanguage $preferredLanguage = null;
 
     #[ORM\Column(enumType: TimeFormat::class, length: 8, options: ['default' => '12h'])]
     private TimeFormat $timeFormat = GeneralSettings::DEFAULT_TIME_FORMAT;
@@ -314,6 +318,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getLocaleLabel(): string
     {
         return $this->locale->label();
+    }
+
+    public function getPreferredLanguage(): ?SupportedLanguage
+    {
+        return $this->preferredLanguage;
+    }
+
+    public function setPreferredLanguage(?SupportedLanguage $preferredLanguage): static
+    {
+        $this->preferredLanguage = $preferredLanguage;
+
+        return $this;
     }
 
     public function getTimeFormat(): TimeFormat

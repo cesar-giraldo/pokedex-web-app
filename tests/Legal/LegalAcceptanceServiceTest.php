@@ -125,7 +125,10 @@ final class LegalAcceptanceServiceTest extends TestCase
     {
         $version = $this->versionWithTranslations();
         $service = $this->serviceFor($version);
-        $user = new User()->setStatus(UserStatus::Active)->setLocale(SupportedLocale::EnglishUnitedStates);
+        $user = new User()
+            ->setStatus(UserStatus::Active)
+            ->setLocale(SupportedLocale::SpanishColombia)
+            ->setPreferredLanguage(SupportedLanguage::English);
 
         $translation = $service->translationForLocale($user, $version, 'fr');
 

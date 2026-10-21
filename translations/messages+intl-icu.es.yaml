@@ -157,6 +157,7 @@ account:
     country: País
     cellphone: Celular
     timezone: Zona horaria
+    language: Idioma
     locale: Idioma regional
     time_format: Formato de hora
     avatar: Imagen de perfil
@@ -179,6 +180,7 @@ account:
     review_fields: Revisa los campos marcados.
     select_country: Selecciona un país
     select_timezone: Selecciona una zona horaria
+    select_language: Selecciona un idioma
     select_locale: Selecciona un idioma regional
     select_time_format: Selecciona un formato de hora
     show_password: Mostrar contraseña
@@ -206,6 +208,19 @@ notifications:
         database_backup_failed: Base de datos
         pokemons_imported: Pokémon
         legal_version_published: Legal
+    snapshot:
+        database_backup:
+            completed:
+                title: Backup de base de datos completado
+                message: 'El backup se generó y se subió a S3. Clave: {key}'
+            failed:
+                title: Falló el backup de base de datos
+                detail: 'No se pudo generar el backup de la base de datos. {detail}'
+                metadata: 'El archivo se subió a S3 pero no se pudo actualizar la configuración general. Clave: {key}'
+                unexpected: No se pudo generar el backup de la base de datos.
+        pokemons_imported:
+            title: '{count, plural, one {Se agregó # Pokémon} other {Se agregaron # Pokémon}}'
+            message: '{count, plural, one {El comando de importación guardó # Pokémon en la base de datos.} other {El comando de importación guardó # Pokémon en la base de datos.}}'
 
 favorites:
     title: Favoritos
@@ -221,6 +236,22 @@ legal:
         checkbox_required: Debes marcar la casilla para continuar.
         submit: Aceptar y continuar
         processing: Registrando aceptación...
+
+email:
+    database_backup:
+        completed:
+            subject: El backup de la base de datos está listo
+            heading: Backup de base de datos completado
+            intro: 'Hola {name}, el backup de la base de datos se generó correctamente.'
+            detail: Puedes revisarlo y descargarlo en la configuración general.
+            action: Abrir la configuración general
+        failed:
+            subject: No se pudo generar el backup de la base de datos
+            heading: Falló el backup de base de datos
+            intro: 'Hola {name}, el backup de la base de datos no se completó.'
+            detail: El detalle está en la notificación de la aplicación. En la configuración general puedes revisar el último backup disponible.
+            action: Abrir la configuración general
+        footer: Este mensaje se envió de forma automática.
 
 error:
     home: Volver al inicio

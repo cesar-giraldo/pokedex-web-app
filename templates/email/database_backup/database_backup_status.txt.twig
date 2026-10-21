@@ -1,0 +1,19 @@
+{% if succeeded %}
+{{ 'email.database_backup.completed.heading'|trans }}
+
+{{ 'email.database_backup.completed.intro'|trans({name: recipient_name}) }}
+
+{{ 'email.database_backup.completed.detail'|trans }}
+
+{{ 'email.database_backup.completed.action'|trans }}: {{ settings_url }}
+{% else %}
+{{ 'email.database_backup.failed.heading'|trans }}
+
+{{ 'email.database_backup.failed.intro'|trans({name: recipient_name}) }}
+
+{{ 'email.database_backup.failed.detail'|trans }}
+
+{{ 'email.database_backup.failed.action'|trans }}: {{ settings_url }}
+{% endif %}
+
+{{ 'email.database_backup.footer'|trans }}
