@@ -129,7 +129,7 @@ auth:
     login_description: Sign in with your email/nickname and password to continue.
     login_identifier: Email or nickname
     register_title: Create account
-    register_description: Create an account to save your progress.
+    register_description: Create an account to get access.
     nickname: Nickname
     email: Email
     password: Password
@@ -198,7 +198,9 @@ account:
     new_password: New password
     confirm_password: Confirm password
     save_password: Update password
+    create_password: Create password
     password_unchanged: It has not been changed since the account was created.
+    password_not_chosen: There is no platform password yet. You can create one and still sign in with Google.
     password_last_updated: 'Last updated: {date}'
     complete_profile: Complete your profile information to continue.
     info_saved: Your personal information was updated.

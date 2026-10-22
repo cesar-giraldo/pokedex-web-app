@@ -98,6 +98,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private string $password = '';
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $passwordChosen = true;
+
     #[ORM\Column(enumType: UserStatus::class)]
     private UserStatus $status = UserStatus::UnconfirmedAccount;
 
@@ -302,6 +305,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    public function hasChosenPassword(): bool
+    {
+        return $this->passwordChosen;
+    }
+
+    public function setPasswordChosen(bool $passwordChosen): static
+    {
+        $this->passwordChosen = $passwordChosen;
 
         return $this;
     }

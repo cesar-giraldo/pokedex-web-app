@@ -129,7 +129,7 @@ auth:
     login_description: Entra con tu correo/nickname y tu contraseña para continuar.
     login_identifier: Correo ó Nickname
     register_title: Crear cuenta
-    register_description: Crea una cuenta para guardar tu progreso.
+    register_description: Crea una cuenta para poder acceder.
     nickname: Nickname
     email: Correo electrónico
     password: Contraseña
@@ -198,7 +198,9 @@ account:
     new_password: Nueva contraseña
     confirm_password: Confirmar contraseña
     save_password: Actualizar contraseña
+    create_password: Crear contraseña
     password_unchanged: No se ha cambiado desde que se creó la cuenta.
+    password_not_chosen: Todavía no hay una contraseña de la plataforma. Puedes crear una y seguir entrando con Google.
     password_last_updated: 'Última actualización: {date}'
     complete_profile: Debes completar la información de tu perfil para continuar.
     info_saved: Tu información personal se actualizó correctamente.

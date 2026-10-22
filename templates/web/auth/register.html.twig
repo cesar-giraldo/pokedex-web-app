@@ -8,9 +8,8 @@
 
 {% block body %}
     <div class="bg-surface px-4 py-16">
-        <div class="mx-auto max-w-md rounded-3xl bg-white p-8 ring-1 ring-black/5">
+        <div class="mx-auto max-w-md rounded-3xl bg-white p-8 ring-1 ring-black/5 lg:max-w-xl">
             <h1 class="text-3xl font-extrabold tracking-tight">{{ 'auth.register_title'|trans }}</h1>
-            <p class="mt-2 text-sm leading-6 text-muted">{{ 'auth.register_description'|trans }}</p>
             <div class="mt-6 space-y-3">
                 {% for message in app.flashes('error') %}
                     <twig:web_alert variant="error" message="{{ message|trans }}" />
@@ -22,31 +21,34 @@
             <div class="mt-8">
                 {% include '@web/auth/_google.html.twig' with {from: 'register'} only %}
             </div>
+            <p class="mt-6 text-sm leading-6 text-muted">{{ 'auth.register_description'|trans }}</p>
             {{ form_start(registrationForm, {
                 action: path('app_public_register', {_locale: app.request.locale}),
                 method: 'POST',
-                attr: registrationForm.vars.attr|merge({ class: 'mt-8 space-y-4' }),
+                attr: registrationForm.vars.attr|merge({ class: 'mt-4 space-y-4' }),
             }) }}
-                <twig:web_text_input
-                    label="{{ 'auth.name'|trans }}"
-                    name="{{ registrationForm.name.vars.full_name }}"
-                    id="register-name"
-                    value="{{ registrationForm.name.vars.value }}"
-                    autocomplete="given-name"
-                    :maxLength="form_field_max_length(registrationForm.name)"
-                    :required="true"
-                    error="{{ field_error(registrationForm.name) }}"
-                />
-                <twig:web_text_input
-                    label="{{ 'account.lastname'|trans }}"
-                    name="{{ registrationForm.lastname.vars.full_name }}"
-                    id="register-lastname"
-                    value="{{ registrationForm.lastname.vars.value }}"
-                    autocomplete="family-name"
-                    :maxLength="form_field_max_length(registrationForm.lastname)"
-                    :required="true"
-                    error="{{ field_error(registrationForm.lastname) }}"
-                />
+                <div class="grid gap-4 lg:grid-cols-2">
+                    <twig:web_text_input
+                        label="{{ 'auth.name'|trans }}"
+                        name="{{ registrationForm.name.vars.full_name }}"
+                        id="register-name"
+                        value="{{ registrationForm.name.vars.value }}"
+                        autocomplete="given-name"
+                        :maxLength="form_field_max_length(registrationForm.name)"
+                        :required="true"
+                        error="{{ field_error(registrationForm.name) }}"
+                    />
+                    <twig:web_text_input
+                        label="{{ 'account.lastname'|trans }}"
+                        name="{{ registrationForm.lastname.vars.full_name }}"
+                        id="register-lastname"
+                        value="{{ registrationForm.lastname.vars.value }}"
+                        autocomplete="family-name"
+                        :maxLength="form_field_max_length(registrationForm.lastname)"
+                        :required="true"
+                        error="{{ field_error(registrationForm.lastname) }}"
+                    />
+                </div>
                 <twig:web_text_input
                     label="{{ 'auth.email'|trans }}"
                     name="{{ registrationForm.email.vars.full_name }}"
@@ -58,29 +60,31 @@
                     :required="true"
                     error="{{ field_error(registrationForm.email) }}"
                 />
-                <twig:web_password_input
-                    label="{{ 'auth.password'|trans }}"
-                    name="{{ registrationForm.password.vars.full_name }}"
-                    id="register-password"
-                    autocomplete="new-password"
-                    showLabel="{{ 'account.show_password'|trans }}"
-                    hideLabel="{{ 'account.hide_password'|trans }}"
-                    :maxLength="form_field_max_length(registrationForm.password)"
-                    :required="true"
-                    error="{{ field_error(registrationForm.password) }}"
-                    help="{{ 'auth.password_hint'|trans }}"
-                />
-                <twig:web_password_input
-                    label="{{ 'auth.password_confirm'|trans }}"
-                    name="{{ registrationForm.passwordConfirm.vars.full_name }}"
-                    id="register-password-confirm"
-                    autocomplete="new-password"
-                    showLabel="{{ 'account.show_password'|trans }}"
-                    hideLabel="{{ 'account.hide_password'|trans }}"
-                    :maxLength="form_field_max_length(registrationForm.passwordConfirm)"
-                    :required="true"
-                    error="{{ field_error(registrationForm.passwordConfirm) }}"
-                />
+                <div class="grid gap-4 lg:grid-cols-2">
+                    <twig:web_password_input
+                        label="{{ 'auth.password'|trans }}"
+                        name="{{ registrationForm.password.vars.full_name }}"
+                        id="register-password"
+                        autocomplete="new-password"
+                        showLabel="{{ 'account.show_password'|trans }}"
+                        hideLabel="{{ 'account.hide_password'|trans }}"
+                        :maxLength="form_field_max_length(registrationForm.password)"
+                        :required="true"
+                        error="{{ field_error(registrationForm.password) }}"
+                        help="{{ 'auth.password_hint'|trans }}"
+                    />
+                    <twig:web_password_input
+                        label="{{ 'auth.password_confirm'|trans }}"
+                        name="{{ registrationForm.passwordConfirm.vars.full_name }}"
+                        id="register-password-confirm"
+                        autocomplete="new-password"
+                        showLabel="{{ 'account.show_password'|trans }}"
+                        hideLabel="{{ 'account.hide_password'|trans }}"
+                        :maxLength="form_field_max_length(registrationForm.passwordConfirm)"
+                        :required="true"
+                        error="{{ field_error(registrationForm.passwordConfirm) }}"
+                    />
+                </div>
                 {{ form_widget(registrationForm.timezone, { attr: { 'data-registration-preferences-target': 'timezone' } }) }}
                 {{ form_widget(registrationForm.locale, { attr: { 'data-registration-preferences-target': 'locale' } }) }}
                 {{ form_widget(registrationForm.timeFormat, { attr: { 'data-registration-preferences-target': 'timeFormat' } }) }}

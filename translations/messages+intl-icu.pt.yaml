@@ -129,7 +129,7 @@ auth:
     login_description: Entre com seu e-mail/nickname e sua senha para continuar.
     login_identifier: E-mail ou nickname
     register_title: Criar conta
-    register_description: Crie uma conta para guardar seu progresso.
+    register_description: Crie uma conta para poder acessar.
     nickname: Nickname
     email: E-mail
     password: Senha
@@ -198,7 +198,9 @@ account:
     new_password: Nova senha
     confirm_password: Confirmar senha
     save_password: Atualizar senha
+    create_password: Criar senha
     password_unchanged: Não foi alterada desde a criação da conta.
+    password_not_chosen: Ainda não há uma senha da plataforma. Você pode criar uma e continuar entrando com o Google.
     password_last_updated: 'Última atualização: {date}'
     complete_profile: Complete as informações do seu perfil para continuar.
     info_saved: Suas informações pessoais foram atualizadas.

@@ -218,6 +218,7 @@ final class UserController extends AbstractController
             }
 
             $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+            $user->setPasswordChosen(true);
 
             try {
                 $entityManager->persist($user);
@@ -314,6 +315,7 @@ final class UserController extends AbstractController
             $plainPassword = $form->get('plainPassword')->getData();
             if (is_string($plainPassword) && '' !== $plainPassword) {
                 $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+                $user->setPasswordChosen(true);
                 $user->setPasswordUpdatedAt(new DateTime());
             }
 
@@ -450,6 +452,7 @@ final class UserController extends AbstractController
             }
 
             $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+            $user->setPasswordChosen(true);
             $user->setPasswordUpdatedAt(new DateTime());
 
             try {

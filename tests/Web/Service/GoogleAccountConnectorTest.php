@@ -65,6 +65,7 @@ final class GoogleAccountConnectorTest extends TestCase
         self::assertSame('Ada', $user->getName());
         self::assertSame('-', $user->getLastname());
         self::assertSame('random-hash', $user->getPassword());
+        self::assertFalse($user->hasChosenPassword());
         self::assertSame(SupportedLanguage::Spanish, $user->getPreferredLanguage());
         self::assertSame(GeneralSettings::DEFAULT_TIMEZONE, $user->getTimezone());
         self::assertSame(GeneralSettings::DEFAULT_LOCALE, $user->getLocale());
@@ -97,6 +98,7 @@ final class GoogleAccountConnectorTest extends TestCase
         self::assertSame(UserStatus::UncompleteProfileInfo, $user->getStatus());
         self::assertSame('google-sub', $user->getGoogleSub());
         self::assertSame('hash', $user->getPassword());
+        self::assertTrue($user->hasChosenPassword());
     }
 
     public function testAnAccountThatAlreadyHasAnotherGoogleSubjectIsRejected(): void

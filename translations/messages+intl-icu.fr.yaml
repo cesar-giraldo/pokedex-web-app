@@ -129,7 +129,7 @@ auth:
     login_description: Connectez-vous avec votre e-mail ou votre pseudo et votre mot de passe pour continuer.
     login_identifier: E-mail ou pseudo
     register_title: Créer un compte
-    register_description: Créez un compte pour enregistrer votre progression.
+    register_description: Créez un compte pour pouvoir accéder.
     nickname: Pseudo
     email: E-mail
     password: Mot de passe
@@ -198,7 +198,9 @@ account:
     new_password: Nouveau mot de passe
     confirm_password: Confirmer le mot de passe
     save_password: Mettre à jour le mot de passe
+    create_password: Créer un mot de passe
     password_unchanged: Il n’a pas été modifié depuis la création du compte.
+    password_not_chosen: Il n’y a pas encore de mot de passe pour la plateforme. Vous pouvez en créer un et continuer à vous connecter avec Google.
     password_last_updated: 'Dernière mise à jour : {date}'
     complete_profile: Complétez les informations de votre profil pour continuer.
     info_saved: Vos informations personnelles ont été mises à jour.

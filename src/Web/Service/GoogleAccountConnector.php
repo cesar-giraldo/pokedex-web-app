@@ -104,6 +104,7 @@ final class GoogleAccountConnector
         $user->setTimeFormat($settings->getDefaultTimeFormat());
         $user->setIsHidden(false);
         $user->setPassword($this->passwordHasher->hashPassword($user, bin2hex(random_bytes(32))));
+        $user->setPasswordChosen(false);
 
         $this->entityManager->persist($user);
         $this->save();

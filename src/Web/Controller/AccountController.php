@@ -74,6 +74,7 @@ final class AccountController extends AbstractController
         $passwordForm = $this->createForm(UserProfilePasswordType::class, null, [
             'user' => $user,
             'password_hasher' => $this->passwordHasher,
+            'require_current_password' => $user->hasChosenPassword(),
         ]);
 
         $infoForm->handleRequest($request);
@@ -240,6 +241,7 @@ final class AccountController extends AbstractController
         }
 
         $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
+        $user->setPasswordChosen(true);
         $user->setPasswordUpdatedAt(new DateTime());
 
         try {

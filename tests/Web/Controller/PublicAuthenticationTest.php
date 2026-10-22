@@ -441,6 +441,51 @@ final class PublicAuthenticationTest extends WebTestCase
         /** @var UserPasswordHasherInterface $hasher */
         $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
         self::assertTrue($hasher->isPasswordValid($updated, 'Secret456'));
+        self::assertTrue($updated->hasChosenPassword());
+    }
+
+    public function testAGoogleBornAccountCreatesItsFirstPasswordWithoutTheCurrentOne(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        $nickname = $this->rememberNickname('gpass' . bin2hex(random_bytes(3)));
+        $this->createUser($nickname, [UserRole::User], UserStatus::Active, 'Ada', 'gpass-' . $nickname . '@example.com', 57, $this->phone());
+        $account = $this->reload($nickname);
+        $account->setGoogleSub('google-' . $nickname);
+        $account->setPasswordChosen(false);
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->flush();
+        $client->loginUser($this->reload($nickname), 'public');
+
+        $crawler = $client->request('GET', '/' . $locale . '/profile');
+        self::assertSelectorTextContains('#profile-password-updated', $this->trans($locale, 'account.password_not_chosen'));
+        self::assertSelectorNotExists('#profile-current-password');
+        self::assertSelectorCount(2, '[data-controller="password-input"]');
+        self::assertSelectorTextContains('form[name="user_profile_password"] button[type="submit"]', $this->trans($locale, 'account.create_password'));
+
+        $form = $crawler->filter('form[name="user_profile_password"]')->form();
+        $form['user_profile_password[plainPassword]'] = 'Secret456';
+        $form['user_profile_password[confirmPassword]'] = 'Secret456';
+        $client->submit($form);
+
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
+        $crawler = $client->followRedirect();
+        self::assertSelectorTextContains('main [role="status"]', $this->trans($locale, 'account.password_saved'));
+        self::assertSelectorExists('#profile-current-password');
+        self::assertSelectorCount(3, '[data-controller="password-input"]');
+        self::assertTrue($this->reload($nickname)->hasChosenPassword());
+
+        $form = $crawler->filter('form[name="user_profile_password"]')->form();
+        $form['user_profile_password[currentPassword]'] = '';
+        $form['user_profile_password[plainPassword]'] = 'Secret789';
+        $form['user_profile_password[confirmPassword]'] = 'Secret789';
+        $client->submit($form);
+
+        self::assertSelectorExists('#profile-current-password[aria-invalid="true"]');
+        /** @var UserPasswordHasherInterface $hasher */
+        $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
+        self::assertFalse($hasher->isPasswordValid($this->reload($nickname), 'Secret789'));
     }
 
     public function testInvalidFieldsRenderErrorMessages(): void
