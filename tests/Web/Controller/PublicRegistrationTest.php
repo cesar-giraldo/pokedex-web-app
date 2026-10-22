@@ -145,6 +145,9 @@ final class PublicRegistrationTest extends WebTestCase
         $this->submitCode($client, $crawler, $code);
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
         self::assertSame(UserStatus::UncompleteProfileInfo, $this->reload($email)->getStatus());
+        $client->followRedirect();
+        self::assertSelectorCount(1, 'main .alert-warning');
+        self::assertSelectorTextContains('main .alert-warning', $this->trans($locale, 'account.confirmed_complete_profile'));
 
         self::assertNotNull($this->notice($admin, $email));
         self::assertNotNull($this->notice($developer, $email));

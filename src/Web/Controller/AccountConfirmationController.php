@@ -57,6 +57,8 @@ final class AccountConfirmationController extends AbstractController
             $attempt = $confirmations->verify($user, $data->code());
 
             if (ConfirmationAttempt::Confirmed === $attempt) {
+                $this->addFlash('account_confirmed', 'account.confirmed_complete_profile');
+
                 return $this->redirectToRoute('app_public_profile', [
                     '_locale' => $languages->preferredForUser($user, $settings->get())->value,
                 ]);

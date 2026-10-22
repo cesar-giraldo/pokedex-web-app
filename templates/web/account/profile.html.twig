@@ -15,7 +15,12 @@
             </header>
 
             <div class="space-y-3">
-                {% if user.status.value == 'uncomplete_profile_info' %}
+                {% set confirmation_messages = app.flashes('account_confirmed') %}
+                {% if confirmation_messages is not empty %}
+                    {% for message in confirmation_messages %}
+                        <twig:web_alert variant="warning" message="{{ message|trans }}" />
+                    {% endfor %}
+                {% elseif user.status.value == 'uncomplete_profile_info' %}
                     <twig:web_alert variant="warning" message="{{ 'account.complete_profile'|trans }}" />
                 {% endif %}
                 {% for message in app.flashes('success') %}

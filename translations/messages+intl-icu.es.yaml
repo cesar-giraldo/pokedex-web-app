@@ -203,6 +203,7 @@ account:
     password_not_chosen: Todavía no hay una contraseña de la plataforma. Puedes crear una y seguir entrando con Google.
     password_last_updated: 'Última actualización: {date}'
     complete_profile: Debes completar la información de tu perfil para continuar.
+    confirmed_complete_profile: Cuenta confirmada exitosamente, ahora debes completar la información de tu perfil para continuar.
     info_saved: Tu información personal se actualizó correctamente.
     profile_completed: Tu perfil se completó correctamente. Ya puedes usar la plataforma.
     password_saved: Tu contraseña se actualizó correctamente.

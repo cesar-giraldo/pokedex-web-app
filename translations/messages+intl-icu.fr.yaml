@@ -203,6 +203,7 @@ account:
     password_not_chosen: Il n’y a pas encore de mot de passe pour la plateforme. Vous pouvez en créer un et continuer à vous connecter avec Google.
     password_last_updated: 'Dernière mise à jour : {date}'
     complete_profile: Complétez les informations de votre profil pour continuer.
+    confirmed_complete_profile: Compte confirmé avec succès. Complétez maintenant les informations de votre profil pour continuer.
     info_saved: Vos informations personnelles ont été mises à jour.
     profile_completed: Votre profil a été complété. Vous pouvez maintenant utiliser la plateforme.
     password_saved: Votre mot de passe a été mis à jour.
