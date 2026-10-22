@@ -15,7 +15,12 @@
             </header>
 
             <div class="space-y-3">
-                {% if user.status.value == 'uncomplete_profile_info' %}
+                {% set confirmation_messages = app.flashes('account_confirmed') %}
+                {% if confirmation_messages is not empty %}
+                    {% for message in confirmation_messages %}
+                        <twig:web_alert variant="warning" message="{{ message|trans }}" />
+                    {% endfor %}
+                {% elseif user.status.value == 'uncomplete_profile_info' %}
                     <twig:web_alert variant="warning" message="{{ 'account.complete_profile'|trans }}" />
                 {% endif %}
                 {% for message in app.flashes('success') %}
@@ -26,18 +31,31 @@
                 {% endfor %}
             </div>
 
-            <section class="rounded-3xl bg-white p-8 ring-1 ring-black/5" aria-labelledby="profile-info-title">
+            <section
+                class="rounded-3xl bg-white p-8 ring-1 ring-black/5"
+                aria-labelledby="profile-info-title"
+                {% if user.profileImagePath %}data-controller="gallery"{% endif %}
+            >
                 <h2 id="profile-info-title" class="text-xl font-bold">{{ 'account.info_title'|trans }}</h2>
                 {{ form_start(infoForm, { attr: { class: 'mt-6 space-y-4', 'data-turbo': 'false' } }) }}
                     <div class="flex flex-col gap-5 sm:flex-row sm:items-start">
                         {% if user.profileImagePath %}
-                            <img
-                                class="h-20 w-20 shrink-0 rounded-full border border-black/10 object-cover"
-                                src="{{ path('app_public_profile_avatar', {_locale: app.request.locale}) }}"
-                                alt="{{ 'account.avatar'|trans }}"
-                                width="80"
-                                height="80"
+                            <button
+                                type="button"
+                                class="h-20 w-20 shrink-0 cursor-zoom-in overflow-hidden rounded-full border border-black/10 p-0"
+                                data-gallery-target="item"
+                                data-action="gallery#open"
+                                data-gallery-src-param="{{ public_profile_image_url(user, 'display') }}"
+                                aria-label="{{ 'account.view_avatar'|trans }}"
                             >
+                                <img
+                                    class="h-full w-full object-cover"
+                                    src="{{ public_profile_image_url(user) }}"
+                                    alt=""
+                                    width="80"
+                                    height="80"
+                                >
+                            </button>
                         {% else %}
                             <span class="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border border-black/10 bg-surface text-muted" aria-hidden="true">
                                 {{ ux_icon('heroicons:user-circle', { class: 'h-full w-full' }) }}
@@ -176,29 +194,38 @@
                     {{ form_widget(infoForm._token) }}
                     <twig:web_submit_button label="{{ 'account.save'|trans }}" />
                 {{ form_end(infoForm, { render_rest: false }) }}
+                {% if user.profileImagePath %}
+                    {% include '@web/partials/_image_gallery_dialog.html.twig' with {
+                        label: 'account.avatar'|trans,
+                    } %}
+                {% endif %}
             </section>
 
             <section class="rounded-3xl bg-white p-8 ring-1 ring-black/5" aria-labelledby="profile-password-title">
                 <h2 id="profile-password-title" class="text-xl font-bold">{{ 'account.security_title'|trans }}</h2>
                 <p id="profile-password-updated" class="mt-2 text-sm text-muted">
-                    {% if user.hasUpdatedPasswordSinceCreation %}
+                    {% if not user.hasChosenPassword %}
+                        {{ 'account.password_not_chosen'|trans }}
+                    {% elseif user.hasUpdatedPasswordSinceCreation %}
                         {{ 'account.password_last_updated'|trans({date: user.passwordUpdatedAt|app_datetime}) }}
                     {% else %}
                         {{ 'account.password_unchanged'|trans }}
                     {% endif %}
                 </p>
                 {{ form_start(passwordForm, { attr: { class: 'mt-6 space-y-4', 'data-turbo': 'false' } }) }}
-                    <twig:web_password_input
-                        label="{{ 'account.current_password'|trans }}"
-                        name="{{ passwordForm.currentPassword.vars.full_name }}"
-                        id="profile-current-password"
-                        autocomplete="current-password"
-                        showLabel="{{ 'account.show_password'|trans }}"
-                        hideLabel="{{ 'account.hide_password'|trans }}"
-                        :maxLength="form_field_max_length(passwordForm.currentPassword)"
-                        :required="true"
-                        error="{{ field_error(passwordForm.currentPassword) }}"
-                    />
+                    {% if passwordForm.currentPassword is defined %}
+                        <twig:web_password_input
+                            label="{{ 'account.current_password'|trans }}"
+                            name="{{ passwordForm.currentPassword.vars.full_name }}"
+                            id="profile-current-password"
+                            autocomplete="current-password"
+                            showLabel="{{ 'account.show_password'|trans }}"
+                            hideLabel="{{ 'account.hide_password'|trans }}"
+                            :maxLength="form_field_max_length(passwordForm.currentPassword)"
+                            :required="true"
+                            error="{{ field_error(passwordForm.currentPassword) }}"
+                        />
+                    {% endif %}
                     <twig:web_password_input
                         label="{{ 'account.new_password'|trans }}"
                         name="{{ passwordForm.plainPassword.vars.full_name }}"
@@ -222,7 +249,7 @@
                         error="{{ field_error(passwordForm.confirmPassword) }}"
                     />
                     {{ form_widget(passwordForm._token) }}
-                    <twig:web_submit_button label="{{ 'account.save_password'|trans }}" />
+                    <twig:web_submit_button label="{{ (user.hasChosenPassword ? 'account.save_password' : 'account.create_password')|trans }}" />
                 {{ form_end(passwordForm, { render_rest: false }) }}
             </section>
         </div>

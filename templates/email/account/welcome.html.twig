@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'email.welcome.heading'|trans({platform: public_site_name()}) }}</title>
+</head>
+<body style="margin:0;padding:24px;background:#f4f4f5;color:#18181b;font-family:Arial,sans-serif;line-height:1.5;">
+    <article style="max-width:560px;margin:0 auto;padding:24px;background:#ffffff;">
+        <h1 style="margin:0 0 16px;font-size:22px;">{{ 'email.welcome.heading'|trans({platform: public_site_name()}) }}</h1>
+        <p style="margin:0 0 12px;">{{ 'email.welcome.intro'|trans({name: recipient_name, platform: public_site_name()}) }}</p>
+        <p style="margin:0 0 24px;">
+            <a href="{{ home_url }}">{{ 'email.welcome.action'|trans }}</a>
+        </p>
+        <p style="margin:0;font-size:13px;color:#52525b;">{{ 'email.welcome.footer'|trans }}</p>
+    </article>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'email.new_user.heading'|trans }}</title>
+</head>
+<body style="margin:0;padding:24px;background:#f4f4f5;color:#18181b;font-family:Arial,sans-serif;line-height:1.5;">
+    <article style="max-width:560px;margin:0 auto;padding:24px;background:#ffffff;">
+        <h1 style="margin:0 0 16px;font-size:22px;">{{ 'email.new_user.heading'|trans }}</h1>
+        <p style="margin:0 0 12px;">{{ 'email.new_user.intro'|trans({name: recipient_name, registered_name: registered_name, email: registered_email}) }}</p>
+        {% if profile_url %}
+            <p style="margin:0 0 24px;">
+                <a href="{{ profile_url }}">{{ 'email.new_user.action'|trans }}</a>
+            </p>
+        {% endif %}
+        <p style="margin:0;font-size:13px;color:#52525b;">{{ 'email.new_user.footer'|trans }}</p>
+    </article>
+</body>
+</html>

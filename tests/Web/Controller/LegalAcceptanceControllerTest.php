@@ -213,7 +213,9 @@ final class LegalAcceptanceControllerTest extends WebTestCase
         $this->login($client, $user);
 
         $client->request('GET', '/' . self::LOCALE . '/profile/avatar');
+        self::assertResponseStatusCodeSame(404);
 
+        $client->request('GET', '/' . self::LOCALE . '/profile/image/display');
         self::assertResponseStatusCodeSame(404);
     }
 

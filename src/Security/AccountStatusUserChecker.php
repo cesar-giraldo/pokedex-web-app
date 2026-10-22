@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Security;
 
+use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -13,10 +15,13 @@ use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusExce
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+use function str_starts_with;
+
 final class AccountStatusUserChecker implements UserCheckerInterface
 {
     public function __construct(
         private readonly ?TokenStorageInterface $tokenStorage = null,
+        private readonly ?RequestStack $requestStack = null,
     ) {
     }
 
@@ -35,7 +40,7 @@ final class AccountStatusUserChecker implements UserCheckerInterface
             );
         }
 
-        if (!$user->getStatus()->allowsBackendLogin()) {
+        if (!$user->getStatus()->allowsBackendLogin() && !$this->allowsPublicUnconfirmedLogin($user)) {
             throw new CustomUserMessageAccountStatusException($user->getStatus()->loginDeniedMessage());
         }
     }
@@ -50,11 +55,26 @@ final class AccountStatusUserChecker implements UserCheckerInterface
             return;
         }
 
+        if (UserStatus::UnconfirmedAccount === $user->getStatus() && $this->allowsPublicUnconfirmedLogin($user)) {
+            return;
+        }
+
         if (UserStatus::Active !== $user->getStatus()) {
             throw new CustomUserMessageAccountStatusException(
                 $user->getStatus()->loginDeniedMessage()
             );
         }
+    }
+
+    private function allowsPublicUnconfirmedLogin(User $user): bool
+    {
+        if (UserStatus::UnconfirmedAccount !== $user->getStatus() || !$user->hasAssignedRole(UserRole::User)) {
+            return false;
+        }
+
+        $path = $this->requestStack?->getCurrentRequest()?->getPathInfo() ?? '';
+
+        return '' !== $path && !str_starts_with($path, '/admin');
     }
 
     private function isImpersonated(User $user): bool

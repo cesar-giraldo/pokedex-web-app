@@ -26,8 +26,8 @@ final class UserProfilePasswordType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder
-            ->add('currentPassword', PasswordType::class, [
+        if (true === $options['require_current_password']) {
+            $builder->add('currentPassword', PasswordType::class, [
                 'label' => false,
                 'mapped' => false,
                 'attr' => ['maxlength' => 128],
@@ -38,7 +38,10 @@ final class UserProfilePasswordType extends AbstractType
                         maxMessage: 'La contraseña no puede tener más de {{ limit }} caracteres.',
                     ),
                 ],
-            ])
+            ]);
+        }
+
+        $builder
             ->add('plainPassword', PasswordType::class, [
                 'label' => false,
                 'mapped' => false,
@@ -74,26 +77,28 @@ final class UserProfilePasswordType extends AbstractType
             /** @var UserPasswordHasherInterface $passwordHasher */
             $passwordHasher = $form->getConfig()->getOption('password_hasher');
 
-            $currentPassword = $form->get('currentPassword')->getData();
             $plainPassword = $form->get('plainPassword')->getData();
             $confirmPassword = $form->get('confirmPassword')->getData();
 
-            $currentPassword = is_string($currentPassword) ? $currentPassword : '';
             $plainPassword = is_string($plainPassword) ? $plainPassword : '';
             $confirmPassword = is_string($confirmPassword) ? $confirmPassword : '';
 
-            $currentPasswordValid = '' !== $currentPassword && $passwordHasher->isPasswordValid($user, $currentPassword);
+            if (true === $form->getConfig()->getOption('require_current_password')) {
+                $currentPassword = $form->get('currentPassword')->getData();
+                $currentPassword = is_string($currentPassword) ? $currentPassword : '';
+                $currentPasswordValid = '' !== $currentPassword && $passwordHasher->isPasswordValid($user, $currentPassword);
 
-            if ('' !== $currentPassword && !$currentPasswordValid) {
-                $form->get('currentPassword')->addError(new FormError('La contraseña actual no es correcta.'));
+                if ('' !== $currentPassword && !$currentPasswordValid) {
+                    $form->get('currentPassword')->addError(new FormError('La contraseña actual no es correcta.'));
 
-                return;
-            }
+                    return;
+                }
 
-            if ($currentPasswordValid && '' !== $plainPassword && $passwordHasher->isPasswordValid($user, $plainPassword)) {
-                $form->get('plainPassword')->addError(new FormError('La nueva contraseña no puede ser igual a la contraseña actual.'));
+                if ($currentPasswordValid && '' !== $plainPassword && $passwordHasher->isPasswordValid($user, $plainPassword)) {
+                    $form->get('plainPassword')->addError(new FormError('La nueva contraseña no puede ser igual a la contraseña actual.'));
 
-                return;
+                    return;
+                }
             }
 
             if ($plainPassword !== $confirmPassword) {
@@ -106,7 +111,10 @@ final class UserProfilePasswordType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => null,
+            'require_current_password' => true,
         ]);
+
+        $resolver->setAllowedTypes('require_current_password', 'bool');
 
         $resolver->setRequired(['user', 'password_hasher']);
         $resolver->setAllowedTypes('user', User::class);

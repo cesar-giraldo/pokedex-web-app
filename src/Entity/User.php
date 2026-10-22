@@ -30,6 +30,7 @@ use function trim;
 #[ORM\Table(name: 'users')]
 #[ORM\UniqueConstraint(name: 'uniq_users_nickname', fields: ['nickname'])]
 #[ORM\UniqueConstraint(name: 'uniq_users_country_cellphone', fields: ['countryCode', 'cellphone'])]
+#[ORM\UniqueConstraint(name: 'uniq_users_google_sub', fields: ['googleSub'])]
 #[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['nickname'], message: 'Este nickname ya está registrado.')]
 #[UniqueEntity(
@@ -41,6 +42,11 @@ use function trim;
 #[UniqueEntity(
     fields: ['countryCode', 'cellphone'],
     message: 'Este número de celular ya está registrado.',
+    ignoreNull: true,
+)]
+#[UniqueEntity(
+    fields: ['googleSub'],
+    message: 'Esta cuenta de Google ya está vinculada.',
     ignoreNull: true,
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -66,6 +72,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Email]
     private ?string $email = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $googleSub = null;
+
     #[ORM\Column(nullable: true)]
     #[Assert\Positive]
     private ?int $countryCode = null;
@@ -88,6 +97,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private string $password = '';
+
+    #[ORM\Column(options: ['default' => true])]
+    private bool $passwordChosen = true;
 
     #[ORM\Column(enumType: UserStatus::class)]
     private UserStatus $status = UserStatus::UnconfirmedAccount;
@@ -191,6 +203,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getGoogleSub(): ?string
+    {
+        return $this->googleSub;
+    }
+
+    public function setGoogleSub(?string $googleSub): static
+    {
+        if (null === $googleSub || '' === trim($googleSub)) {
+            $this->googleSub = null;
+
+            return $this;
+        }
+
+        $this->googleSub = trim($googleSub);
+
+        return $this;
+    }
+
     public function getCountryCode(): ?int
     {
         return $this->countryCode;
@@ -275,6 +305,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    public function hasChosenPassword(): bool
+    {
+        return $this->passwordChosen;
+    }
+
+    public function setPasswordChosen(bool $passwordChosen): static
+    {
+        $this->passwordChosen = $passwordChosen;
 
         return $this;
     }

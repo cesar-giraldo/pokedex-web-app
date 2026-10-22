@@ -1,0 +1,20 @@
+framework:
+    rate_limiter:
+        public_registration:
+            policy: sliding_window
+            limit: 5
+            interval: '1 hour'
+        account_confirmation_resend:
+            policy: sliding_window
+            limit: 5
+            interval: '2 hours'
+
+when@test:
+    framework:
+        rate_limiter:
+            public_registration:
+                limit: 1000
+                interval: '1 minute'
+            account_confirmation_resend:
+                limit: 1000
+                interval: '1 minute'

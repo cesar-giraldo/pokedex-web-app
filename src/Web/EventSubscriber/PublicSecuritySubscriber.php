@@ -17,16 +17,20 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 use Symfony\Component\Security\Http\Event\LogoutEvent;
 use Symfony\Component\Security\Http\RememberMe\RememberMeHandlerInterface;
+use Throwable;
 
 use function is_string;
 use function preg_match;
@@ -63,8 +67,10 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
             LogoutEvent::class => ['onLogout', 100],
             KernelEvents::REQUEST => [
                 ['normalizeLoginNickname', 12],
+                ['guardUnconfirmedAccount', 7],
                 ['guardIncompleteProfile', 7],
             ],
+            KernelEvents::EXCEPTION => ['redirectUnconfirmedAccessDenied', 0],
         ];
     }
 
@@ -122,7 +128,7 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
 
     public function onLoginSuccess(LoginSuccessEvent $event): void
     {
-        if (self::FIREWALL !== $event->getFirewallName()) {
+        if (!$this->isPublicSessionFirewall($event->getFirewallName())) {
             return;
         }
 
@@ -161,6 +167,14 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         $locale = $this->legalLanguageResolver
             ->preferredForUser($user, $this->generalSettingsProvider->get())
             ->value;
+
+        if (UserStatus::UnconfirmedAccount === $user->getStatus()) {
+            $event->setResponse(new RedirectResponse(
+                $this->urlGenerator->generate('app_public_account_confirm', ['_locale' => $locale]),
+            ));
+
+            return;
+        }
 
         if (UserStatus::UncompleteProfileInfo === $user->getStatus()) {
             $event->setResponse(new RedirectResponse(
@@ -209,6 +223,76 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         ));
     }
 
+    public function guardUnconfirmedAccount(RequestEvent $event): void
+    {
+        if (!$event->isMainRequest() || $event->hasResponse()) {
+            return;
+        }
+
+        $request = $event->getRequest();
+
+        if ('security.firewall.map.context.public' !== $request->attributes->get('_firewall_context')) {
+            return;
+        }
+
+        $user = $this->tokenStorage->getToken()?->getUser();
+
+        if (!$user instanceof User || !$user->hasAssignedRole(UserRole::User)) {
+            return;
+        }
+
+        if (UserStatus::UnconfirmedAccount !== $user->getStatus()) {
+            return;
+        }
+
+        if ($this->isUnconfirmedAccountAllowedPath($request->getPathInfo())) {
+            return;
+        }
+
+        $event->setResponse(new RedirectResponse(
+            $this->urlGenerator->generate('app_public_account_confirm', [
+                '_locale' => $this->legalLanguageResolver
+                    ->preferredForUser($user, $this->generalSettingsProvider->get())
+                    ->value,
+            ]),
+        ));
+    }
+
+    public function redirectUnconfirmedAccessDenied(ExceptionEvent $event): void
+    {
+        if (!$event->isMainRequest()) {
+            return;
+        }
+
+        $request = $event->getRequest();
+
+        if ('security.firewall.map.context.public' !== $request->attributes->get('_firewall_context')) {
+            return;
+        }
+
+        if (!$this->isAccessDenied($event->getThrowable())) {
+            return;
+        }
+
+        $user = $this->tokenStorage->getToken()?->getUser();
+
+        if (!$user instanceof User || !$user->hasAssignedRole(UserRole::User)) {
+            return;
+        }
+
+        if (UserStatus::UnconfirmedAccount !== $user->getStatus()) {
+            return;
+        }
+
+        $event->setResponse(new RedirectResponse(
+            $this->urlGenerator->generate('app_public_account_confirm', [
+                '_locale' => $this->legalLanguageResolver
+                    ->preferredForUser($user, $this->generalSettingsProvider->get())
+                    ->value,
+            ]),
+        ));
+    }
+
     public function guardIncompleteProfile(RequestEvent $event): void
     {
         if (!$event->isMainRequest()) {
@@ -246,11 +330,11 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         ));
     }
 
-    private function isIncompleteProfileAllowedPath(string $path): bool
+    private function isUnconfirmedAccountAllowedPath(string $path): bool
     {
         $locale = SupportedLanguage::ROUTE_REQUIREMENT;
 
-        if (1 === preg_match(sprintf('#^/(%s)/profile(?:/avatar)?$#', $locale), $path)) {
+        if (1 === preg_match(sprintf('#^/(%s)/account/confirm(?:/resend)?$#', $locale), $path)) {
             return true;
         }
 
@@ -265,6 +349,43 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         return str_starts_with($path, '/assets/')
             || str_starts_with($path, '/_profiler')
             || str_starts_with($path, '/_wdt');
+    }
+
+    private function isAccessDenied(Throwable $throwable): bool
+    {
+        do {
+            if ($throwable instanceof AccessDeniedException || $throwable instanceof AccessDeniedHttpException) {
+                return true;
+            }
+        } while (null !== $throwable = $throwable->getPrevious());
+
+        return false;
+    }
+
+    private function isIncompleteProfileAllowedPath(string $path): bool
+    {
+        $locale = SupportedLanguage::ROUTE_REQUIREMENT;
+
+        if (1 === preg_match(sprintf('#^/(%s)/profile(?:/avatar|/image/(?:avatar|display|original))?$#', $locale), $path)) {
+            return true;
+        }
+
+        if (1 === preg_match(sprintf('#^/(%s)/logout$#', $locale), $path)) {
+            return true;
+        }
+
+        if (1 === preg_match(sprintf('#^/(%s)/impersonation/exit$#', $locale), $path)) {
+            return true;
+        }
+
+        return str_starts_with($path, '/assets/')
+            || str_starts_with($path, '/_profiler')
+            || str_starts_with($path, '/_wdt');
+    }
+
+    private function isPublicSessionFirewall(string $firewallName): bool
+    {
+        return self::FIREWALL === $firewallName || 'google_connect' === $firewallName;
     }
 
     private function locale(Request $request): string

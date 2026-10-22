@@ -59,6 +59,16 @@ security:
             lazy: true
             provider: app_user_provider
             user_checker: App\Security\AccountStatusUserChecker
+        # La vuelta de Google no lleva idioma: una sola URI en la consola.
+        # Comparte la sesión `_security_public` para que el alta quede en el sitio público.
+        google_connect:
+            pattern: ^/connect/google/check$
+            context: public
+            lazy: true
+            provider: app_user_provider
+            user_checker: App\Security\AccountStatusUserChecker
+            custom_authenticators:
+                - App\Web\Security\GoogleAuthenticator
         main:
             lazy: true
             provider: app_user_provider
@@ -95,6 +105,7 @@ security:
         - { path: ^/(es|en|pt|fr)/favorites$, roles: PUBLIC_ACCOUNT }
         - { path: ^/(es|en|pt|fr)/notifications, roles: PUBLIC_ACCOUNT }
         - { path: ^/(es|en|pt|fr)/legal/accept, roles: PUBLIC_ACCOUNT }
+        - { path: ^/connect/google, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/(es|en|pt|fr)(/|$), roles: PUBLIC_ACCESS }
         - { path: ^/sitemap\.xml$, roles: PUBLIC_ACCESS }

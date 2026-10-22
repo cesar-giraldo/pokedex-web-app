@@ -1,0 +1,45 @@
+<dialog
+    class="gallery-dialog"
+    data-gallery-target="dialog"
+    aria-label="{{ label }}"
+    data-action="click->gallery#backdrop close->gallery#clear keydown->gallery#keydown"
+>
+    <figure class="gallery-figure" data-gallery-target="figure">
+        <div class="gallery-stage">
+            <img data-gallery-target="image" alt="" class="gallery-image">
+            <div class="gallery-loader" data-gallery-target="loader" hidden role="status" aria-live="polite" aria-label="{{ 'site.loading'|trans }}">
+                <div class="page-loader-ring" aria-hidden="true"></div>
+            </div>
+            <button
+                type="button"
+                class="gallery-icon-button gallery-close"
+                data-gallery-target="closeButton"
+                data-action="gallery#close"
+                aria-label="{{ 'pokemon.close'|trans }}"
+            >
+                {{ ux_icon('heroicons:x-mark', { class: 'h-6 w-6', 'aria-hidden': 'true' }) }}
+            </button>
+            <button
+                type="button"
+                class="gallery-icon-button gallery-nav gallery-nav-previous"
+                data-gallery-target="previousButton"
+                data-action="gallery#previous"
+                aria-label="{{ 'pokemon.previous_image'|trans }}"
+                hidden
+            >
+                {{ ux_icon('heroicons:chevron-left', { class: 'h-6 w-6', 'aria-hidden': 'true' }) }}
+            </button>
+            <button
+                type="button"
+                class="gallery-icon-button gallery-nav gallery-nav-next"
+                data-gallery-target="nextButton"
+                data-action="gallery#next"
+                aria-label="{{ 'pokemon.next_image'|trans }}"
+                hidden
+            >
+                {{ ux_icon('heroicons:chevron-right', { class: 'h-6 w-6', 'aria-hidden': 'true' }) }}
+            </button>
+        </div>
+        <figcaption class="gallery-caption" data-gallery-target="caption" hidden></figcaption>
+    </figure>
+</dialog>

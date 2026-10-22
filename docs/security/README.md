@@ -6,15 +6,10 @@ Documentación del sistema de usuarios, login del panel administrativo y control
 
 | Documento | Contenido |
 | --------- | --------- |
-| [autenticacion-admin.md](./autenticacion-admin.md) | Flujo de login, roles, estados, intentos fallidos, throttling, remember me y archivos clave |
+| [autenticacion-admin.md](./autenticacion-admin.md) | Flujo de login del panel, roles, estados, intentos fallidos, throttling, remember me y archivos clave |
+| [registro-google.md](./registro-google.md) | Alta e inicio de sesión públicos con Google: consola, credenciales y URI local |
 
-## Alcance actual
+## Alcance
 
-Esta documentación cubre el **backend administrativo** (`/admin/*`):
-
-- Login con nickname y contraseña
-- Control de acceso por rol (`ROLE_ADMIN` mínimo)
-- Bloqueo por intentos fallidos y throttling por IP
-- Estados de cuenta y redirecciones post-login
-
-El login público del sitio web (`src/Web`) aún no está implementado; la entidad `User` y el rol `user` están preparados para ese contexto futuro.
+- El panel administrativo (`/admin`) está descrito en [autenticacion-admin.md](./autenticacion-admin.md).
+- El alta y el acceso públicos con Google están descritos en [registro-google.md](./registro-google.md).
