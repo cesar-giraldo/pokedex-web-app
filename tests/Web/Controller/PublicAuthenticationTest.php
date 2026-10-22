@@ -370,9 +370,14 @@ final class PublicAuthenticationTest extends WebTestCase
         $message = self::getMailerMessage();
         self::assertInstanceOf(TemplatedEmail::class, $message);
         self::assertEmailAddressContains($message, 'To', $email);
+        $platform = $this->platformName($locale);
         self::assertEmailSubjectContains($message, $this->trans($locale, 'email.welcome.subject'));
-        self::assertEmailHtmlBodyContains($message, $this->trans($locale, 'email.welcome.heading'));
-        self::assertEmailHtmlBodyContains($message, $this->trans($locale, 'email.welcome.intro', 'messages', ['name' => 'Ada']));
+        self::assertEmailHtmlBodyContains($message, $this->trans($locale, 'email.welcome.heading', 'messages', ['platform' => $platform]));
+        self::assertEmailHtmlBodyContains($message, $this->trans($locale, 'email.welcome.intro', 'messages', [
+            'name' => 'Ada',
+            'platform' => $platform,
+        ]));
+        self::assertEmailHtmlBodyContains($message, $this->trans($locale, 'email.welcome.action'));
         self::assertEmailTextBodyContains($message, '/' . $locale);
         $this->acceptPendingLegalDocuments($updated);
         $client->followRedirect();
@@ -740,6 +745,19 @@ final class PublicAuthenticationTest extends WebTestCase
             $locale,
             static fn (): string => $translator->trans($key, $parameters, $domain),
         );
+    }
+
+    private function platformName(string $locale): string
+    {
+        /** @var GeneralSettingsProvider $settings */
+        $settings = static::getContainer()->get(GeneralSettingsProvider::class);
+        $name = $settings->get()->getPlatformName();
+
+        if (null !== $name && '' !== $name) {
+            return $name;
+        }
+
+        return $this->trans($locale, 'site.name_fallback');
     }
 
     private function defaultLocale(): string

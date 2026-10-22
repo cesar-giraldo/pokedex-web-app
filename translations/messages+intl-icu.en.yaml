@@ -303,9 +303,9 @@ email:
         footer: This message was sent automatically.
     welcome:
         subject: Your profile is ready
-        heading: Thanks for registering
-        intro: 'Hello {name}, thank you for registering on the platform. Your profile is ready and you can start using it.'
-        action: Go to the home page
+        heading: 'Welcome to {platform}'
+        intro: 'Hello {name}, thank you for registering on {platform}. Your account is ready and you can start using it.'
+        action: Access
         footer: This message was sent automatically.
 
 error:

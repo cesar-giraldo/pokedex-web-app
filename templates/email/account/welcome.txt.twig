@@ -1,6 +1,6 @@
-{{ 'email.welcome.heading'|trans }}
+{{ 'email.welcome.heading'|trans({platform: public_site_name()}) }}
 
-{{ 'email.welcome.intro'|trans({name: recipient_name}) }}
+{{ 'email.welcome.intro'|trans({name: recipient_name, platform: public_site_name()}) }}
 
 {{ 'email.welcome.action'|trans }}: {{ home_url }}
 

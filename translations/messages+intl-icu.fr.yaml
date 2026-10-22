@@ -303,9 +303,9 @@ email:
         footer: Ce message a été envoyé automatiquement.
     welcome:
         subject: Votre profil est prêt
-        heading: Merci de vous être inscrit
-        intro: 'Bonjour {name}, merci de vous être inscrit sur la plateforme. Votre profil est prêt et vous pouvez commencer à l’utiliser.'
-        action: Aller à l’accueil
+        heading: 'Bienvenue sur {platform}'
+        intro: 'Bonjour {name}, merci de vous être inscrit sur {platform}. Votre compte est prêt et vous pouvez commencer à l’utiliser.'
+        action: Accéder
         footer: Ce message a été envoyé automatiquement.
 
 error:
