@@ -10,7 +10,6 @@
     <div class="bg-surface px-4 py-16">
         <div class="mx-auto max-w-md rounded-3xl bg-white p-8 ring-1 ring-black/5">
             <h1 class="text-3xl font-extrabold tracking-tight">{{ 'auth.login_title'|trans }}</h1>
-            <p class="mt-2 text-sm leading-6 text-muted">{{ 'auth.login_description'|trans }}</p>
             <div class="mt-6 space-y-3">
                 {% for message in app.flashes('error') %}
                     <twig:web_alert variant="error" message="{{ message|trans }}" />
@@ -19,13 +18,17 @@
                     <twig:web_alert variant="error" message="{{ error.messageKey|trans(error.messageData, 'security') }}" />
                 {% endif %}
             </div>
+            <div class="mt-8">
+                {% include '@web/auth/_google.html.twig' with {from: 'login'} only %}
+            </div>
+            <p class="mt-6 text-sm leading-6 text-muted">{{ 'auth.login_description'|trans }}</p>
             {{ form_start(loginForm, {
                 action: path('app_public_login', {_locale: app.request.locale}),
                 method: 'POST',
-                attr: { class: 'mt-8 space-y-4', 'data-turbo': 'false' },
+                attr: { class: 'mt-4 space-y-4', 'data-turbo': 'false' },
             }) }}
                 <twig:web_text_input
-                    label="{{ 'auth.nickname'|trans }}"
+                    label="{{ 'auth.login_identifier'|trans }}"
                     name="{{ loginForm['_username'].vars.full_name }}"
                     id="login-nickname"
                     value="{{ loginForm['_username'].vars.value }}"

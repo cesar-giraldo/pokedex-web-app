@@ -12,3 +12,9 @@ services:
         decorates: App\Notification\Email\AccountConfirmationCodeMailer
         arguments:
             $inner: '@.inner'
+
+    App\Web\Security\GoogleAuthorizationClient:
+        class: App\Tests\Double\FakeGoogleAuthorizationClient
+
+    App\Web\Security\GoogleIdTokenVerifier:
+        class: App\Tests\Double\FakeGoogleIdTokenVerifier

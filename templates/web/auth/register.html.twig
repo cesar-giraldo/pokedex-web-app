@@ -12,9 +12,15 @@
             <h1 class="text-3xl font-extrabold tracking-tight">{{ 'auth.register_title'|trans }}</h1>
             <p class="mt-2 text-sm leading-6 text-muted">{{ 'auth.register_description'|trans }}</p>
             <div class="mt-6 space-y-3">
+                {% for message in app.flashes('error') %}
+                    <twig:web_alert variant="error" message="{{ message|trans }}" />
+                {% endfor %}
                 {% for error in registrationForm.vars.errors %}
                     <twig:web_alert variant="error" message="{{ error.message }}" />
                 {% endfor %}
+            </div>
+            <div class="mt-8">
+                {% include '@web/auth/_google.html.twig' with {from: 'register'} only %}
             </div>
             {{ form_start(registrationForm, {
                 action: path('app_public_register', {_locale: app.request.locale}),

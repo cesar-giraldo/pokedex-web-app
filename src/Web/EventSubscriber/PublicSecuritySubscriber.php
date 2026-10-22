@@ -128,7 +128,7 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
 
     public function onLoginSuccess(LoginSuccessEvent $event): void
     {
-        if (self::FIREWALL !== $event->getFirewallName()) {
+        if (!$this->isPublicSessionFirewall($event->getFirewallName())) {
             return;
         }
 
@@ -381,6 +381,11 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         return str_starts_with($path, '/assets/')
             || str_starts_with($path, '/_profiler')
             || str_starts_with($path, '/_wdt');
+    }
+
+    private function isPublicSessionFirewall(string $firewallName): bool
+    {
+        return self::FIREWALL === $firewallName || 'google_connect' === $firewallName;
     }
 
     private function locale(Request $request): string

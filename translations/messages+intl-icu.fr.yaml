@@ -126,7 +126,8 @@ contact:
 auth:
     unavailable: Cette fonction n’est pas encore disponible.
     login_title: Connexion
-    login_description: Connectez-vous avec votre pseudo et votre mot de passe pour continuer.
+    login_description: Connectez-vous avec votre e-mail ou votre pseudo et votre mot de passe pour continuer.
+    login_identifier: E-mail ou pseudo
     register_title: Créer un compte
     register_description: Créez un compte pour enregistrer votre progression.
     nickname: Pseudo
@@ -139,6 +140,11 @@ auth:
     remember: Se souvenir de moi sur cet appareil
     submit_login: Connexion
     submit_register: Créer un compte
+    google_signup: "S'inscrire avec Google"
+    google_login: Se connecter avec Google
+    google_or: ou
+    google_failed: Impossible de continuer avec Google. Réessayez ou utilisez le formulaire.
+    google_unavailable: "La connexion avec Google n'est pas disponible pour le moment."
     no_account: Pas encore de compte ?
     has_account: Vous avez déjà un compte ?
     accept_terms: J’accepte les

@@ -126,7 +126,8 @@ contact:
 auth:
     unavailable: This feature is not available yet.
     login_title: Log in
-    login_description: Sign in with your nickname and password to continue.
+    login_description: Sign in with your email/nickname and password to continue.
+    login_identifier: Email or nickname
     register_title: Create account
     register_description: Create an account to save your progress.
     nickname: Nickname
@@ -139,6 +140,11 @@ auth:
     remember: Remember me on this device
     submit_login: Log in
     submit_register: Create account
+    google_signup: Sign up with Google
+    google_login: Log in with Google
+    google_or: or
+    google_failed: We could not continue with Google. Try again or use the form.
+    google_unavailable: Sign-in with Google is not available right now.
     no_account: No account yet?
     has_account: Already have an account?
     accept_terms: I accept the

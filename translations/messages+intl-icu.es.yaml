@@ -126,7 +126,8 @@ contact:
 auth:
     unavailable: Esta función aún no está disponible.
     login_title: Ingresar
-    login_description: Entra con tu nickname y tu contraseña para continuar.
+    login_description: Entra con tu correo/nickname y tu contraseña para continuar.
+    login_identifier: Correo ó Nickname
     register_title: Crear cuenta
     register_description: Crea una cuenta para guardar tu progreso.
     nickname: Nickname
@@ -139,6 +140,11 @@ auth:
     remember: Recordarme en este dispositivo
     submit_login: Ingresar
     submit_register: Crear cuenta
+    google_signup: Regístrate con Google
+    google_login: Entra con Google
+    google_or: o
+    google_failed: No pudimos continuar con Google. Inténtalo de nuevo o usa el formulario.
+    google_unavailable: El acceso con Google no está disponible en este momento.
     no_account: ¿No tienes cuenta?
     has_account: ¿Ya tienes cuenta?
     accept_terms: Acepto los
