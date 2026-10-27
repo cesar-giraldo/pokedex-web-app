@@ -198,6 +198,21 @@ auth:
     register_unavailable: No pudimos crear la cuenta con estos datos. Si ya tienes una, inicia sesión.
     register_rate_limited: Demasiados intentos de registro. Inténtalo más tarde.
     register_rejected: No pudimos crear la cuenta. Inténtalo de nuevo.
+    forgot_password: ¿Olvidaste tu contraseña?
+    forgot_password_title: Restablecer contraseña
+    forgot_password_description: Escribe el correo o el nickname con el que te registraste. Si la cuenta se puede recuperar, te enviamos un enlace.
+    forgot_password_identifier: Correo o nickname
+    forgot_password_submit: Enviar enlace
+    forgot_password_sent: Si la cuenta existe y se puede recuperar, enviamos un correo con los pasos.
+    forgot_password_rate_limited: Demasiados intentos. Espera un momento y vuelve a intentarlo.
+    forgot_password_back: Volver a iniciar sesión
+    reset_password_title: Crea una contraseña nueva
+    reset_password_description: Elige una contraseña nueva. El enlace funciona durante 12 horas y solo se puede usar una vez.
+    reset_password_submit: Guardar contraseña
+    reset_password_invalid_title: Enlace no disponible
+    reset_password_invalid: Este enlace ya no es válido. Solicita uno nuevo.
+    reset_password_success: Tu contraseña se actualizó. Entra con la nueva.
+    reset_password_request_again: Solicitar un enlace nuevo
 
 form:
     processing: Procesando...
@@ -343,6 +358,25 @@ email:
         heading: 'Bienvenido a {platform}'
         intro: 'Hola {name}, gracias por registrarte en la {platform}. Tu cuenta está lista y ya puedes usarla.'
         action: Acceder
+        footer: Este mensaje se envió de forma automática.
+    password_reset:
+        subject: Restablece tu contraseña
+        heading: Restablece tu contraseña
+        intro: 'Hola {name}, recibimos una solicitud para crear una contraseña nueva en tu cuenta.'
+        expires: El enlace funciona durante 12 horas y solo se puede usar una vez. Si pides otro enlace, este deja de funcionar.
+        action: Crear una contraseña nueva
+        link_hint: Si el botón no abre, copia esta dirección en el navegador.
+        ignore: Si no pediste esto, puedes ignorar el mensaje. Tu contraseña no va a cambiar.
+        footer: Este mensaje se envió de forma automática.
+    password_reset_completed:
+        subject: Tu contraseña ya está actualizada
+        heading: Tu contraseña ya está actualizada
+        intro: 'Hola {name}, la contraseña de tu cuenta se cambió correctamente.'
+        detail: Ya puedes entrar con la contraseña nueva.
+        when: 'El cambio se hizo el {when}.'
+        not_you: Si no fuiste tú, escribe al administrador del sitio para recuperar el acceso.
+        contact_action: Contactar al administrador
+        not_you_email: 'Si no fuiste tú, escribe a {email} para que un administrador te ayude.'
         footer: Este mensaje se envió de forma automática.
 
 error:

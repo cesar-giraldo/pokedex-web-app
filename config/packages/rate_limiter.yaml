@@ -8,6 +8,14 @@ framework:
             policy: sliding_window
             limit: 5
             interval: '2 hours'
+        password_reset_request_ip:
+            policy: sliding_window
+            limit: 5
+            interval: '1 hour'
+        password_reset_request_identifier:
+            policy: sliding_window
+            limit: 3
+            interval: '1 hour'
 
 when@test:
     framework:
@@ -16,5 +24,11 @@ when@test:
                 limit: 1000
                 interval: '1 minute'
             account_confirmation_resend:
+                limit: 1000
+                interval: '1 minute'
+            password_reset_request_ip:
+                limit: 1000
+                interval: '1 minute'
+            password_reset_request_identifier:
                 limit: 1000
                 interval: '1 minute'

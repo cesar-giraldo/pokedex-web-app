@@ -17,3 +17,6 @@ auth.register_unavailable: Nous n’avons pas pu créer le compte avec ces infor
 auth.register_rejected: Nous n’avons pas pu créer le compte. Réessayez.
 auth.terms_required: Vous devez accepter les documents pour continuer.
 auth.confirm_code_required: Saisissez le code à 6 chiffres.
+auth.forgot_password_identifier_required: Saisissez votre e-mail ou votre pseudo.
+auth.forgot_password_identifier_max: Il ne peut pas dépasser {{ limit }} caractères.
+auth.password_same_as_current: Le nouveau mot de passe ne peut pas être identique à l’actuel.

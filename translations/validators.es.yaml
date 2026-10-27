@@ -17,3 +17,6 @@ auth.register_unavailable: No pudimos crear la cuenta con estos datos. Si ya tie
 auth.register_rejected: No pudimos crear la cuenta. Inténtalo de nuevo.
 auth.terms_required: Debes aceptar los documentos para continuar.
 auth.confirm_code_required: Ingresa el código de 6 dígitos.
+auth.forgot_password_identifier_required: Escribe tu correo o nickname.
+auth.forgot_password_identifier_max: No puede tener más de {{ limit }} caracteres.
+auth.password_same_as_current: La nueva contraseña no puede ser igual a la actual.

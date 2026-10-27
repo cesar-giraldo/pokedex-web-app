@@ -198,6 +198,21 @@ auth:
     register_unavailable: Nous n’avons pas pu créer le compte avec ces informations. Si vous en avez déjà un, connectez-vous.
     register_rate_limited: Trop de tentatives d’inscription. Réessayez plus tard.
     register_rejected: Nous n’avons pas pu créer le compte. Réessayez.
+    forgot_password: Mot de passe oublié ?
+    forgot_password_title: Réinitialiser le mot de passe
+    forgot_password_description: Saisissez l’e-mail ou le pseudo utilisé lors de l’inscription. Si le compte peut être récupéré, nous vous envoyons un lien.
+    forgot_password_identifier: E-mail ou pseudo
+    forgot_password_submit: Envoyer le lien
+    forgot_password_sent: Si le compte existe et peut être récupéré, nous avons envoyé un e-mail avec les étapes.
+    forgot_password_rate_limited: Trop de tentatives. Attendez un moment et réessayez.
+    forgot_password_back: Retour à la connexion
+    reset_password_title: Créez un nouveau mot de passe
+    reset_password_description: Choisissez un nouveau mot de passe. Le lien fonctionne pendant 12 heures et ne peut être utilisé qu’une fois.
+    reset_password_submit: Enregistrer le mot de passe
+    reset_password_invalid_title: Lien indisponible
+    reset_password_invalid: Ce lien n’est plus valable. Demandez-en un nouveau.
+    reset_password_success: Votre mot de passe a été mis à jour. Connectez-vous avec le nouveau.
+    reset_password_request_again: Demander un nouveau lien
 
 form:
     processing: Traitement...
@@ -343,6 +358,25 @@ email:
         heading: 'Bienvenue sur {platform}'
         intro: 'Bonjour {name}, merci de vous être inscrit sur {platform}. Votre compte est prêt et vous pouvez commencer à l’utiliser.'
         action: Accéder
+        footer: Ce message a été envoyé automatiquement.
+    password_reset:
+        subject: Réinitialisez votre mot de passe
+        heading: Réinitialisez votre mot de passe
+        intro: 'Bonjour {name}, nous avons reçu une demande pour créer un nouveau mot de passe sur votre compte.'
+        expires: Le lien fonctionne pendant 12 heures et ne peut être utilisé qu’une fois. Si vous en demandez un autre, celui-ci ne fonctionne plus.
+        action: Créer un nouveau mot de passe
+        link_hint: Si le bouton ne s’ouvre pas, copiez cette adresse dans le navigateur.
+        ignore: Si vous n’avez pas fait cette demande, vous pouvez ignorer le message. Votre mot de passe ne changera pas.
+        footer: Ce message a été envoyé automatiquement.
+    password_reset_completed:
+        subject: Votre mot de passe est à jour
+        heading: Votre mot de passe est à jour
+        intro: 'Bonjour {name}, le mot de passe de votre compte a bien été modifié.'
+        detail: Vous pouvez maintenant vous connecter avec le nouveau mot de passe.
+        when: 'Le changement a été fait le {when}.'
+        not_you: Si ce n’était pas vous, écrivez à l’administrateur du site pour retrouver l’accès.
+        contact_action: Contacter l’administrateur
+        not_you_email: 'Si ce n’était pas vous, écrivez à {email} pour qu’un administrateur vous aide.'
         footer: Ce message a été envoyé automatiquement.
 
 error:
