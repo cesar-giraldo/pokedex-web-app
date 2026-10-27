@@ -198,6 +198,21 @@ auth:
     register_unavailable: We could not create the account with these details. If you already have one, log in.
     register_rate_limited: Too many registration attempts. Try again later.
     register_rejected: We could not create the account. Try again.
+    forgot_password: Forgot your password?
+    forgot_password_title: Reset your password
+    forgot_password_description: Enter the email or nickname you used to register. If the account can be recovered, we will send you a link.
+    forgot_password_identifier: Email or nickname
+    forgot_password_submit: Send link
+    forgot_password_sent: If the account exists and can be recovered, we sent an email with the steps.
+    forgot_password_rate_limited: Too many attempts. Wait a moment and try again.
+    forgot_password_back: Back to log in
+    reset_password_title: Create a new password
+    reset_password_description: Choose a new password. The link works for 12 hours and can only be used once.
+    reset_password_submit: Save password
+    reset_password_invalid_title: Link unavailable
+    reset_password_invalid: This link is no longer valid. Request a new one.
+    reset_password_success: Your password was updated. Sign in with the new one.
+    reset_password_request_again: Request a new link
 
 form:
     processing: Processing...
@@ -343,6 +358,25 @@ email:
         heading: 'Welcome to {platform}'
         intro: 'Hello {name}, thank you for registering on {platform}. Your account is ready and you can start using it.'
         action: Access
+        footer: This message was sent automatically.
+    password_reset:
+        subject: Reset your password
+        heading: Reset your password
+        intro: 'Hello {name}, we received a request to create a new password for your account.'
+        expires: The link works for 12 hours and can only be used once. If you request another link, this one stops working.
+        action: Create a new password
+        link_hint: If the button does not open, copy this address into your browser.
+        ignore: If you did not ask for this, you can ignore the message. Your password will not change.
+        footer: This message was sent automatically.
+    password_reset_completed:
+        subject: Your password is updated
+        heading: Your password is updated
+        intro: 'Hello {name}, the password for your account was changed successfully.'
+        detail: You can now sign in with the new password.
+        when: 'The change was made on {when}.'
+        not_you: If this was not you, write to the site administrator to recover access.
+        contact_action: Contact the administrator
+        not_you_email: 'If this was not you, write to {email} so an administrator can help you.'
         footer: This message was sent automatically.
 
 error:

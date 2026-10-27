@@ -22,6 +22,12 @@
 				</p>
 			</div>
 
+			{% for message in app.flashes('success') %}
+				<div class="mb-4">
+					<twig:component_alert_success message="{{ message }}" :autoHideDelay="0" />
+				</div>
+			{% endfor %}
+
 			{% for message in app.flashes('error') %}
 				<div class="mb-4 rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-400">
 					{{ message }}
@@ -65,7 +71,7 @@
 					error="{{ field_error(loginForm['_password']) }}"
 				/>
 
-				<div class="flex items-center justify-between">
+				<div class="flex items-center justify-between gap-4">
 					<twig:component_checkbox
 						label="Recordarme"
 						name="{{ loginForm['_remember_me'].vars.full_name }}"
@@ -73,6 +79,7 @@
 						value="on"
 						:checked="loginForm['_remember_me'].vars.checked"
 					/>
+					<a href="{{ path('app_admin_forgot_password') }}" class="shrink-0 text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">¿Olvidaste tu contraseña?</a>
 				</div>
 
 				<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">

@@ -11,6 +11,9 @@
         <div class="mx-auto max-w-md rounded-3xl bg-white p-8 ring-1 ring-black/5">
             <h1 class="text-3xl font-extrabold tracking-tight">{{ 'auth.login_title'|trans }}</h1>
             <div class="mt-6 space-y-3">
+                {% for message in app.flashes('success') %}
+                    <twig:web_alert variant="success" message="{{ message|trans }}" />
+                {% endfor %}
                 {% for message in app.flashes('error') %}
                     <twig:web_alert variant="error" message="{{ message|trans }}" />
                 {% endfor %}
@@ -48,13 +51,16 @@
                     :required="true"
                     error="{{ field_error(loginForm['_password']) }}"
                 />
-                <twig:web_checkbox
-                    label="{{ 'auth.remember'|trans }}"
-                    name="{{ loginForm['_remember_me'].vars.full_name }}"
-                    id="login-remember"
-                    value="on"
-                    :checked="loginForm['_remember_me'].vars.checked"
-                />
+                <div class="flex items-center justify-between gap-4">
+                    <twig:web_checkbox
+                        label="{{ 'auth.remember'|trans }}"
+                        name="{{ loginForm['_remember_me'].vars.full_name }}"
+                        id="login-remember"
+                        value="on"
+                        :checked="loginForm['_remember_me'].vars.checked"
+                    />
+                    <a class="shrink-0 text-sm font-semibold text-brand" href="{{ path('app_public_forgot_password', {_locale: app.request.locale}) }}">{{ 'auth.forgot_password'|trans }}</a>
+                </div>
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate_public') }}">
                 <twig:web_submit_button label="{{ 'auth.submit_login'|trans }}" />
             {{ form_end(loginForm, { render_rest: false }) }}

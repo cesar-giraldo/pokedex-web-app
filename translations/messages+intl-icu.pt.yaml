@@ -198,6 +198,21 @@ auth:
     register_unavailable: Não conseguimos criar a conta com esses dados. Se você já tem uma, entre.
     register_rate_limited: Muitas tentativas de cadastro. Tente mais tarde.
     register_rejected: Não conseguimos criar a conta. Tente de novo.
+    forgot_password: Esqueceu sua senha?
+    forgot_password_title: Redefinir senha
+    forgot_password_description: Escreva o e-mail ou o nickname com o qual você se registrou. Se a conta puder ser recuperada, enviamos um link.
+    forgot_password_identifier: E-mail ou nickname
+    forgot_password_submit: Enviar link
+    forgot_password_sent: Se a conta existe e pode ser recuperada, enviamos um e-mail com os passos.
+    forgot_password_rate_limited: Muitas tentativas. Espere um momento e tente de novo.
+    forgot_password_back: Voltar para entrar
+    reset_password_title: Crie uma senha nova
+    reset_password_description: Escolha uma senha nova. O link funciona por 12 horas e só pode ser usado uma vez.
+    reset_password_submit: Salvar senha
+    reset_password_invalid_title: Link indisponível
+    reset_password_invalid: Este link já não é válido. Solicite um novo.
+    reset_password_success: Sua senha foi atualizada. Entre com a nova.
+    reset_password_request_again: Solicitar um link novo
 
 form:
     processing: Processando...
@@ -343,6 +358,25 @@ email:
         heading: 'Bem-vindo a {platform}'
         intro: 'Olá {name}, obrigado por se registrar na {platform}. Sua conta está pronta e você já pode usá-la.'
         action: Acessar
+        footer: Esta mensagem foi enviada automaticamente.
+    password_reset:
+        subject: Redefina sua senha
+        heading: Redefina sua senha
+        intro: 'Olá {name}, recebemos um pedido para criar uma senha nova na sua conta.'
+        expires: O link funciona por 12 horas e só pode ser usado uma vez. Se você pedir outro link, este deixa de funcionar.
+        action: Criar uma senha nova
+        link_hint: Se o botão não abrir, copie este endereço no navegador.
+        ignore: Se você não pediu isso, pode ignorar a mensagem. Sua senha não vai mudar.
+        footer: Esta mensagem foi enviada automaticamente.
+    password_reset_completed:
+        subject: Sua senha já está atualizada
+        heading: Sua senha já está atualizada
+        intro: 'Olá {name}, a senha da sua conta foi alterada corretamente.'
+        detail: Você já pode entrar com a senha nova.
+        when: 'A alteração foi feita em {when}.'
+        not_you: Se não foi você, escreva ao administrador do site para recuperar o acesso.
+        contact_action: Falar com o administrador
+        not_you_email: 'Se não foi você, escreva para {email} para que um administrador ajude.'
         footer: Esta mensagem foi enviada automaticamente.
 
 error:
