@@ -21,6 +21,7 @@ use Psr\Log\NullLogger;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Throwable;
 
 use function bin2hex;
 use function count;
@@ -138,23 +139,50 @@ final class PasswordResetService
         string $plainPassword,
         SupportedLanguage $requestLanguage,
     ): bool {
-        if ($this->entityManager->contains($token)) {
-            $this->entityManager->refresh($token);
-        }
+        $tokenId = $token->getId();
 
-        $now = new DateTime();
-
-        if ($token->isConsumed() || $token->isExpired($now)) {
+        if (null === $tokenId) {
             return false;
         }
 
+        $now = new DateTime();
         $user = $token->getUser();
-        $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
-        $user->setPasswordChosen(true);
-        $user->setPasswordUpdatedAt($now);
-        $user->resetFailedLoginAttempts();
-        $token->consume($now);
-        $this->entityManager->flush();
+        $this->entityManager->beginTransaction();
+
+        try {
+            if (!$this->tokens->claim($tokenId, $now)) {
+                $this->entityManager->rollback();
+
+                return false;
+            }
+
+            if ($this->entityManager->contains($token)) {
+                $this->entityManager->refresh($token);
+            }
+
+            $token->consume($now);
+
+            if ($this->entityManager->contains($user)) {
+                $this->entityManager->refresh($user);
+            }
+
+            if (!$this->canReset($user, $token->getChannel())) {
+                $this->entityManager->commit();
+
+                return false;
+            }
+
+            $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
+            $user->setPasswordChosen(true);
+            $user->setPasswordUpdatedAt($now);
+            $user->resetFailedLoginAttempts();
+            $this->entityManager->flush();
+            $this->entityManager->commit();
+        } catch (Throwable $exception) {
+            $this->rollBackOpenTransaction();
+
+            throw $exception;
+        }
 
         $this->completedSender->send($user, $token->getChannel(), $now, $requestLanguage);
         $this->logger->info('Se restableció la contraseña.', [
@@ -229,6 +257,15 @@ final class PasswordResetService
         $this->entityManager->flush();
 
         return $selector . '.' . $verifier;
+    }
+
+    private function rollBackOpenTransaction(): void
+    {
+        if (!$this->entityManager->getConnection()->isTransactionActive()) {
+            return;
+        }
+
+        $this->entityManager->rollback();
     }
 
     private function maskTiming(string $normalized): void

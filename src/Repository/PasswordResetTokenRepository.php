@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\Enum\PasswordResetChannel;
 use App\Entity\PasswordResetToken;
 use App\Entity\User;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -52,5 +53,24 @@ class PasswordResetTokenRepository extends ServiceEntityRepository
             ->getResult();
 
         return $tokens;
+    }
+
+    /**
+     * Marca un enlace abierto como usado. Cero filas significa que otro proceso ya lo reclamó o que caducó.
+     */
+    public function claim(int $id, DateTimeInterface $now): bool
+    {
+        $affected = $this->getEntityManager()->createQueryBuilder()
+            ->update(PasswordResetToken::class, 'token')
+            ->set('token.consumedAt', ':now')
+            ->where('token.id = :id')
+            ->andWhere('token.consumedAt IS NULL')
+            ->andWhere('token.expiresAt > :now')
+            ->setParameter('id', $id)
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->execute();
+
+        return 1 === $affected;
     }
 }

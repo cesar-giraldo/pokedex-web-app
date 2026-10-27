@@ -178,6 +178,8 @@ final class PasswordResetServiceTest extends TestCase
             PasswordResetChannel::Web,
             new DateTime('-1 minute'),
         );
+        $this->assignTokenId($token, 11);
+        $this->assignTokenId($expired, 12);
         $hasher = $this->createMock(UserPasswordHasherInterface::class);
         $hasher->expects(self::once())->method('hashPassword')->with($user, 'Newpass1')->willReturn('new-hash');
         $completed = $this->createMock(PasswordResetCompletedSender::class);
@@ -195,6 +197,19 @@ final class PasswordResetServiceTest extends TestCase
                     $expired->getSelector() => $expired,
                     default => null,
                 };
+            },
+        );
+        $tokens->method('claim')->willReturnCallback(
+            static function (int $id, DateTime $now) use ($token, $expired): bool {
+                $candidate = match ($id) {
+                    11 => $token,
+                    12 => $expired,
+                    default => null,
+                };
+
+                return $candidate instanceof PasswordResetToken
+                    && !$candidate->isConsumed()
+                    && !$candidate->isExpired($now);
             },
         );
         $service = $this->service(
@@ -221,6 +236,39 @@ final class PasswordResetServiceTest extends TestCase
         self::assertTrue($token->isConsumed());
         self::assertNull($service->findOpen($publicToken, PasswordResetChannel::Web));
         self::assertFalse($service->complete($token, 'Newpass1', SupportedLanguage::French));
+    }
+
+    public function testCompleteConsumesTheLinkWithoutChangingThePasswordWhenTheAccountCanNoLongerReset(): void
+    {
+        $banned = $this->user(status: UserStatus::Banned, id: 20);
+        $banned->setPassword('old-hash');
+        $bannedToken = $this->openToken($banned, PasswordResetChannel::Web, 20);
+        $formerStaff = $this->user(roles: [UserRole::User], id: 21);
+        $formerStaff->setPassword('old-hash');
+        $adminToken = $this->openToken($formerStaff, PasswordResetChannel::Admin, 21);
+        $hasher = $this->createMock(UserPasswordHasherInterface::class);
+        $hasher->expects(self::never())->method('hashPassword');
+        $completed = $this->createMock(PasswordResetCompletedSender::class);
+        $completed->expects(self::never())->method('send');
+        $tokens = $this->createStub(PasswordResetTokenRepository::class);
+        $tokens->method('claim')->willReturn(true);
+        $service = $this->service(
+            $this->createStub(UserRepository::class),
+            $tokens,
+            $this->manager(),
+            $this->createStub(PasswordResetRequestSender::class),
+            $completed,
+            hasher: $hasher,
+        );
+
+        self::assertFalse($service->complete($bannedToken, 'Newpass1', SupportedLanguage::Spanish));
+        self::assertSame('old-hash', $banned->getPassword());
+        self::assertTrue($bannedToken->isConsumed());
+        self::assertSame(UserStatus::Banned, $banned->getStatus());
+
+        self::assertFalse($service->complete($adminToken, 'Newpass1', SupportedLanguage::Spanish));
+        self::assertSame('old-hash', $formerStaff->getPassword());
+        self::assertTrue($adminToken->isConsumed());
     }
 
     public function testIpLimitShowsADistinctResultAndIdentifierLimitStaysSilent(): void
@@ -317,6 +365,26 @@ final class PasswordResetServiceTest extends TestCase
             'limit' => $limit,
             'interval' => '1 hour',
         ], $storage);
+    }
+
+    private function openToken(User $user, PasswordResetChannel $channel, int $id): PasswordResetToken
+    {
+        $token = new PasswordResetToken(
+            $user,
+            str_repeat('ab', 16),
+            hash_hmac('sha256', 'verifier', self::SECRET),
+            $channel,
+            new DateTime('+2 hours'),
+        );
+        $this->assignTokenId($token, $id);
+
+        return $token;
+    }
+
+    private function assignTokenId(PasswordResetToken $token, int $id): void
+    {
+        $property = new ReflectionProperty(PasswordResetToken::class, 'id');
+        $property->setValue($token, $id);
     }
 
     private function tokens(): PasswordResetTokenRepository
