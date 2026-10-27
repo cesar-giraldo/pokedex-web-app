@@ -51,9 +51,14 @@ final class LegalAcceptanceSubscriber implements EventSubscriberInterface
 
         $request = $event->getRequest();
 
+        // Image responses must not be replaced by the legal-acceptance redirect,
+        // and reading the token would mark them private in the shared cache.
+        if (str_starts_with($request->getPathInfo(), '/media/')) {
+            return;
+        }
+
         // Symfony 8.1 counts getToken() as session usage and then forces Cache-Control
-        // to private. Anonymous requests have no session, so skip them and keep public
-        // responses (pokemon images) cacheable.
+        // to private. Skip requests that have no session yet.
         if (!$this->hasActiveSecuritySession($request)) {
             return;
         }

@@ -12,7 +12,9 @@ use App\Entity\PokemonType;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Session\SessionFactoryInterface;
 
 use function fclose;
 use function sprintf;
@@ -54,7 +56,23 @@ final class PokemonImageControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertResponseHeaderSame('Content-Type', 'image/jpeg');
-        self::assertStringContainsString('public', (string) $client->getResponse()->headers->get('Cache-Control'));
+        $this->assertPublicCache($client->getResponse()->headers->get('Cache-Control'));
+    }
+
+    public function testPublicMediaStaysPublicWhenTheClientSendsASessionCookie(): void
+    {
+        $client = static::createClient();
+        $pokemon = $this->createTestPokemon();
+        $image = $this->createPokemonImage($pokemon);
+
+        /** @var SessionFactoryInterface $sessionFactory */
+        $sessionFactory = static::getContainer()->get('session.factory');
+        $client->getCookieJar()->set(new Cookie($sessionFactory->createSession()->getName(), 'anonymous-session', null, '/'));
+
+        $client->request('GET', sprintf('/media/pokemon-images/%s', $image->getPublicToken()));
+
+        self::assertResponseIsSuccessful();
+        $this->assertPublicCache($client->getResponse()->headers->get('Cache-Control'));
     }
 
     public function testThumbVariantIsWebpAndSmallerThanOriginal(): void
@@ -169,5 +187,12 @@ final class PokemonImageControllerTest extends WebTestCase
         imagejpeg($image, $path, 90);
 
         return new UploadedFile($path, 'photo.jpg', 'image/jpeg', test: true);
+    }
+
+    private function assertPublicCache(?string $cacheControl): void
+    {
+        self::assertNotNull($cacheControl);
+        self::assertStringContainsString('public', $cacheControl);
+        self::assertStringNotContainsString('private', $cacheControl);
     }
 }
