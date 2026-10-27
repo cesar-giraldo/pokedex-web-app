@@ -42,7 +42,15 @@
                         {{ 'pokemon.entry'|trans }}
                     {% endif %}
                 </p>
-                <h1 class="mt-2 text-5xl font-extrabold tracking-tight">{{ pokemon.name }}</h1>
+                <div class="mt-2 flex items-start justify-between gap-4">
+                    <h1 class="text-5xl font-extrabold tracking-tight">{{ pokemon.name }}</h1>
+                    {% include '@web/pokemon/_favorite_button.html.twig' with {
+                        pokemon: pokemon,
+                        favorite_gate: favorite_gate,
+                        is_favorite: pokemon.id in favorite_ids,
+                        remove_on_unfavorite: false,
+                    } only %}
+                </div>
                 {% if pokemon.type %}
                     <p class="mt-4 inline-flex rounded-full bg-surface px-3 py-1 text-sm font-medium text-brand">{{ pokemon.type.name|capitalize }}</p>
                 {% endif %}

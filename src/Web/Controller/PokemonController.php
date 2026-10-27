@@ -7,8 +7,11 @@ namespace App\Web\Controller;
 use App\Admin\Twig\Extensions\PokemonImageExtension;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Pokemon;
+use App\Entity\User;
+use App\Web\Service\PokemonFavoriteManager;
 use App\Web\Service\PublicPokemonCatalog;
 use App\Web\Service\PublicStructuredData;
+use App\Web\View\PublicPokemonPage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +26,7 @@ final class PokemonController extends AbstractController
         private readonly PublicPokemonCatalog $catalog,
         private readonly PublicStructuredData $structuredData,
         private readonly PokemonImageExtension $pokemonImages,
+        private readonly PokemonFavoriteManager $favorites,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -48,6 +52,8 @@ final class PokemonController extends AbstractController
             'page' => $page,
             'types' => $this->catalog->types(),
             'meta_description' => $description,
+            'favorite_gate' => $this->favoriteGate(),
+            'favorite_ids' => $this->favoriteIds($page),
             'structured_data_json' => $this->structuredData->collectionJson(
                 $request->getLocale(),
                 $this->translator->trans('listing.title'),
@@ -87,15 +93,50 @@ final class PokemonController extends AbstractController
             $this->translator->trans('pokemon.meta_fallback', ['name' => $pokemon->getName()]),
         );
 
+        $pokemonId = $pokemon->getId();
+
         return $this->render('@web/pokemon/show.html.twig', [
             'pokemon' => $pokemon,
             'meta_description' => $description,
             'og_image' => $imageUrls[0] ?? $pokemon->getSpriteFront(),
+            'favorite_gate' => $this->favoriteGate(),
+            'favorite_ids' => null !== $pokemonId ? $this->favoriteIdsFor([$pokemonId]) : [],
             'structured_data_json' => $this->structuredData->pokemonJson(
                 $request->getLocale(),
                 $pokemon,
                 $imageUrls,
             ),
         ]);
+    }
+
+    private function favoriteGate(): string
+    {
+        $user = $this->getUser();
+
+        return $this->favorites->gateFor($user instanceof User ? $user : null);
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function favoriteIds(PublicPokemonPage $page): array
+    {
+        return $this->favoriteIdsFor($page->pokemonIds());
+    }
+
+    /**
+     * @param list<int> $pokemonIds
+     *
+     * @return list<int>
+     */
+    private function favoriteIdsFor(array $pokemonIds): array
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof User || PokemonFavoriteManager::GATE_TOGGLE !== $this->favorites->gateFor($user)) {
+            return [];
+        }
+
+        return $this->favorites->idsFor($user, $pokemonIds);
     }
 }

@@ -20,6 +20,7 @@ use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Legal\LegalLanguageResolver;
 use App\Notification\Email\WelcomeMailer;
+use App\Web\Service\PendingFavoriteReturn;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -50,6 +51,7 @@ final class AccountController extends AbstractController
         private readonly GeneralSettingsProvider $generalSettingsProvider,
         private readonly LegalLanguageResolver $legalLanguageResolver,
         private readonly WelcomeMailer $welcomeMailer,
+        private readonly PendingFavoriteReturn $pendingFavoriteReturn,
     ) {
     }
 
@@ -82,7 +84,7 @@ final class AccountController extends AbstractController
         $locale = $request->getLocale();
 
         if ($infoForm->isSubmitted()) {
-            return $this->handleInfoForm($user, $infoForm, $passwordForm);
+            return $this->handleInfoForm($request, $user, $infoForm, $passwordForm);
         }
 
         if ($passwordForm->isSubmitted()) {
@@ -168,7 +170,7 @@ final class AccountController extends AbstractController
      * @param FormInterface<User> $infoForm
      * @param FormInterface<null> $passwordForm
      */
-    private function handleInfoForm(User $user, FormInterface $infoForm, FormInterface $passwordForm): Response
+    private function handleInfoForm(Request $request, User $user, FormInterface $infoForm, FormInterface $passwordForm): Response
     {
         if (!$infoForm->isValid()) {
             $this->addFlash('error', 'account.review_fields');
@@ -208,9 +210,14 @@ final class AccountController extends AbstractController
             $this->welcomeMailer->send($user);
             $this->addFlash('success', 'account.profile_completed');
 
-            return $this->redirectToRoute('app_public_home', [
-                '_locale' => $locale,
-            ]);
+            return $this->pendingFavoriteReturn->redirectInsteadOf(
+                $user,
+                $request,
+                $locale,
+                $this->redirectToRoute('app_public_home', [
+                    '_locale' => $locale,
+                ]),
+            );
         }
 
         $this->addFlash('success', 'account.info_saved');

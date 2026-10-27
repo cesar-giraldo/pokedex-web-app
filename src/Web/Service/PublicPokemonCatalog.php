@@ -7,6 +7,7 @@ namespace App\Web\Service;
 use App\Entity\Pokemon;
 use App\Entity\PokemonImage;
 use App\Entity\PokemonType;
+use App\Entity\User;
 use App\Repository\PokemonImageRepository;
 use App\Repository\PokemonRepository;
 use App\Repository\PokemonTypeRepository;
@@ -31,10 +32,10 @@ final class PublicPokemonCatalog
         return $this->images->findFeaturedForVisiblePokemon();
     }
 
-    public function page(string $query, ?int $typeId, int $page): PublicPokemonPage
+    public function page(string $query, ?int $typeId, int $page, ?User $favoritesOf = null): PublicPokemonPage
     {
         $resolvedTypeId = $this->resolveTypeId($typeId);
-        $total = $this->pokemons->countPublic($query, $resolvedTypeId);
+        $total = $this->pokemons->countPublic($query, $resolvedTypeId, $favoritesOf);
         $pageCount = max(1, (int) ceil($total / self::PER_PAGE));
         $page = min(max(1, $page), $pageCount);
         $pokemons = $this->pokemons->findPublicPage(
@@ -42,6 +43,7 @@ final class PublicPokemonCatalog
             $resolvedTypeId,
             ($page - 1) * self::PER_PAGE,
             self::PER_PAGE,
+            $favoritesOf,
         );
 
         $ids = [];

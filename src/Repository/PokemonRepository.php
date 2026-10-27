@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Pokemon;
+use App\Entity\User;
+use App\Entity\UserPokemonFavorite;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -61,9 +64,13 @@ class PokemonRepository extends ServiceEntityRepository
         return $qb;
     }
 
-    public function countPublic(string $name, ?int $typeId): int
+    public function countPublic(string $name, ?int $typeId, ?User $favoritesOf = null): int
     {
-        return (int) $this->publicQuery($name, $typeId)
+        $query = $favoritesOf instanceof User
+            ? $this->favoriteQuery($name, $typeId, $favoritesOf)
+            : $this->publicQuery($name, $typeId);
+
+        return (int) $query
             ->select('COUNT(p.id)')
             ->getQuery()
             ->getSingleScalarResult();
@@ -72,14 +79,37 @@ class PokemonRepository extends ServiceEntityRepository
     /**
      * @return list<Pokemon>
      */
-    public function findPublicPage(string $name, ?int $typeId, int $offset, int $limit): array
+    public function findPublicPage(string $name, ?int $typeId, int $offset, int $limit, ?User $favoritesOf = null): array
     {
+        if ($favoritesOf instanceof User) {
+            return $this->findFavoritePage($name, $typeId, $offset, $limit, $favoritesOf);
+        }
+
         /** @var list<Pokemon> $pokemons */
         $pokemons = $this->publicQuery($name, $typeId)
             ->leftJoin('p.type', 't')
             ->addSelect('t')
             ->addOrderBy('CASE WHEN p.listOrder IS NULL THEN 1 ELSE 0 END', 'ASC')
             ->addOrderBy('p.listOrder', 'ASC')
+            ->addOrderBy('p.name', 'ASC')
+            ->setFirstResult(max(0, $offset))
+            ->setMaxResults(max(1, $limit))
+            ->getQuery()
+            ->getResult();
+
+        return $pokemons;
+    }
+
+    /**
+     * @return list<Pokemon>
+     */
+    private function findFavoritePage(string $name, ?int $typeId, int $offset, int $limit, User $user): array
+    {
+        /** @var list<Pokemon> $pokemons */
+        $pokemons = $this->favoriteQuery($name, $typeId, $user)
+            ->leftJoin('p.type', 't')
+            ->addSelect('t')
+            ->addOrderBy('fav.favoritedAt', 'DESC')
             ->addOrderBy('p.name', 'ASC')
             ->setFirstResult(max(0, $offset))
             ->setMaxResults(max(1, $limit))
@@ -133,6 +163,18 @@ class PokemonRepository extends ServiceEntityRepository
         }
 
         return $identities;
+    }
+
+    private function favoriteQuery(string $name, ?int $typeId, User $user): QueryBuilder
+    {
+        return $this->publicQuery($name, $typeId)
+            ->innerJoin(
+                UserPokemonFavorite::class,
+                'fav',
+                Join::WITH,
+                'fav.pokemon = p AND fav.user = :favoriteUser',
+            )
+            ->setParameter('favoriteUser', $user);
     }
 
     private function publicQuery(string $name, ?int $typeId): QueryBuilder

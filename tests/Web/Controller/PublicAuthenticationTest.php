@@ -387,7 +387,7 @@ final class PublicAuthenticationTest extends WebTestCase
         $client->request('GET', '/' . $locale . '/favorites');
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', $this->trans($locale, 'favorites.title'));
-        self::assertSelectorTextContains('main', 'Lorem ipsum dolor sit amet');
+        self::assertSelectorTextContains('main', $this->trans($locale, 'favorites.empty'));
         self::assertSelectorExists(sprintf(
             'nav[aria-label="%s"] a[href="/%s/pokemon"]',
             $this->trans($locale, 'breadcrumb.label'),

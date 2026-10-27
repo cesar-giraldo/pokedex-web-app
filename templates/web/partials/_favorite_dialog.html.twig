@@ -1,0 +1,23 @@
+<dialog
+    id="favorite-dialog"
+    class="favorite-dialog"
+    data-controller="favorite-dialog"
+    data-favorite-dialog-target="dialog"
+    data-action="click->favorite-dialog#backdrop"
+    aria-labelledby="favorite-dialog-login-message"
+>
+    <div data-favorite-dialog-target="loginPanel">
+        <p id="favorite-dialog-login-message" class="text-base leading-7">{{ 'favorites.login_message'|trans }}</p>
+        <div class="mt-6 flex flex-wrap justify-end gap-3">
+            <button type="button" class="btn btn-secondary" data-favorite-dialog-target="cancel" data-action="favorite-dialog#cancel">{{ 'favorites.cancel'|trans }}</button>
+            <a class="btn btn-primary" href="{{ path('app_public_login', {_locale: app.request.locale}) }}" data-action="favorite-dialog#confirm">{{ 'favorites.login_submit'|trans }}</a>
+        </div>
+    </div>
+    <div data-favorite-dialog-target="profilePanel" hidden>
+        <p id="favorite-dialog-profile-message" class="text-base leading-7">{{ 'favorites.profile_message'|trans }}</p>
+        <div class="mt-6 flex flex-wrap justify-end gap-3">
+            <button type="button" class="btn btn-secondary" data-favorite-dialog-target="cancel" data-action="favorite-dialog#cancel">{{ 'favorites.cancel'|trans }}</button>
+            <a class="btn btn-primary" href="{{ path('app_public_profile', {_locale: app.request.locale}) }}" data-action="favorite-dialog#confirm">{{ 'favorites.profile_submit'|trans }}</a>
+        </div>
+    </div>
+</dialog>

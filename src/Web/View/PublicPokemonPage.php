@@ -42,4 +42,22 @@ final readonly class PublicPokemonPage
     {
         return $this->page < $this->pageCount();
     }
+
+    /**
+     * @return list<int>
+     */
+    public function pokemonIds(): array
+    {
+        $ids = [];
+
+        foreach ($this->pokemons as $pokemon) {
+            $id = $pokemon->getId();
+
+            if (null !== $id) {
+                $ids[] = $id;
+            }
+        }
+
+        return $ids;
+    }
 }

@@ -1,0 +1,32 @@
+{% set pressed = is_favorite ? 'true' : 'false' %}
+{% set label = is_favorite ? 'favorites.remove'|trans : 'favorites.add'|trans %}
+<button
+    type="button"
+    class="favorite-button"
+    data-controller="favorite"
+    data-favorite-favorite-dialog-outlet="#favorite-dialog"
+    data-favorite-pokemon-id-value="{{ pokemon.id }}"
+    data-favorite-favorited-value="{{ pressed }}"
+    data-favorite-gate-value="{{ favorite_gate }}"
+    data-favorite-cookie-name-value="{{ constant('App\\Web\\Service\\PendingFavoriteReturn::COOKIE_NAME') }}"
+    data-favorite-csrf-value="{{ csrf_token('pokemon_favorite') }}"
+    data-favorite-url-value="{{ path('app_public_pokemon_favorite', {_locale: app.request.locale, id: pokemon.id}) }}"
+    data-favorite-login-url-value="{{ path('app_public_login', {_locale: app.request.locale}) }}"
+    data-favorite-profile-url-value="{{ path('app_public_profile', {_locale: app.request.locale}) }}"
+    data-favorite-remove-card-value="{{ remove_on_unfavorite ? 'true' : 'false' }}"
+    data-favorite-add-label-value="{{ 'favorites.add'|trans }}"
+    data-favorite-remove-label-value="{{ 'favorites.remove'|trans }}"
+    data-action="favorite#toggle"
+    aria-pressed="{{ pressed }}"
+    aria-label="{{ label }}"
+    title="{{ label }}"
+>
+    <span class="favorite-heart" data-favorite-target="heart">
+        <span data-favorite-target="empty" {% if is_favorite %}hidden{% endif %}>
+            {{ ux_icon('heroicons:heart', { class: 'h-5 w-5', 'aria-hidden': 'true' }) }}
+        </span>
+        <span data-favorite-target="filled" {% if not is_favorite %}hidden{% endif %}>
+            {{ ux_icon('heroicons:heart-solid', { class: 'h-5 w-5', 'aria-hidden': 'true' }) }}
+        </span>
+    </span>
+</button>

@@ -1,0 +1,30 @@
+<li class="relative">
+    <a class="block overflow-hidden rounded-3xl bg-white ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:ring-brand" href="{{ path('app_public_pokemon', {_locale: app.request.locale, id: pokemon.id}) }}">
+        {% if cover %}
+            <img src="{{ pokemon_image_url(cover, 'thumb') }}" alt="{{ cover.description|default(pokemon.name) }}" width="400" height="400" class="aspect-square w-full bg-surface object-contain" loading="lazy" decoding="async">
+        {% elseif pokemon.spriteFront %}
+            <img src="{{ pokemon.spriteFront }}" alt="{{ pokemon.name }}" width="96" height="96" class="aspect-square w-full bg-surface object-contain p-8" loading="lazy" decoding="async">
+        {% else %}
+            <div class="grid aspect-square place-items-center bg-surface text-3xl font-extrabold text-brand" aria-hidden="true">{{ pokemon.name|first|upper }}</div>
+        {% endif %}
+        <div class="p-5">
+            <p class="text-sm font-medium text-muted">
+                {% if pokemon.listOrder is not null %}
+                    {{ 'pokemon.number'|trans({number: '%04d'|format(pokemon.listOrder)}) }}
+                {% endif %}
+                {% if pokemon.type %}
+                    <span class="text-brand">{{ pokemon.type.name|capitalize }}</span>
+                {% endif %}
+            </p>
+            <h2 class="mt-1 text-xl font-semibold">{{ pokemon.name }}</h2>
+        </div>
+    </a>
+    <div class="absolute top-3 right-3 z-10">
+        {% include '@web/pokemon/_favorite_button.html.twig' with {
+            pokemon: pokemon,
+            favorite_gate: favorite_gate,
+            is_favorite: is_favorite,
+            remove_on_unfavorite: remove_on_unfavorite|default(false),
+        } only %}
+    </div>
+</li>
