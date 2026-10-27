@@ -15,10 +15,10 @@ use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusExce
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-use function str_starts_with;
-
 final class AccountStatusUserChecker implements UserCheckerInterface
 {
+    private const string PUBLIC_FIREWALL_CONTEXT = 'security.firewall.map.context.public';
+
     public function __construct(
         private readonly ?TokenStorageInterface $tokenStorage = null,
         private readonly ?RequestStack $requestStack = null,
@@ -72,9 +72,9 @@ final class AccountStatusUserChecker implements UserCheckerInterface
             return false;
         }
 
-        $path = $this->requestStack?->getCurrentRequest()?->getPathInfo() ?? '';
+        $context = $this->requestStack?->getCurrentRequest()?->attributes->get('_firewall_context');
 
-        return '' !== $path && !str_starts_with($path, '/admin');
+        return self::PUBLIC_FIREWALL_CONTEXT === $context;
     }
 
     private function isImpersonated(User $user): bool

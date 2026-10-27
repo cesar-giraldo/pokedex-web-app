@@ -10,9 +10,11 @@ use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Notification\StaffNewUserNotifier;
+use App\Repository\AccountConfirmationCodeRepository;
 use App\Repository\UserRepository;
 use App\Web\Security\GoogleIdentity;
 use App\Web\Security\GoogleSignInException;
+use DateTime;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -28,6 +30,7 @@ final class GoogleAccountConnector
 {
     public function __construct(
         private readonly UserRepository $users,
+        private readonly AccountConfirmationCodeRepository $confirmationCodes,
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly GeneralSettingsProvider $settings,
@@ -133,8 +136,22 @@ final class GoogleAccountConnector
 
     private function promote(User $user): void
     {
-        if (UserStatus::UnconfirmedAccount === $user->getStatus()) {
-            $user->setStatus(UserStatus::UncompleteProfileInfo);
+        if (UserStatus::UnconfirmedAccount !== $user->getStatus()) {
+            return;
+        }
+
+        $user->setPassword($this->passwordHasher->hashPassword($user, bin2hex(random_bytes(32))));
+        $user->setPasswordChosen(false);
+        $this->discardConfirmationCodes($user);
+        $user->setStatus(UserStatus::UncompleteProfileInfo);
+    }
+
+    private function discardConfirmationCodes(User $user): void
+    {
+        $now = new DateTime();
+
+        foreach ($this->confirmationCodes->findUnconsumed($user) as $code) {
+            $code->consume($now);
         }
     }
 

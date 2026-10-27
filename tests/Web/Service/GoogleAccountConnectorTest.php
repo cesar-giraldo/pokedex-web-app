@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace App\Tests\Web\Service;
 
 use App\Admin\Service\GeneralSettingsProvider;
+use App\Entity\AccountConfirmationCode;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\GeneralSettings;
 use App\Entity\User;
 use App\Notification\StaffNewUserNotifier;
+use App\Repository\AccountConfirmationCodeRepository;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\UserRepository;
 use App\Web\Security\GoogleIdentity;
 use App\Web\Security\GoogleSignInException;
 use App\Web\Service\GoogleAccountConnector;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -73,15 +76,76 @@ final class GoogleAccountConnectorTest extends TestCase
         self::assertFalse($user->isHidden());
     }
 
-    public function testAVerifiedEmailLinksTheExistingAccountAndSkipsTheStaffNotice(): void
+    public function testAVerifiedEmailClaimsAnUnconfirmedAccountAndReplacesItsPassword(): void
     {
         $existing = $this->user(UserStatus::UnconfirmedAccount);
+        $code = new AccountConfirmationCode($existing, 'code-hash', new DateTime('+2 hours'));
         $users = $this->createMock(UserRepository::class);
         $users->expects($this->once())->method('findOneByGoogleSub')->willReturn(null);
         $users->expects($this->once())->method('findOneByEmail')->with('ada@example.com')->willReturn($existing);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects($this->never())->method('persist');
+        $entityManager->expects($this->once())->method('flush');
+
+        $hasher = $this->createMock(UserPasswordHasherInterface::class);
+        $hasher->expects($this->once())->method('hashPassword')->with($existing)->willReturn('rotated-hash');
+        $notifier = $this->createMock(StaffNewUserNotifier::class);
+        $notifier->expects($this->never())->method('notify');
+        $codes = $this->createMock(AccountConfirmationCodeRepository::class);
+        $codes->expects($this->once())->method('findUnconsumed')->with($existing)->willReturn([$code]);
+
+        $user = $this->connector($users, $entityManager, $hasher, $notifier, $codes)->connect(
+            new GoogleIdentity('google-sub', 'ada@example.com', 'Ada', 'Lovelace'),
+            SupportedLanguage::Spanish,
+        );
+
+        self::assertSame($existing, $user);
+        self::assertSame(UserStatus::UncompleteProfileInfo, $user->getStatus());
+        self::assertSame('google-sub', $user->getGoogleSub());
+        self::assertSame('rotated-hash', $user->getPassword());
+        self::assertFalse($user->hasChosenPassword());
+        self::assertTrue($code->isConsumed());
+    }
+
+    public function testSigningInAnUnconfirmedLinkedAccountReplacesItsPassword(): void
+    {
+        $existing = $this->user(UserStatus::UnconfirmedAccount, 'google-sub');
+        $code = new AccountConfirmationCode($existing, 'code-hash', new DateTime('+2 hours'));
+        $users = $this->createMock(UserRepository::class);
+        $users->expects($this->once())->method('findOneByGoogleSub')->with('google-sub')->willReturn($existing);
+        $users->expects($this->never())->method('findOneByEmail');
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->once())->method('flush');
+
+        $hasher = $this->createMock(UserPasswordHasherInterface::class);
+        $hasher->expects($this->once())->method('hashPassword')->with($existing)->willReturn('rotated-hash');
+        $notifier = $this->createMock(StaffNewUserNotifier::class);
+        $notifier->expects($this->never())->method('notify');
+        $codes = $this->createMock(AccountConfirmationCodeRepository::class);
+        $codes->expects($this->once())->method('findUnconsumed')->with($existing)->willReturn([$code]);
+
+        $user = $this->connector($users, $entityManager, $hasher, $notifier, $codes)->connect(
+            new GoogleIdentity('google-sub', 'ada@example.com', 'Ada', 'Lovelace'),
+            SupportedLanguage::Spanish,
+        );
+
+        self::assertSame($existing, $user);
+        self::assertSame(UserStatus::UncompleteProfileInfo, $user->getStatus());
+        self::assertSame('rotated-hash', $user->getPassword());
+        self::assertFalse($user->hasChosenPassword());
+        self::assertTrue($code->isConsumed());
+    }
+
+    public function testAnActiveAccountKeepsItsPasswordWhenGoogleIsLinked(): void
+    {
+        $existing = $this->user(UserStatus::Active);
+        $users = $this->createMock(UserRepository::class);
+        $users->expects($this->once())->method('findOneByGoogleSub')->willReturn(null);
+        $users->expects($this->once())->method('findOneByEmail')->with('ada@example.com')->willReturn($existing);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects($this->once())->method('flush');
 
         $hasher = $this->createMock(UserPasswordHasherInterface::class);
@@ -95,7 +159,7 @@ final class GoogleAccountConnectorTest extends TestCase
         );
 
         self::assertSame($existing, $user);
-        self::assertSame(UserStatus::UncompleteProfileInfo, $user->getStatus());
+        self::assertSame(UserStatus::Active, $user->getStatus());
         self::assertSame('google-sub', $user->getGoogleSub());
         self::assertSame('hash', $user->getPassword());
         self::assertTrue($user->hasChosenPassword());
@@ -144,22 +208,30 @@ final class GoogleAccountConnectorTest extends TestCase
     }
 
     /**
-     * @param MockObject&UserRepository              $users
-     * @param MockObject&EntityManagerInterface      $entityManager
-     * @param MockObject&UserPasswordHasherInterface $hasher
-     * @param MockObject&StaffNewUserNotifier        $notifier
+     * @param MockObject&UserRepository                           $users
+     * @param MockObject&EntityManagerInterface                   $entityManager
+     * @param MockObject&UserPasswordHasherInterface              $hasher
+     * @param MockObject&StaffNewUserNotifier                     $notifier
+     * @param (MockObject&AccountConfirmationCodeRepository)|null $confirmationCodes
      */
     private function connector(
         UserRepository $users,
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $hasher,
         StaffNewUserNotifier $notifier,
+        ?AccountConfirmationCodeRepository $confirmationCodes = null,
     ): GoogleAccountConnector {
         $settings = $this->createStub(GeneralSettingsRepository::class);
         $settings->method('findSingleton')->willReturn(null);
 
+        if (!$confirmationCodes instanceof AccountConfirmationCodeRepository) {
+            $confirmationCodes = $this->createMock(AccountConfirmationCodeRepository::class);
+            $confirmationCodes->expects($this->never())->method('findUnconsumed');
+        }
+
         return new GoogleAccountConnector(
             $users,
+            $confirmationCodes,
             $entityManager,
             $hasher,
             new GeneralSettingsProvider($settings),

@@ -65,9 +65,7 @@ final class UserCheckerTest extends TestCase
 
     public function testAllowsUnconfirmedUserOnThePublicSite(): void
     {
-        $stack = new RequestStack();
-        $stack->push(Request::create('/es/login', 'POST'));
-        $checker = new AccountStatusUserChecker(null, $stack);
+        $checker = $this->checkerFor('/es/login', 'security.firewall.map.context.public');
         $user = $this->createUser(UserStatus::UnconfirmedAccount);
         $user->setApplicationRoles([UserRole::User]);
 
@@ -79,9 +77,31 @@ final class UserCheckerTest extends TestCase
 
     public function testStillBlocksUnconfirmedUserOnAdminLogin(): void
     {
-        $stack = new RequestStack();
-        $stack->push(Request::create('/admin/login', 'POST'));
-        $checker = new AccountStatusUserChecker(null, $stack);
+        $checker = $this->checkerFor('/admin/login', 'security.firewall.map.context.main');
+        $user = $this->createUser(UserStatus::UnconfirmedAccount);
+        $user->setApplicationRoles([UserRole::User]);
+
+        $this->expectException(CustomUserMessageAccountStatusException::class);
+        $this->expectExceptionMessage('account_unconfirmed');
+
+        $checker->checkPreAuth($user);
+    }
+
+    public function testBlocksUnconfirmedUserOutsideThePublicFirewall(): void
+    {
+        $checker = $this->checkerFor('/api/me', 'security.firewall.map.context.api');
+        $user = $this->createUser(UserStatus::UnconfirmedAccount);
+        $user->setApplicationRoles([UserRole::User]);
+
+        $this->expectException(CustomUserMessageAccountStatusException::class);
+        $this->expectExceptionMessage('account_unconfirmed');
+
+        $checker->checkPreAuth($user);
+    }
+
+    public function testBlocksUnconfirmedUserWhenTheFirewallContextIsMissing(): void
+    {
+        $checker = $this->checkerFor('/es/login', null);
         $user = $this->createUser(UserStatus::UnconfirmedAccount);
         $user->setApplicationRoles([UserRole::User]);
 
@@ -99,6 +119,20 @@ final class UserCheckerTest extends TestCase
         $this->userChecker->checkPostAuth($user);
 
         self::assertSame(UserStatus::UncompleteProfileInfo, $user->getStatus());
+    }
+
+    private function checkerFor(string $path, ?string $firewallContext): AccountStatusUserChecker
+    {
+        $request = Request::create($path, 'POST');
+
+        if (null !== $firewallContext) {
+            $request->attributes->set('_firewall_context', $firewallContext);
+        }
+
+        $stack = new RequestStack();
+        $stack->push($request);
+
+        return new AccountStatusUserChecker(null, $stack);
     }
 
     private function createUser(UserStatus $status): User
