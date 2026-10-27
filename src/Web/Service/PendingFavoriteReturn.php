@@ -23,6 +23,7 @@ final class PendingFavoriteReturn
 
     public function __construct(
         private readonly PublicPokemonCatalog $catalog,
+        private readonly PokemonFavoriteManager $favorites,
         private readonly LegalAcceptanceService $acceptance,
         private readonly UrlGeneratorInterface $urlGenerator,
     ) {
@@ -41,11 +42,16 @@ final class PendingFavoriteReturn
         }
 
         $pokemonId = $this->pokemonId($raw);
+        $pokemon = null === $pokemonId ? null : $this->catalog->findVisible($pokemonId);
 
-        if (null === $pokemonId || !$this->catalog->findVisible($pokemonId) instanceof Pokemon) {
+        if (!$pokemon instanceof Pokemon) {
             $this->clearCookie($fallback, $request);
 
             return $fallback;
+        }
+
+        if (PokemonFavoriteManager::GATE_TOGGLE === $this->favorites->gateFor($user)) {
+            $this->favorites->add($user, $pokemon);
         }
 
         $response = new RedirectResponse($this->urlGenerator->generate('app_public_pokemon', [

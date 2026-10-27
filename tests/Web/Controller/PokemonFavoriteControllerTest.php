@@ -179,8 +179,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
         $this->submitLogin($client, $locale, $nickname);
 
-        $this->assertRedirectEndsWith($client, sprintf('/%s/pokemon/%d', $locale, $pokemonId));
-        self::assertNull($client->getCookieJar()->get(PendingFavoriteReturn::COOKIE_NAME));
+        $this->assertReturnedFavorite($client, $locale, $pokemonId, $this->reload($nickname)->getId());
     }
 
     public function testInvalidCookieIsDiscardedAndLoginContinuesHome(): void
@@ -209,6 +208,9 @@ final class PokemonFavoriteControllerTest extends WebTestCase
         $this->submitLogin($client, $locale, $nickname);
 
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
+        $userId = $this->reload($nickname)->getId();
+        self::assertNotNull($userId);
+        self::assertSame(0, $this->favoriteCount($userId, $pokemonId));
         $cookie = $client->getCookieJar()->get(PendingFavoriteReturn::COOKIE_NAME);
         self::assertNotNull($cookie);
         self::assertSame((string) $pokemonId, $cookie->getValue());
@@ -223,7 +225,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
         $location = (string) $client->getResponse()->headers->get('Location');
 
         if (str_ends_with($location, sprintf('/%s/pokemon/%d', $locale, $pokemonId))) {
-            self::assertNull($client->getCookieJar()->get(PendingFavoriteReturn::COOKIE_NAME));
+            $this->assertReturnedFavorite($client, $locale, $pokemonId, $userId);
 
             return;
         }
@@ -232,8 +234,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
         self::assertNotNull($client->getCookieJar()->get(PendingFavoriteReturn::COOKIE_NAME));
         $this->acceptPendingLegalDocuments($this->reload($nickname));
         $client->request('GET', '/' . $locale . '/legal/accept');
-        $this->assertRedirectEndsWith($client, sprintf('/%s/pokemon/%d', $locale, $pokemonId));
-        self::assertNull($client->getCookieJar()->get(PendingFavoriteReturn::COOKIE_NAME));
+        $this->assertReturnedFavorite($client, $locale, $pokemonId, $userId);
     }
 
     public function testPendingLegalAcceptanceKeepsTheCookieUntilTheDocumentsAreAccepted(): void
@@ -249,8 +250,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
         if (!$acceptance->hasPending($user)) {
             $this->setFavoriteCookie($client, (string) $pokemonId);
             $this->submitLogin($client, $locale, $nickname);
-            $this->assertRedirectEndsWith($client, sprintf('/%s/pokemon/%d', $locale, $pokemonId));
-            self::assertNull($client->getCookieJar()->get(PendingFavoriteReturn::COOKIE_NAME));
+            $this->assertReturnedFavorite($client, $locale, $pokemonId, $user->getId());
 
             return;
         }
@@ -259,11 +259,11 @@ final class PokemonFavoriteControllerTest extends WebTestCase
         $this->submitLogin($client, $locale, $nickname);
         $this->assertRedirectEndsWith($client, '/' . $locale);
         self::assertNotNull($client->getCookieJar()->get(PendingFavoriteReturn::COOKIE_NAME));
+        self::assertSame(0, $this->favoriteCount($user->getId(), $pokemonId));
 
         $this->acceptPendingLegalDocuments($this->reload($nickname));
         $client->request('GET', '/' . $locale . '/legal/accept');
-        $this->assertRedirectEndsWith($client, sprintf('/%s/pokemon/%d', $locale, $pokemonId));
-        self::assertNull($client->getCookieJar()->get(PendingFavoriteReturn::COOKIE_NAME));
+        $this->assertReturnedFavorite($client, $locale, $pokemonId, $user->getId());
     }
 
     private function toggle(KernelBrowser $client, string $method, string $locale, int $pokemonId, ?string $token): void
@@ -311,6 +311,16 @@ final class PokemonFavoriteControllerTest extends WebTestCase
             false,
             'lax',
         ));
+    }
+
+    private function assertReturnedFavorite(KernelBrowser $client, string $locale, int $pokemonId, ?int $userId): void
+    {
+        $this->assertRedirectEndsWith($client, sprintf('/%s/pokemon/%d', $locale, $pokemonId));
+        self::assertNull($client->getCookieJar()->get(PendingFavoriteReturn::COOKIE_NAME));
+        self::assertSame(1, $this->favoriteCount($userId, $pokemonId));
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('button.favorite-button[aria-pressed="true"]');
     }
 
     private function assertRedirectEndsWith(KernelBrowser $client, string $path): void
