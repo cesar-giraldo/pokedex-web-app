@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Web\Controller;
 
 use App\Entity\Enum\SupportedLanguage;
-use App\Entity\Enum\UserStatus;
 use App\Entity\Pokemon;
 use App\Entity\User;
 use App\Web\Service\PokemonFavoriteManager;
@@ -36,7 +35,7 @@ final class PokemonFavoriteController extends AbstractController
     {
         $user = $this->getUser();
 
-        if (!$user instanceof User || UserStatus::Active !== $user->getStatus()) {
+        if (!$user instanceof User || PokemonFavoriteManager::GATE_TOGGLE !== $this->favorites->gateFor($user)) {
             return $this->json(['favorited' => false], Response::HTTP_FORBIDDEN);
         }
 

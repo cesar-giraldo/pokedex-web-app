@@ -101,6 +101,28 @@ final class PokemonFavoriteControllerTest extends WebTestCase
         self::assertSame(0, $this->favoriteCount($incomplete->getId(), $pokemonId));
     }
 
+    public function testActiveStaffWithoutThePublicRoleCannotChangeFavorites(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        $pokemonId = $this->createPokemon('Staff Favorite');
+        $nickname = $this->rememberNickname('fav-staff-' . bin2hex(random_bytes(3)));
+        $staff = $this->createUser($nickname, UserStatus::Active, false, UserRole::Operator);
+        $client->loginUser($this->reload($nickname), 'public');
+
+        $crawler = $client->request('GET', sprintf('/%s/pokemon/%d', $locale, $pokemonId));
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('button.favorite-button[data-favorite-gate-value="login"]');
+        $token = $crawler->filter('.favorite-button')->attr('data-favorite-csrf-value');
+        self::assertIsString($token);
+
+        $this->toggle($client, 'POST', $locale, $pokemonId, $token);
+        self::assertResponseStatusCodeSame(403);
+        $this->toggle($client, 'DELETE', $locale, $pokemonId, $token);
+        self::assertResponseStatusCodeSame(403);
+        self::assertSame(0, $this->favoriteCount($staff->getId(), $pokemonId));
+    }
+
     public function testActiveUserCanAddAndRemoveAFavoriteWithoutDuplicatingIt(): void
     {
         $client = static::createClient();
@@ -360,8 +382,12 @@ final class PokemonFavoriteControllerTest extends WebTestCase
         $entityManager->flush();
     }
 
-    private function createUser(string $nickname, UserStatus $status, bool $acceptLegal): User
-    {
+    private function createUser(
+        string $nickname,
+        UserStatus $status,
+        bool $acceptLegal,
+        UserRole $role = UserRole::User,
+    ): User {
         /** @var EntityManagerInterface $entityManager */
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
         /** @var UserPasswordHasherInterface $hasher */
@@ -371,7 +397,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
             ->setLastname('Tester')
             ->setNickname($nickname)
             ->setEmail(sprintf('%s@example.com', $nickname))
-            ->setApplicationRoles([UserRole::User])
+            ->setApplicationRoles([$role])
             ->setStatus($status);
         $user->setPassword($hasher->hashPassword($user, self::PASSWORD));
         $entityManager->persist($user);
