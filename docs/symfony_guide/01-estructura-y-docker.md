@@ -65,10 +65,10 @@ Crea un archivo llamado `Dockerfile` (sin extensión) en la raíz del proyecto:
 # syntax=docker/dockerfile:1
 
 # ============================================================
-# Imagen base: FrankenPHP con PHP 8.5.8
+# Imagen base: FrankenPHP 1.13.4 con PHP 8.5.12
 # Trae Caddy + PHP-FPM + extensiones comunes preinstaladas
 # ============================================================
-FROM dunglas/frankenphp:1-php8.5.8 AS base
+FROM dunglas/frankenphp:1.13.4-php8.5 AS base
 
 # Argumentos para la zona horaria (puedes cambiarla)
 ARG TZ=America/Bogota
@@ -129,7 +129,7 @@ EXPOSE 443/udp
 
 | Sección | Propósito |
 | ------- | --------- |
-| `FROM dunglas/frankenphp:1-php8.5.8` | Partimos de una imagen oficial con PHP 8.5.8 + FrankenPHP. |
+| `FROM dunglas/frankenphp:1.13.4-php8.5` | Partimos de una imagen oficial con FrankenPHP 1.13.4 y PHP 8.5.12. |
 | `apt-get install ...` | Instala librerías del SO necesarias para extensiones PHP. |
 | `install-php-extensions` | Script que viene en la imagen para instalar extensiones de PHP fácilmente. `pdo_pgsql` es **obligatorio** para PostgreSQL. |
 | `COPY --from=composer/composer` | Copia el binario de Composer desde otra imagen oficial. |
@@ -195,12 +195,11 @@ services:
       - caddy_config:/config      # Configuración de Caddy
     environment:
       SERVER_NAME: "https://localhost"
-      APP_ENV: dev
-      APP_SECRET: "ChangeMe!ThisIsADevSecret"
-      # ⚠️ NO definas DATABASE_URL aquí. Si lo haces, sobrescribirá lo que
-      # configures en .env / .env.local (las variables del entorno real
-      # tienen prioridad sobre los archivos dotenv en Symfony).
-      # Pon DATABASE_URL en el archivo .env del proyecto (ver paso 02-03).
+      # APP_ENV=dev en local. En producción exporta APP_ENV=prod.
+      APP_ENV: ${APP_ENV:-dev}
+      # No definas APP_SECRET ni DATABASE_URL aquí. El entorno real pisa a
+      # .env / .env.local. El secreto vive en .env.local (local) o en el
+      # entorno del servidor (producción).
       #
       # El modo worker de FrankenPHP se habilita en el paso 02 (después
       # de instalar Symfony) descomentando la siguiente línea:

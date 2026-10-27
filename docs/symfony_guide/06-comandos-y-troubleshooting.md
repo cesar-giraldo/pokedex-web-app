@@ -370,7 +370,7 @@ Y ajusta `serverVersion=18` en el `compose.yaml` si es necesario.
 docker compose exec php php -v
 ```
 
-Si no, revisa que el `Dockerfile` use `dunglas/frankenphp:1-php8.5.8`.
+Si no, revisa que el `Dockerfile` use `dunglas/frankenphp:1.13.4-php8.5`.
 
 ### ❌ El contenedor PHP se reinicia constantemente
 
@@ -426,7 +426,7 @@ docker compose up -d --force-recreate php
 docker compose exec php php bin/console cache:clear
 ```
 
-> **Regla práctica:** En `compose.yaml` deja solo variables que sean propias de Docker (`SERVER_NAME`, `APP_ENV`, `APP_SECRET`). Cualquier valor que un dev quiera personalizar debe vivir en `.env` / `.env.local`.
+> **Regla práctica:** No pongas `APP_SECRET` ni `DATABASE_URL` en `compose.yaml`. En local viven en `.env.local` / `.env.dev`. En producción se inyectan en el entorno del servidor. `APP_ENV` puede quedar en Compose como `${APP_ENV:-dev}` para no forzar desarrollo al desplegar.
 
 ### ❌ Activé el modo worker pero los logs no muestran `workers initialized`
 

@@ -20,9 +20,11 @@ services:
       # - ./docker/Caddyfile:/etc/frankenphp/Caddyfile:ro
     environment:
       SERVER_NAME: "https://localhost"
-      # DATABASE_URL se lee desde .env / .env.local (no definir aquí)
-      APP_ENV: dev
-      APP_SECRET: "ChangeMe!ThisIsADevSecret"
+      # DATABASE_URL se lee desde .env / .env.local (no definir aquí).
+      # APP_ENV=dev en local. En producción exporta APP_ENV=prod antes de levantar Compose.
+      APP_ENV: ${APP_ENV:-dev}
+      # APP_SECRET no se define aquí: en local lo leen .env.local y .env.dev.
+      # En producción hay que inyectarlo en el entorno del servidor, con un valor propio.
       # Habilitar el modo worker de FrankenPHP solo en staging o prod (5x +rápido)
       # FRANKENPHP_CONFIG: "worker ./public/index.php"
     depends_on:

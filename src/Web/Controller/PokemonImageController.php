@@ -11,6 +11,7 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\EventListener\AbstractSessionListener;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Throwable;
@@ -71,6 +72,9 @@ final class PokemonImageController extends AbstractController
 
         $response->headers->set('Content-Type', $this->pokemonImageStorage->resolveMimeType($imagePath, $imageVariant));
         $response->headers->set('Cache-Control', 'public, max-age=3600');
+        // The image does not vary by user. Without this, a session cookie makes
+        // Symfony 8.1 rewrite Cache-Control to private.
+        $response->headers->set(AbstractSessionListener::NO_AUTO_CACHE_CONTROL_HEADER, '1');
 
         return $response;
     }

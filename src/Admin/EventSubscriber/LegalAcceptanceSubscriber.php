@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Legal\LegalAcceptanceService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -48,6 +49,20 @@ final class LegalAcceptanceSubscriber implements EventSubscriberInterface
             return;
         }
 
+        $request = $event->getRequest();
+
+        // Image responses must not be replaced by the legal-acceptance redirect,
+        // and reading the token would mark them private in the shared cache.
+        if (str_starts_with($request->getPathInfo(), '/media/')) {
+            return;
+        }
+
+        // Symfony 8.1 counts getToken() as session usage and then forces Cache-Control
+        // to private. Skip requests that have no session yet.
+        if (!$this->hasActiveSecuritySession($request)) {
+            return;
+        }
+
         $token = $this->tokenStorage->getToken();
 
         if (!$token || $token instanceof SwitchUserToken) {
@@ -64,7 +79,6 @@ final class LegalAcceptanceSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $request = $event->getRequest();
         $path = $request->getPathInfo();
 
         if ($this->isAllowedPath($path) || $this->isPublicLegalPath($path) || $this->isNotificationOpenPath($path)) {
@@ -78,6 +92,19 @@ final class LegalAcceptanceSubscriber implements EventSubscriberInterface
         $event->setResponse(new RedirectResponse(
             $this->urlGenerator->generate('app_backend_legal_accept'),
         ));
+    }
+
+    private function hasActiveSecuritySession(Request $request): bool
+    {
+        if ($request->hasPreviousSession()) {
+            return true;
+        }
+
+        if (!$request->hasSession(true)) {
+            return false;
+        }
+
+        return $request->getSession()->isStarted();
     }
 
     private function isAllowedPath(string $path): bool

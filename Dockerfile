@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
 
 # ============================================================
-# Imagen base: FrankenPHP con PHP 8.5.8
+# Imagen base: FrankenPHP 1.13.4 con PHP 8.5.12
 # Trae Caddy + PHP-FPM + extensiones comunes preinstaladas
 # ============================================================
-FROM dunglas/frankenphp:1-php8.5.8 AS base
+FROM dunglas/frankenphp:1.13.4-php8.5 AS base
 
 # Argumentos para la zona horaria (puedes cambiarla)
 ARG TZ=UTC
@@ -53,8 +53,12 @@ RUN install-php-extensions @composer && \
     apt-get install -y --no-install-recommends nodejs && \
     rm -rf /var/lib/apt/lists/*
 
-# 5. Configurar PHP para desarrollo
+# 5. Configurar PHP. El entrypoint elige dev.ini o prod.ini según APP_ENV.
 COPY --link docker/php/php.ini /usr/local/etc/php/conf.d/app.ini
+COPY --link docker/php/dev.ini /usr/local/etc/php/env/dev.ini
+COPY --link docker/php/prod.ini /usr/local/etc/php/env/prod.ini
+COPY --link docker/php/docker-entrypoint.sh /usr/local/bin/app-entrypoint
+RUN chmod +x /usr/local/bin/app-entrypoint
 
 # 6. Definir el directorio de trabajo dentro del contenedor
 WORKDIR /app
@@ -67,3 +71,6 @@ ENV SERVER_NAME=":80"
 EXPOSE 80
 EXPOSE 443
 EXPOSE 443/udp
+
+ENTRYPOINT ["app-entrypoint"]
+CMD ["--config", "/etc/frankenphp/Caddyfile", "--adapter", "caddyfile"]
