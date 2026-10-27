@@ -25,6 +25,7 @@ final class PublicSitemapBuilderTest extends TestCase
         self::assertStringContainsString('app_public_terms', $xml);
         self::assertStringContainsString('app_public_home', $xml);
         self::assertStringContainsString('app_public_contact', $xml);
+        self::assertStringContainsString('app_public_cookies', $xml);
     }
 
     public function testSitemapOmitsTheLegalSectionWhenNothingIsPublished(): void
@@ -33,6 +34,7 @@ final class PublicSitemapBuilderTest extends TestCase
 
         self::assertStringNotContainsString('app_public_privacy', $xml);
         self::assertStringNotContainsString('app_public_terms', $xml);
+        self::assertStringContainsString('app_public_cookies', $xml);
     }
 
     /**

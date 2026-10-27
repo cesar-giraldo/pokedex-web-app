@@ -57,7 +57,7 @@ final class PublicPagesTest extends WebTestCase
         $client = static::createClient();
         $locale = $this->defaultLocale();
 
-        foreach (['/pokemon', '/about', '/contact', '/login', '/register'] as $path) {
+        foreach (['/pokemon', '/about', '/contact', '/cookies', '/login', '/register'] as $path) {
             $client->request('GET', '/' . $locale . $path);
             self::assertResponseIsSuccessful();
             self::assertSelectorExists('h1');
@@ -284,6 +284,7 @@ final class PublicPagesTest extends WebTestCase
         self::assertResponseIsSuccessful();
         $sitemap = (string) $client->getResponse()->getContent();
         self::assertStringContainsString('/' . $locale . '/pokemon', $sitemap);
+        self::assertStringContainsString('/' . $locale . '/cookies', $sitemap);
         self::assertStringContainsString('xhtml:link', $sitemap);
         /** @var LegalDocumentVersionRepository $versions */
         $versions = static::getContainer()->get(LegalDocumentVersionRepository::class);
@@ -322,6 +323,7 @@ final class PublicPagesTest extends WebTestCase
             '/' . $locale . '/pokemon/' . $this->pokemonId => '/' . $locale . '/pokemon',
             '/' . $locale . '/about' => '/' . $locale . '/about',
             '/' . $locale . '/contact' => '/' . $locale . '/contact',
+            '/' . $locale . '/cookies' => '/' . $locale . '/cookies',
         ];
 
         foreach ($pages as $path => $currentHref) {
@@ -388,11 +390,68 @@ final class PublicPagesTest extends WebTestCase
         }
 
         $legalNav = sprintf('footer nav[aria-label="%s"]', $legalLabel);
+        self::assertSelectorExists($legalNav);
 
-        if ($privacy || $terms) {
-            self::assertSelectorExists($legalNav);
-        } else {
-            self::assertSelectorNotExists($legalNav);
+        $crawler = $client->getCrawler();
+        $links = $crawler->filter($legalNav . ' a');
+        $href = $links->last()->attr('href');
+        self::assertIsString($href);
+        self::assertSame('/' . $locale . '/cookies', $href);
+    }
+
+    public function testCookiesPageExplainsEachCookieInTheVisitorLanguage(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        $client->request('GET', '/' . $locale . '/cookies');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorCount(1, 'h1');
+        self::assertSelectorTextContains('h1', $this->trans($locale, 'cookies.title'));
+        self::assertSelectorTextContains('main', $this->trans($locale, 'cookies.intro'));
+        self::assertSelectorTextContains('table', 'PHPSESSID');
+        self::assertSelectorTextContains('table', 'PUBLIC_REMEMBERME');
+        self::assertSelectorTextContains('table', 'REMEMBERME');
+        self::assertSelectorTextContains('table', 'public_favorite_pokemon');
+        self::assertSelectorTextContains('table', $this->trans($locale, 'cookies.csrf_name'));
+        self::assertSelectorExists('script[type="application/ld+json"]');
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        /** @var GeneralSettingsRepository $repository */
+        $repository = static::getContainer()->get(GeneralSettingsRepository::class);
+        $settings = $repository->getOrCreateSingleton();
+        $enabled = $settings->getEnabledLanguages();
+        $other = null;
+
+        foreach (['en', 'pt', 'fr', 'es'] as $candidate) {
+            if ($candidate !== $locale && in_array($candidate, $enabled, true)) {
+                $other = $candidate;
+                break;
+            }
+        }
+
+        $added = false;
+
+        if (null === $other) {
+            $other = 'en' === $locale ? 'fr' : 'en';
+            $settings->setEnabledLanguages([...$enabled, $other]);
+            $entityManager->flush();
+            $added = true;
+        }
+
+        try {
+            $client->request('GET', '/' . $other . '/cookies');
+            self::assertResponseIsSuccessful();
+            self::assertSelectorTextContains('main', $this->trans($other, 'cookies.intro'));
+            self::assertNotSame(
+                $this->trans($locale, 'cookies.intro'),
+                $this->trans($other, 'cookies.intro'),
+            );
+        } finally {
+            if ($added) {
+                $settings->setEnabledLanguages($enabled);
+                $entityManager->flush();
+            }
         }
     }
 
@@ -404,5 +463,18 @@ final class PublicPagesTest extends WebTestCase
         $languages = static::getContainer()->get(PublicLanguageResolver::class);
 
         return $languages->defaultLanguage($settings->get())->value;
+    }
+
+    private function trans(string $locale, string $key): string
+    {
+        /** @var TranslatorInterface $translator */
+        $translator = static::getContainer()->get(TranslatorInterface::class);
+        /** @var LocaleSwitcher $localeSwitcher */
+        $localeSwitcher = static::getContainer()->get(LocaleSwitcher::class);
+
+        return $localeSwitcher->runWithLocale(
+            $locale,
+            static fn (): string => $translator->trans($key),
+        );
     }
 }
