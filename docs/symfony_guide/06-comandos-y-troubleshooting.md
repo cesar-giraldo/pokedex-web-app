@@ -370,7 +370,7 @@ Y ajusta `serverVersion=18` en el `compose.yaml` si es necesario.
 docker compose exec php php -v
 ```
 
-Si no, revisa que el `Dockerfile` use `dunglas/frankenphp:1-php8.5.8`.
+Si no, revisa que el `Dockerfile` use `dunglas/frankenphp:1.13.4-php8.5`.
 
 ### ❌ El contenedor PHP se reinicia constantemente
 

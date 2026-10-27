@@ -65,10 +65,10 @@ Crea un archivo llamado `Dockerfile` (sin extensión) en la raíz del proyecto:
 # syntax=docker/dockerfile:1
 
 # ============================================================
-# Imagen base: FrankenPHP con PHP 8.5.8
+# Imagen base: FrankenPHP 1.13.4 con PHP 8.5.12
 # Trae Caddy + PHP-FPM + extensiones comunes preinstaladas
 # ============================================================
-FROM dunglas/frankenphp:1-php8.5.8 AS base
+FROM dunglas/frankenphp:1.13.4-php8.5 AS base
 
 # Argumentos para la zona horaria (puedes cambiarla)
 ARG TZ=America/Bogota
@@ -129,7 +129,7 @@ EXPOSE 443/udp
 
 | Sección | Propósito |
 | ------- | --------- |
-| `FROM dunglas/frankenphp:1-php8.5.8` | Partimos de una imagen oficial con PHP 8.5.8 + FrankenPHP. |
+| `FROM dunglas/frankenphp:1.13.4-php8.5` | Partimos de una imagen oficial con FrankenPHP 1.13.4 y PHP 8.5.12. |
 | `apt-get install ...` | Instala librerías del SO necesarias para extensiones PHP. |
 | `install-php-extensions` | Script que viene en la imagen para instalar extensiones de PHP fácilmente. `pdo_pgsql` es **obligatorio** para PostgreSQL. |
 | `COPY --from=composer/composer` | Copia el binario de Composer desde otra imagen oficial. |
