@@ -46,6 +46,19 @@ final class PageController extends AbstractController
         ]);
     }
 
+    #[Route(
+        '/{_locale}/cookies',
+        name: 'app_public_cookies',
+        requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
+        methods: ['GET'],
+    )]
+    public function cookies(Request $request): Response
+    {
+        return $this->render('@web/page/cookies.html.twig', [
+            'structured_data_json' => $this->pageData($request, 'app_public_cookies', 'cookies.title', 'cookies.meta_description'),
+        ]);
+    }
+
     private function pageData(Request $request, string $route, string $titleKey, string $descriptionKey): string
     {
         return $this->structuredData->webPageJson(

@@ -23,6 +23,7 @@ final class PublicSitemapBuilder
         'app_public_pokedex',
         'app_public_about',
         'app_public_contact',
+        'app_public_cookies',
     ];
 
     public function __construct(

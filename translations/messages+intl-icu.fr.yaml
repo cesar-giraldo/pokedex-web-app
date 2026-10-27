@@ -14,6 +14,7 @@ nav:
     contact: Contact
     privacy: Politique de confidentialité
     terms: Conditions d’utilisation
+    cookies: Cookies
     login: Connexion
     register: Créer un compte
     menu: Menu
@@ -122,6 +123,34 @@ contact:
     address: 'Calle 100 #19-54, Bogotá, Colombia'
     hours_label: Horaires
     hours: Du lundi au vendredi, de 9:00 à 18:00
+
+cookies:
+    title: Cookies
+    meta_description: 'Quels cookies ce site utilise, à quoi ils servent et combien de temps ils durent.'
+    intro: 'Ce site utilise des cookies pour fonctionner. Ils servent à garder votre session, à protéger les formulaires et à retenir une action que vous venez de demander, comme enregistrer un Pokémon dans vos favoris. Nous ne les utilisons pas pour mesurer vos visites ni pour vous afficher de la publicité.'
+    table_caption: Cookies de ce site
+    column_name: Nom
+    column_purpose: À quoi ils servent
+    column_duration: Combien de temps
+    column_when: Quand ils sont enregistrés
+    session_purpose: 'Mémorise votre visite pendant que vous utilisez le site, par exemple que vous êtes connecté ou qu’un message vient d’apparaître.'
+    session_duration: 'Jusqu’à ce que vous fermiez le navigateur.'
+    session_when: 'Lorsque le site a besoin de se souvenir de votre visite, par exemple quand vous entrez dans votre compte.'
+    public_remember_purpose: Maintient votre session ouverte sur le site public.
+    public_remember_duration: 7 jours.
+    public_remember_when: 'Uniquement si vous cochez « Se souvenir de moi » en vous connectant.'
+    remember_purpose: 'Maintient la session ouverte dans le panneau d’administration.'
+    remember_duration: 7 jours.
+    remember_when: 'Uniquement si la personne qui entre dans le panneau coche « Se souvenir de moi ».'
+    csrf_name: 'Cookie de sécurité du formulaire. Le nom change à chaque envoi et, sur une connexion sécurisée, commence par __Host-.'
+    csrf_purpose: 'Vérifie que c’est bien vous qui envoyez le formulaire depuis ce site.'
+    csrf_duration: 'Tant que le navigateur reste ouvert. Il est effacé à l’envoi du formulaire.'
+    csrf_when: 'Lorsque vous utilisez un formulaire, comme celui de connexion.'
+    favorite_purpose: 'Retient le Pokémon que vous vouliez enregistrer comme favori pendant que vous entrez dans votre compte ou que vous finissez de compléter votre profil.'
+    favorite_duration: '24 heures au maximum. Il est effacé plus tôt, dès que le favori est enregistré ou si ce Pokémon n’est plus disponible.'
+    favorite_when: 'Uniquement si vous appuyez sur le cœur et confirmez que vous allez vous connecter ou compléter votre profil. Si vous annulez, il n’est pas enregistré.'
+    manage_title: Comment les supprimer
+    manage_body: 'Vous pouvez les supprimer dans les paramètres du navigateur. Le Pokédex reste consultable. Si le cookie de session est supprimé, il faut vous reconnecter. Si celui du favori en attente est supprimé avant la fin de l’accès, le site ne se souviendra pas du Pokémon que vous vouliez enregistrer.'
 
 auth:
     unavailable: Cette fonction n’est pas encore disponible.

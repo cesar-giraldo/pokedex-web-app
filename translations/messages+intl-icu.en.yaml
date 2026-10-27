@@ -14,6 +14,7 @@ nav:
     contact: Contact
     privacy: Privacy policy
     terms: Terms and conditions
+    cookies: Cookies
     login: Log in
     register: Create account
     menu: Menu
@@ -122,6 +123,34 @@ contact:
     address: 'Calle 100 #19-54, Bogotá, Colombia'
     hours_label: Hours
     hours: Monday to Friday, 9:00 to 18:00
+
+cookies:
+    title: Cookies
+    meta_description: 'Which cookies this site uses, what they are for, and how long they last.'
+    intro: 'This site uses cookies to work. They keep your session, protect forms, and remember something you just asked for, such as saving a Pokémon as a favorite. We do not use them to measure your visits or to show you ads.'
+    table_caption: Cookies on this site
+    column_name: Name
+    column_purpose: What it is for
+    column_duration: How long it lasts
+    column_when: When it is saved
+    session_purpose: 'Remembers your visit while you use the site, for example that you are logged in or that a notice just appeared.'
+    session_duration: Until you close the browser.
+    session_when: 'When the site needs to remember your visit, such as when you sign in.'
+    public_remember_purpose: Keeps you signed in on the public site.
+    public_remember_duration: 7 days.
+    public_remember_when: 'Only if you check “Remember me” when you log in.'
+    remember_purpose: Keeps the session signed in on the administration panel.
+    remember_duration: 7 days.
+    remember_when: 'Only if the person signing in to the panel checks “Remember me”.'
+    csrf_name: 'Form security cookie. The name changes with each submission and, on a secure connection, starts with __Host-.'
+    csrf_purpose: Checks that you are the one sending the form from this site.
+    csrf_duration: 'While the browser stays open. It is deleted when the form is sent.'
+    csrf_when: 'When you use a form, such as the login form.'
+    favorite_purpose: 'Remembers the Pokémon you wanted to save as a favorite while you sign in or finish completing your profile.'
+    favorite_duration: '24 hours at most. It is deleted sooner, as soon as the favorite is saved or if that Pokémon is no longer available.'
+    favorite_when: 'Only if you press the heart and confirm that you are going to log in or complete your profile. If you cancel, it is not saved.'
+    manage_title: How to delete them
+    manage_body: 'You can delete cookies in your browser settings. You can still browse the Pokédex. If the session cookie is deleted, you will need to sign in again. If the pending favorite cookie is deleted before you finish signing in, the site will not remember which Pokémon you wanted to save.'
 
 auth:
     unavailable: This feature is not available yet.

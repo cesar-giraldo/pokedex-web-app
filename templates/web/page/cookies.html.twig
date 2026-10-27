@@ -1,0 +1,62 @@
+{% extends '@web/base.html.twig' %}
+
+{% block title %}{{ 'cookies.title'|trans }} · {{ public_site_name() }}{% endblock %}
+{% block meta_description %}{{ 'cookies.meta_description'|trans }}{% endblock %}
+
+{% block body %}
+    <article class="mx-auto max-w-3xl px-4 py-14">
+        <h1 class="text-4xl font-extrabold tracking-tight">{{ 'cookies.title'|trans }}</h1>
+        <p class="mt-6 text-lg leading-8 text-muted">{{ 'cookies.intro'|trans }}</p>
+
+        <div class="mt-10 overflow-x-auto">
+            <table class="w-full min-w-[48rem] border-collapse text-left text-sm">
+                <caption class="mb-4 text-left text-base font-semibold">{{ 'cookies.table_caption'|trans }}</caption>
+                <thead>
+                    <tr class="border-b border-black/10">
+                        <th scope="col" class="px-3 py-3 font-semibold">{{ 'cookies.column_name'|trans }}</th>
+                        <th scope="col" class="px-3 py-3 font-semibold">{{ 'cookies.column_purpose'|trans }}</th>
+                        <th scope="col" class="px-3 py-3 font-semibold">{{ 'cookies.column_duration'|trans }}</th>
+                        <th scope="col" class="px-3 py-3 font-semibold">{{ 'cookies.column_when'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-black/5 align-top">
+                        <th scope="row" class="px-3 py-4 font-mono text-sm font-semibold">PHPSESSID</th>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.session_purpose'|trans }}</td>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.session_duration'|trans }}</td>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.session_when'|trans }}</td>
+                    </tr>
+                    <tr class="border-b border-black/5 align-top">
+                        <th scope="row" class="px-3 py-4 font-mono text-sm font-semibold">PUBLIC_REMEMBERME</th>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.public_remember_purpose'|trans }}</td>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.public_remember_duration'|trans }}</td>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.public_remember_when'|trans }}</td>
+                    </tr>
+                    <tr class="border-b border-black/5 align-top">
+                        <th scope="row" class="px-3 py-4 font-mono text-sm font-semibold">REMEMBERME</th>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.remember_purpose'|trans }}</td>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.remember_duration'|trans }}</td>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.remember_when'|trans }}</td>
+                    </tr>
+                    <tr class="border-b border-black/5 align-top">
+                        <th scope="row" class="px-3 py-4 font-semibold">{{ 'cookies.csrf_name'|trans }}</th>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.csrf_purpose'|trans }}</td>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.csrf_duration'|trans }}</td>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.csrf_when'|trans }}</td>
+                    </tr>
+                    <tr class="border-b border-black/5 align-top">
+                        <th scope="row" class="px-3 py-4 font-mono text-sm font-semibold">public_favorite_pokemon</th>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.favorite_purpose'|trans }}</td>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.favorite_duration'|trans }}</td>
+                        <td class="px-3 py-4 leading-6">{{ 'cookies.favorite_when'|trans }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <section class="mt-12">
+            <h2 class="text-2xl font-semibold">{{ 'cookies.manage_title'|trans }}</h2>
+            <p class="mt-4 leading-7">{{ 'cookies.manage_body'|trans }}</p>
+        </section>
+    </article>
+{% endblock %}

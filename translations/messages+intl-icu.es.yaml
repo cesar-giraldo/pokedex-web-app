@@ -14,6 +14,7 @@ nav:
     contact: Contacto
     privacy: Política de privacidad
     terms: Términos y condiciones
+    cookies: Cookies
     login: Ingresar
     register: Crear cuenta
     menu: Menú
@@ -122,6 +123,34 @@ contact:
     address: 'Calle 100 #19-54, Bogotá, Colombia'
     hours_label: Horario
     hours: Lunes a viernes, 9:00 a 18:00
+
+cookies:
+    title: Cookies
+    meta_description: 'Qué cookies usa este sitio, para qué sirven y cuánto duran.'
+    intro: 'Este sitio usa cookies para funcionar. Sirven para mantener tu sesión, proteger los formularios y recordar una acción que acabas de pedir, como guardar un Pokémon en favoritos. No las usamos para medir tus visitas ni para mostrarte publicidad.'
+    table_caption: Cookies de este sitio
+    column_name: Nombre
+    column_purpose: Para qué sirve
+    column_duration: Cuánto dura
+    column_when: Cuándo se guarda
+    session_purpose: 'Recuerda tu visita mientras usas el sitio, por ejemplo que has iniciado sesión o un aviso que acaba de aparecer.'
+    session_duration: Hasta que cierras el navegador.
+    session_when: 'Cuando el sitio necesita recordar tu visita, como al entrar a tu cuenta.'
+    public_remember_purpose: Mantiene tu sesión iniciada en la web pública.
+    public_remember_duration: 7 días.
+    public_remember_when: 'Solo si marcas «Recordarme» al entrar.'
+    remember_purpose: Mantiene la sesión iniciada en el panel de administración.
+    remember_duration: 7 días.
+    remember_when: 'Solo si quien entra al panel marca «Recordarme».'
+    csrf_name: 'Cookie de seguridad del formulario. El nombre cambia en cada envío y, en una conexión segura, empieza por __Host-.'
+    csrf_purpose: Comprueba que el formulario lo envías tú desde este sitio.
+    csrf_duration: 'Mientras el navegador sigue abierto. Se borra al enviar el formulario.'
+    csrf_when: 'Al usar un formulario, como el de inicio de sesión.'
+    favorite_purpose: 'Recuerda el Pokémon que quisiste guardar como favorito mientras entras a tu cuenta o terminas de completar tu perfil.'
+    favorite_duration: '24 horas como máximo. Se borra antes, en cuanto el favorito queda guardado o si ese Pokémon ya no está disponible.'
+    favorite_when: 'Solo si pulsas el corazón y confirmas que vas a iniciar sesión o a completar tu perfil. Si cancelas, no se guarda.'
+    manage_title: Cómo borrarlas
+    manage_body: 'Puedes borrar las cookies desde la configuración del navegador. El Pokédex se sigue pudiendo ver. Si se borra la de sesión, hay que volver a entrar. Si se borra la del favorito pendiente antes de terminar el acceso, el sitio no recordará qué Pokémon se quería guardar.'
 
 auth:
     unavailable: Esta función aún no está disponible.
