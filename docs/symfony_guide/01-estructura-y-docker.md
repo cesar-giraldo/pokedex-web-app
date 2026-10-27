@@ -195,12 +195,11 @@ services:
       - caddy_config:/config      # Configuración de Caddy
     environment:
       SERVER_NAME: "https://localhost"
-      APP_ENV: dev
-      APP_SECRET: "ChangeMe!ThisIsADevSecret"
-      # ⚠️ NO definas DATABASE_URL aquí. Si lo haces, sobrescribirá lo que
-      # configures en .env / .env.local (las variables del entorno real
-      # tienen prioridad sobre los archivos dotenv en Symfony).
-      # Pon DATABASE_URL en el archivo .env del proyecto (ver paso 02-03).
+      # APP_ENV=dev en local. En producción exporta APP_ENV=prod.
+      APP_ENV: ${APP_ENV:-dev}
+      # No definas APP_SECRET ni DATABASE_URL aquí. El entorno real pisa a
+      # .env / .env.local. El secreto vive en .env.local (local) o en el
+      # entorno del servidor (producción).
       #
       # El modo worker de FrankenPHP se habilita en el paso 02 (después
       # de instalar Symfony) descomentando la siguiente línea:
