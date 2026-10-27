@@ -12,6 +12,7 @@ use App\Entity\User;
 use App\Legal\LegalLanguageResolver;
 use App\Repository\UserRepository;
 use App\Security\PublicUserImpersonator;
+use App\Web\Service\PendingFavoriteReturn;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -52,6 +53,7 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         private readonly RememberMeHandlerInterface $rememberMeHandler,
         private readonly GeneralSettingsProvider $generalSettingsProvider,
         private readonly LegalLanguageResolver $legalLanguageResolver,
+        private readonly PendingFavoriteReturn $pendingFavoriteReturn,
     ) {
     }
 
@@ -184,8 +186,11 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
             return;
         }
 
-        $event->setResponse(new RedirectResponse(
-            $this->urlGenerator->generate('app_public_home', ['_locale' => $locale]),
+        $event->setResponse($this->pendingFavoriteReturn->redirectInsteadOf(
+            $user,
+            $event->getRequest(),
+            $locale,
+            new RedirectResponse($this->urlGenerator->generate('app_public_home', ['_locale' => $locale])),
         ));
     }
 
@@ -332,6 +337,10 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
 
     private function isUnconfirmedAccountAllowedPath(string $path): bool
     {
+        if ($this->isFavoriteTogglePath($path)) {
+            return true;
+        }
+
         $locale = SupportedLanguage::ROUTE_REQUIREMENT;
 
         if (1 === preg_match(sprintf('#^/(%s)/account/confirm(?:/resend)?$#', $locale), $path)) {
@@ -364,6 +373,10 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
 
     private function isIncompleteProfileAllowedPath(string $path): bool
     {
+        if ($this->isFavoriteTogglePath($path)) {
+            return true;
+        }
+
         $locale = SupportedLanguage::ROUTE_REQUIREMENT;
 
         if (1 === preg_match(sprintf('#^/(%s)/profile(?:/avatar|/image/(?:avatar|display|original))?$#', $locale), $path)) {
@@ -381,6 +394,14 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         return str_starts_with($path, '/assets/')
             || str_starts_with($path, '/_profiler')
             || str_starts_with($path, '/_wdt');
+    }
+
+    private function isFavoriteTogglePath(string $path): bool
+    {
+        return 1 === preg_match(
+            sprintf('#^/(%s)/pokemon/\d+/favorite$#', SupportedLanguage::ROUTE_REQUIREMENT),
+            $path,
+        );
     }
 
     private function isPublicSessionFirewall(string $firewallName): bool

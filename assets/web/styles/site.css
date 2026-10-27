@@ -588,3 +588,69 @@ dialog.gallery-dialog::backdrop {
         border-top-color: var(--color-brand);
     }
 }
+
+.favorite-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--color-brand);
+    box-shadow: 0 8px 24px rgb(130 10 209 / 0.16), 0 0 0 1px rgb(0 0 0 / 0.06);
+}
+
+.favorite-button:hover {
+    box-shadow: 0 8px 24px rgb(130 10 209 / 0.28), 0 0 0 2px var(--color-brand);
+}
+
+.favorite-heart {
+    display: inline-flex;
+    color: var(--color-brand);
+}
+
+.favorite-heart.is-pop {
+    animation: favorite-pop 360ms ease;
+}
+
+dialog.favorite-dialog {
+    position: fixed;
+    inset: 0;
+    width: min(24rem, calc(100vw - 2rem));
+    height: fit-content;
+    max-height: calc(100vh - 2rem);
+    margin: auto;
+    border: 0;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    overflow: auto;
+    background: #fff;
+    color: var(--color-ink);
+    box-shadow: 0 24px 60px rgb(0 0 0 / 0.18);
+}
+
+dialog.favorite-dialog::backdrop {
+    background: rgb(0 0 0 / 65%);
+}
+
+@keyframes favorite-pop {
+    0% {
+        transform: scale(0.86);
+    }
+
+    45% {
+        transform: scale(1.28);
+        filter: drop-shadow(0 0 8px rgb(130 10 209 / 0.55));
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .favorite-heart.is-pop {
+        animation: none;
+    }
+}

@@ -14,6 +14,7 @@ use App\Web\Form\LoginFormType;
 use App\Web\Form\RegistrationFormType;
 use App\Web\Registration\AccountAlreadyExistsException;
 use App\Web\Registration\RegistrationData;
+use App\Web\Service\PendingFavoriteReturn;
 use App\Web\Service\PublicRegistrationService;
 use App\Web\Service\SignupLegalCatalog;
 use LogicException;
@@ -37,11 +38,13 @@ final class AuthController extends AbstractController
         methods: ['GET', 'POST'],
     )]
     public function login(
+        Request $request,
         AuthenticationUtils $authenticationUtils,
         GeneralSettingsProvider $settings,
         LegalLanguageResolver $languages,
+        PendingFavoriteReturn $pendingFavoriteReturn,
     ): Response {
-        $redirect = $this->redirectAuthenticatedUser($settings, $languages);
+        $redirect = $this->redirectAuthenticatedUser($request, $settings, $languages, $pendingFavoriteReturn);
 
         if ($redirect instanceof Response) {
             return $redirect;
@@ -81,10 +84,11 @@ final class AuthController extends AbstractController
         PublicRegistrationService $registration,
         Security $security,
         TranslatorInterface $translator,
+        PendingFavoriteReturn $pendingFavoriteReturn,
         #[Autowire(service: 'limiter.public_registration')]
         RateLimiterFactory $registrationLimiter,
     ): Response {
-        $redirect = $this->redirectAuthenticatedUser($settings, $languages);
+        $redirect = $this->redirectAuthenticatedUser($request, $settings, $languages, $pendingFavoriteReturn);
 
         if ($redirect instanceof Response) {
             return $redirect;
@@ -143,8 +147,10 @@ final class AuthController extends AbstractController
     }
 
     private function redirectAuthenticatedUser(
+        Request $request,
         GeneralSettingsProvider $settings,
         LegalLanguageResolver $languages,
+        PendingFavoriteReturn $pendingFavoriteReturn,
     ): ?Response {
         $user = $this->getUser();
 
@@ -152,14 +158,27 @@ final class AuthController extends AbstractController
             return null;
         }
 
-        $route = match ($user->getStatus()) {
-            UserStatus::UnconfirmedAccount => 'app_public_account_confirm',
-            UserStatus::UncompleteProfileInfo => 'app_public_profile',
-            default => 'app_public_home',
-        };
+        $locale = $languages->preferredForUser($user, $settings->get())->value;
 
-        return $this->redirectToRoute($route, [
-            '_locale' => $languages->preferredForUser($user, $settings->get())->value,
-        ]);
+        if (UserStatus::UnconfirmedAccount === $user->getStatus()) {
+            return $this->redirectToRoute('app_public_account_confirm', [
+                '_locale' => $locale,
+            ]);
+        }
+
+        if (UserStatus::UncompleteProfileInfo === $user->getStatus()) {
+            return $this->redirectToRoute('app_public_profile', [
+                '_locale' => $locale,
+            ]);
+        }
+
+        return $pendingFavoriteReturn->redirectInsteadOf(
+            $user,
+            $request,
+            $locale,
+            $this->redirectToRoute('app_public_home', [
+                '_locale' => $locale,
+            ]),
+        );
     }
 }

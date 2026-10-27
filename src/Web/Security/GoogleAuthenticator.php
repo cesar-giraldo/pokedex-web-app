@@ -8,6 +8,7 @@ use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Web\Service\GoogleAccountConnector;
+use App\Web\Service\PendingFavoriteReturn;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -34,6 +35,7 @@ final class GoogleAuthenticator extends AbstractAuthenticator
         private readonly GoogleIdTokenVerifier $verifier,
         private readonly GoogleAccountConnector $connector,
         private readonly GoogleOAuthCallbackUrl $callbackUrl,
+        private readonly PendingFavoriteReturn $pendingFavoriteReturn,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly LoggerInterface $logger = new NullLogger(),
     ) {
@@ -66,13 +68,23 @@ final class GoogleAuthenticator extends AbstractAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): Response
     {
         $user = $token->getUser();
-        $route = $user instanceof User && UserStatus::UncompleteProfileInfo === $user->getStatus()
-            ? 'app_public_profile'
-            : 'app_public_home';
+        $locale = $this->language($request)->value;
 
-        return new RedirectResponse($this->urlGenerator->generate($route, [
-            '_locale' => $this->language($request)->value,
+        if ($user instanceof User && UserStatus::UncompleteProfileInfo === $user->getStatus()) {
+            return new RedirectResponse($this->urlGenerator->generate('app_public_profile', [
+                '_locale' => $locale,
+            ]));
+        }
+
+        $fallback = new RedirectResponse($this->urlGenerator->generate('app_public_home', [
+            '_locale' => $locale,
         ]));
+
+        if (!$user instanceof User) {
+            return $fallback;
+        }
+
+        return $this->pendingFavoriteReturn->redirectInsteadOf($user, $request, $locale, $fallback);
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response

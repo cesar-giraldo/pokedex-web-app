@@ -10,6 +10,7 @@ use App\Entity\LegalDocumentVersionTranslation;
 use App\Entity\User;
 use App\Legal\Exception\LegalPublicationException;
 use App\Legal\LegalAcceptanceService;
+use App\Web\Service\PendingFavoriteReturn;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +23,7 @@ final class LegalAcceptanceController extends AbstractController
 {
     public function __construct(
         private readonly LegalAcceptanceService $acceptanceService,
+        private readonly PendingFavoriteReturn $pendingFavoriteReturn,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -45,9 +47,7 @@ final class LegalAcceptanceController extends AbstractController
         $pending = $this->acceptanceService->currentPending($user);
 
         if (null === $pending) {
-            return $this->redirectToRoute('app_public_home', [
-                '_locale' => $request->getLocale(),
-            ]);
+            return $this->homeOrFavorite($request, $user);
         }
 
         $translation = $this->acceptanceService->translationForLocale($user, $pending, $request->getLocale());
@@ -75,9 +75,7 @@ final class LegalAcceptanceController extends AbstractController
                     );
                 } catch (LegalPublicationException $exception) {
                     if (!$this->acceptanceService->hasPending($user)) {
-                        return $this->redirectToRoute('app_public_home', [
-                            '_locale' => $request->getLocale(),
-                        ]);
+                        return $this->homeOrFavorite($request, $user);
                     }
 
                     $error = $exception->getMessage();
@@ -108,5 +106,17 @@ final class LegalAcceptanceController extends AbstractController
         }
 
         return $user;
+    }
+
+    private function homeOrFavorite(Request $request, User $user): Response
+    {
+        return $this->pendingFavoriteReturn->redirectInsteadOf(
+            $user,
+            $request,
+            $request->getLocale(),
+            $this->redirectToRoute('app_public_home', [
+                '_locale' => $request->getLocale(),
+            ]),
+        );
     }
 }

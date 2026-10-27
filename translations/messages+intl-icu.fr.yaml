@@ -260,7 +260,15 @@ notifications:
 favorites:
     title: Favoris
     meta_description: Vos Pokémon favoris.
-    body: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet.
+    intro: Les Pokémon que vous avez marqués, du plus récent au plus ancien.
+    empty: Vous n’avez pas encore de Pokémon favoris.
+    add: Ajouter à mes favoris
+    remove: Retirer de mes favoris
+    login_message: Connectez-vous pour l’ajouter à vos favoris
+    login_submit: Se connecter
+    profile_message: Complétez votre profil pour l’ajouter à vos favoris
+    profile_submit: Compléter le profil
+    cancel: Annuler
 
 legal:
     version: 'Version {number}'
