@@ -141,6 +141,16 @@
         color: var(--color-muted);
     }
 
+    select.field {
+        -webkit-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236a6a6a' stroke-width='1.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19.5 8.25-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1.25rem 1.25rem;
+        padding-right: 2.75rem;
+    }
+
     .field[aria-invalid="true"],
     .field[aria-invalid="true"]:focus,
     .file-field[aria-invalid="true"],

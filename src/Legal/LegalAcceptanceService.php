@@ -126,6 +126,33 @@ final class LegalAcceptanceService
         return $acceptance;
     }
 
+    /**
+     * Persiste aceptaciones sin hacer flush, para que el registro las guarde en la misma transacción.
+     *
+     * @param list<LegalDocumentVersionTranslation> $translations
+     */
+    public function recordAcceptances(
+        User $user,
+        array $translations,
+        LegalAcceptanceMethod $method,
+        ?string $ipAddress,
+        ?string $userAgent,
+    ): void {
+        $ipAddress = $this->limit($ipAddress, 45);
+        $userAgent = $this->limit($userAgent, 512);
+
+        foreach ($translations as $translation) {
+            $this->entityManager->persist(new UserLegalAcceptance(
+                $user,
+                $translation,
+                $method,
+                new DateTime(),
+                $ipAddress,
+                $userAgent,
+            ));
+        }
+    }
+
     private function limit(?string $value, int $max): ?string
     {
         if (null === $value || '' === $value) {

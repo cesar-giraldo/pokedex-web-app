@@ -79,6 +79,8 @@ final class PublicPagesTest extends WebTestCase
 
         $client->request('GET', '/' . $locale);
         self::assertResponseIsSuccessful();
+        self::assertSelectorExists('header [data-header-language]');
+        self::assertSelectorExists('footer details summary');
         self::assertSelectorExists('body[data-controller="page-loader"] #page-loader[hidden]');
         self::assertSelectorTextContains('#page-loader', $loading);
     }

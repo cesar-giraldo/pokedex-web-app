@@ -18,7 +18,9 @@ use App\Web\Service\PublicLanguageResolver;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Bundle\FrameworkBundle\Test\MailerAssertionsTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Field\ChoiceFormField;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -32,12 +34,14 @@ use function imagejpeg;
 use function random_bytes;
 use function random_int;
 use function sprintf;
+use function substr;
 use function tempnam;
 
 #[Group('functional')]
 final class PublicAuthenticationTest extends WebTestCase
 {
     use AcceptsPendingLegalDocumentsTrait;
+    use MailerAssertionsTrait;
 
     private const string PASSWORD = 'Secret123';
 
@@ -95,6 +99,8 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorExists('.account-menu .account-menu-chevron');
         self::assertSelectorCount(3, '.account-menu .account-menu-icon');
         self::assertSelectorNotExists('.header-login');
+        self::assertSelectorNotExists('header [data-header-language]');
+        self::assertSelectorExists('footer details summary');
         self::assertNotNull($client->getRequest()->getSession()->get('_security_public'));
     }
 
@@ -254,7 +260,6 @@ final class PublicAuthenticationTest extends WebTestCase
 
         /** @var list<array{UserStatus, string}> $cases */
         $cases = [
-            [UserStatus::UnconfirmedAccount, 'account_unconfirmed'],
             [UserStatus::Banned, 'account_banned'],
             [UserStatus::Inactive, 'account_inactive'],
         ];
@@ -270,6 +275,28 @@ final class PublicAuthenticationTest extends WebTestCase
             self::assertSelectorTextContains('main [role="alert"]', $this->trans($locale, $messageKey, 'security'));
             self::assertNull($client->getRequest()->getSession()->get('_security_public'));
         }
+    }
+
+    public function testUnconfirmedAccountIsSentToTheConfirmationScreen(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        $nickname = $this->rememberNickname('pend' . bin2hex(random_bytes(2)));
+        $this->createUser($nickname, [UserRole::User], UserStatus::UnconfirmedAccount);
+
+        $this->submitLogin($client, $locale, $nickname, self::PASSWORD);
+
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/account/confirm');
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('h1', $this->trans($locale, 'auth.confirm_title'));
+        self::assertNotNull($client->getRequest()->getSession()->get('_security_public'));
+
+        $client->request('GET', '/' . $locale);
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/account/confirm');
+
+        $client->request('GET', '/' . $locale . '/profile');
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/account/confirm');
     }
 
     public function testTemporaryLockShowsTheTranslatedWaitMessage(): void
@@ -307,12 +334,17 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorTextContains('h1', $this->trans($locale, 'account.profile_title'));
         self::assertSelectorExists('main .alert-warning[role="alert"]');
         self::assertSelectorTextContains('main .alert-warning', $this->trans($locale, 'account.complete_profile'));
+        self::assertSelectorExists('header [data-header-language]');
+        self::assertSelectorExists('footer details summary');
 
         $client->request('GET', '/' . $locale);
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
 
         $client->request('GET', '/' . $locale . '/favorites');
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
+
+        $client->request('GET', '/' . $locale . '/profile/image/display');
+        self::assertResponseStatusCodeSame(404);
     }
 
     public function testCompletingContactInfoActivatesTheAccount(): void
@@ -325,16 +357,31 @@ final class PublicAuthenticationTest extends WebTestCase
 
         $crawler = $client->request('GET', '/' . $locale . '/profile');
         $form = $crawler->filter('form[name="user_profile_info"]')->form();
-        $form['user_profile_info[email]'] = 'done-' . bin2hex(random_bytes(3)) . '@example.com';
+        $email = 'done-' . bin2hex(random_bytes(3)) . '@example.com';
+        $form['user_profile_info[email]'] = $email;
         $form['user_profile_info[countryCode]'] = '57';
         $form['user_profile_info[cellphone]'] = $this->phone();
         $client->submit($form);
 
-        $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
+        $this->assertRedirectEndsWith($client, '/' . $locale);
         $updated = $this->reload($nickname);
         self::assertSame(UserStatus::Active, $updated->getStatus());
+        self::assertQueuedEmailCount(1);
+        $message = self::getMailerMessage();
+        self::assertInstanceOf(TemplatedEmail::class, $message);
+        self::assertEmailAddressContains($message, 'To', $email);
+        $platform = $this->platformName($locale);
+        self::assertEmailSubjectContains($message, $this->trans($locale, 'email.welcome.subject'));
+        self::assertEmailHtmlBodyContains($message, $this->trans($locale, 'email.welcome.heading', 'messages', ['platform' => $platform]));
+        self::assertEmailHtmlBodyContains($message, $this->trans($locale, 'email.welcome.intro', 'messages', [
+            'name' => 'Ada',
+            'platform' => $platform,
+        ]));
+        self::assertEmailHtmlBodyContains($message, $this->trans($locale, 'email.welcome.action'));
+        self::assertEmailTextBodyContains($message, '/' . $locale);
         $this->acceptPendingLegalDocuments($updated);
         $client->followRedirect();
+        self::assertSelectorTextContains('main [role="status"]', $this->trans($locale, 'account.profile_completed'));
         self::assertSelectorNotExists('main .alert-warning');
 
         $client->request('GET', '/' . $locale . '/favorites');
@@ -371,6 +418,7 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorTextContains('#profile-password-updated', $this->trans($locale, 'account.password_unchanged'));
         self::assertSelectorTextContains('#profile-avatar-help', $this->trans($locale, 'account.avatar_help'));
         self::assertSelectorNotExists('#profile-remove-avatar');
+        self::assertSelectorNotExists('[data-controller="gallery"]');
         self::assertSelectorCount(3, '[data-controller="password-input"]');
         self::assertSelectorExists('[data-action="click->password-input#toggleVisibility"]');
         self::assertSelectorCount(2, '[data-controller="submit-button"]');
@@ -398,6 +446,51 @@ final class PublicAuthenticationTest extends WebTestCase
         /** @var UserPasswordHasherInterface $hasher */
         $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
         self::assertTrue($hasher->isPasswordValid($updated, 'Secret456'));
+        self::assertTrue($updated->hasChosenPassword());
+    }
+
+    public function testAGoogleBornAccountCreatesItsFirstPasswordWithoutTheCurrentOne(): void
+    {
+        $client = static::createClient();
+        $locale = $this->defaultLocale();
+        $nickname = $this->rememberNickname('gpass' . bin2hex(random_bytes(3)));
+        $this->createUser($nickname, [UserRole::User], UserStatus::Active, 'Ada', 'gpass-' . $nickname . '@example.com', 57, $this->phone());
+        $account = $this->reload($nickname);
+        $account->setGoogleSub('google-' . $nickname);
+        $account->setPasswordChosen(false);
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->flush();
+        $client->loginUser($this->reload($nickname), 'public');
+
+        $crawler = $client->request('GET', '/' . $locale . '/profile');
+        self::assertSelectorTextContains('#profile-password-updated', $this->trans($locale, 'account.password_not_chosen'));
+        self::assertSelectorNotExists('#profile-current-password');
+        self::assertSelectorCount(2, '[data-controller="password-input"]');
+        self::assertSelectorTextContains('form[name="user_profile_password"] button[type="submit"]', $this->trans($locale, 'account.create_password'));
+
+        $form = $crawler->filter('form[name="user_profile_password"]')->form();
+        $form['user_profile_password[plainPassword]'] = 'Secret456';
+        $form['user_profile_password[confirmPassword]'] = 'Secret456';
+        $client->submit($form);
+
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
+        $crawler = $client->followRedirect();
+        self::assertSelectorTextContains('main [role="status"]', $this->trans($locale, 'account.password_saved'));
+        self::assertSelectorExists('#profile-current-password');
+        self::assertSelectorCount(3, '[data-controller="password-input"]');
+        self::assertTrue($this->reload($nickname)->hasChosenPassword());
+
+        $form = $crawler->filter('form[name="user_profile_password"]')->form();
+        $form['user_profile_password[currentPassword]'] = '';
+        $form['user_profile_password[plainPassword]'] = 'Secret789';
+        $form['user_profile_password[confirmPassword]'] = 'Secret789';
+        $client->submit($form);
+
+        self::assertSelectorExists('#profile-current-password[aria-invalid="true"]');
+        /** @var UserPasswordHasherInterface $hasher */
+        $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
+        self::assertFalse($hasher->isPasswordValid($this->reload($nickname), 'Secret789'));
     }
 
     public function testInvalidFieldsRenderErrorMessages(): void
@@ -473,9 +566,15 @@ final class PublicAuthenticationTest extends WebTestCase
 
         $client->request('GET', '/' . $locale . '/profile/avatar');
         $this->assertRedirectEndsWith($client, '/' . $locale . '/login');
+        $client->request('GET', '/' . $locale . '/profile/image/display');
+        $this->assertRedirectEndsWith($client, '/' . $locale . '/login');
 
         $client->loginUser($this->reload($nickname), 'public');
         $client->request('GET', '/' . $locale . '/profile/avatar');
+        self::assertResponseStatusCodeSame(404);
+        $client->request('GET', '/' . $locale . '/profile/image/display');
+        self::assertResponseStatusCodeSame(404);
+        $client->request('GET', '/' . $locale . '/profile/image/thumb');
         self::assertResponseStatusCodeSame(404);
 
         $managedUser = $this->reload($nickname);
@@ -490,10 +589,34 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('image/', (string) $client->getResponse()->headers->get('Content-Type'));
 
+        $client->request('GET', '/' . $locale . '/profile/image/display');
+        self::assertResponseIsSuccessful();
+        self::assertSame('image/webp', $client->getResponse()->headers->get('Content-Type'));
+
         $client->request('GET', '/' . $locale . '/profile');
         self::assertSelectorExists('#profile-remove-avatar[role="switch"]');
         self::assertSelectorExists('[data-controller="toggle"]');
         self::assertSelectorTextContains('#profile-remove-avatar-help', $this->trans($locale, 'account.remove_avatar_help'));
+        $profile = $client->getCrawler();
+        $button = $profile->filter('section[data-controller="gallery"] button[data-gallery-target="item"]');
+        self::assertSame(1, $button->count());
+        self::assertSame($this->trans($locale, 'account.view_avatar'), $button->attr('aria-label'));
+        $displaySrc = $button->attr('data-gallery-src-param');
+        $thumbSrc = $button->filter('img')->attr('src');
+        self::assertIsString($displaySrc);
+        self::assertIsString($thumbSrc);
+        self::assertMatchesRegularExpression('#/profile/image/display\?v=[a-f0-9]{16}$#', $displaySrc);
+        self::assertMatchesRegularExpression('#/profile/avatar\?v=[a-f0-9]{16}$#', $thumbSrc);
+        self::assertSame(substr($displaySrc, -16), substr($thumbSrc, -16));
+        self::assertGreaterThanOrEqual(2, $profile->filter('img[src="' . $thumbSrc . '"]')->count());
+        self::assertSelectorNotExists('section[data-controller="gallery"] button[data-gallery-alt-param]');
+        self::assertSelectorExists(sprintf(
+            'dialog.gallery-dialog[aria-label="%s"] button[data-gallery-target="closeButton"][aria-label="%s"]',
+            $this->trans($locale, 'account.avatar'),
+            $this->trans($locale, 'pokemon.close'),
+        ));
+        self::assertSelectorExists('button[data-gallery-target="previousButton"][hidden]');
+        self::assertSelectorExists('button[data-gallery-target="nextButton"][hidden]');
     }
 
     private function submitLogin(KernelBrowser $client, string $locale, string $nickname, string $password): void
@@ -622,6 +745,19 @@ final class PublicAuthenticationTest extends WebTestCase
             $locale,
             static fn (): string => $translator->trans($key, $parameters, $domain),
         );
+    }
+
+    private function platformName(string $locale): string
+    {
+        /** @var GeneralSettingsProvider $settings */
+        $settings = static::getContainer()->get(GeneralSettingsProvider::class);
+        $name = $settings->get()->getPlatformName();
+
+        if (null !== $name && '' !== $name) {
+            return $name;
+        }
+
+        return $this->trans($locale, 'site.name_fallback');
     }
 
     private function defaultLocale(): string

@@ -11,6 +11,8 @@ use App\Security\AccountStatusUserChecker;
 use DateTime;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
@@ -61,6 +63,54 @@ final class UserCheckerTest extends TestCase
         self::assertTrue($user->isLoginTemporarilyBlocked());
     }
 
+    public function testAllowsUnconfirmedUserOnThePublicSite(): void
+    {
+        $checker = $this->checkerFor('/es/login', 'security.firewall.map.context.public');
+        $user = $this->createUser(UserStatus::UnconfirmedAccount);
+        $user->setApplicationRoles([UserRole::User]);
+
+        $checker->checkPreAuth($user);
+        $checker->checkPostAuth($user);
+
+        self::assertSame(UserStatus::UnconfirmedAccount, $user->getStatus());
+    }
+
+    public function testStillBlocksUnconfirmedUserOnAdminLogin(): void
+    {
+        $checker = $this->checkerFor('/admin/login', 'security.firewall.map.context.main');
+        $user = $this->createUser(UserStatus::UnconfirmedAccount);
+        $user->setApplicationRoles([UserRole::User]);
+
+        $this->expectException(CustomUserMessageAccountStatusException::class);
+        $this->expectExceptionMessage('account_unconfirmed');
+
+        $checker->checkPreAuth($user);
+    }
+
+    public function testBlocksUnconfirmedUserOutsideThePublicFirewall(): void
+    {
+        $checker = $this->checkerFor('/api/me', 'security.firewall.map.context.api');
+        $user = $this->createUser(UserStatus::UnconfirmedAccount);
+        $user->setApplicationRoles([UserRole::User]);
+
+        $this->expectException(CustomUserMessageAccountStatusException::class);
+        $this->expectExceptionMessage('account_unconfirmed');
+
+        $checker->checkPreAuth($user);
+    }
+
+    public function testBlocksUnconfirmedUserWhenTheFirewallContextIsMissing(): void
+    {
+        $checker = $this->checkerFor('/es/login', null);
+        $user = $this->createUser(UserStatus::UnconfirmedAccount);
+        $user->setApplicationRoles([UserRole::User]);
+
+        $this->expectException(CustomUserMessageAccountStatusException::class);
+        $this->expectExceptionMessage('account_unconfirmed');
+
+        $checker->checkPreAuth($user);
+    }
+
     public function testAllowsIncompleteProfileLogin(): void
     {
         $user = $this->createUser(UserStatus::UncompleteProfileInfo);
@@ -69,6 +119,20 @@ final class UserCheckerTest extends TestCase
         $this->userChecker->checkPostAuth($user);
 
         self::assertSame(UserStatus::UncompleteProfileInfo, $user->getStatus());
+    }
+
+    private function checkerFor(string $path, ?string $firewallContext): AccountStatusUserChecker
+    {
+        $request = Request::create($path, 'POST');
+
+        if (null !== $firewallContext) {
+            $request->attributes->set('_firewall_context', $firewallContext);
+        }
+
+        $stack = new RequestStack();
+        $stack->push($request);
+
+        return new AccountStatusUserChecker(null, $stack);
     }
 
     private function createUser(UserStatus $status): User

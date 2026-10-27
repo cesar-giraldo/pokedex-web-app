@@ -1,0 +1,66 @@
+{% extends '@web/base.html.twig' %}
+
+{% block title %}{{ 'auth.confirm_title'|trans }} · {{ public_site_name() }}{% endblock %}
+{% block meta_description %}{{ 'auth.confirm_description'|trans({email: email}) }}{% endblock %}
+{% block robots %}noindex, follow{% endblock %}
+
+{% block body %}
+    <div class="bg-surface px-4 py-16">
+        <div class="mx-auto max-w-md rounded-3xl bg-white p-8 ring-1 ring-black/5">
+            <h1 class="text-3xl font-extrabold tracking-tight">{{ 'auth.confirm_title'|trans }}</h1>
+            <p class="mt-2 text-sm leading-6 text-muted">{{ 'auth.confirm_description'|trans({email: email}) }}</p>
+            <div class="mt-6 space-y-3">
+                {% for message in app.flashes('success') %}
+                    <twig:web_alert variant="success" message="{{ message|trans }}" />
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <twig:web_alert variant="error" message="{{ message|trans }}" />
+                {% endfor %}
+                {% for error in confirmationForm.vars.errors %}
+                    <twig:web_alert variant="error" message="{{ error.message }}" />
+                {% endfor %}
+            </div>
+            {{ form_start(confirmationForm, {
+                action: path('app_public_account_confirm', {_locale: app.request.locale}),
+                method: 'POST',
+                attr: confirmationForm.vars.attr|merge({ class: 'mt-8' }),
+            }) }}
+                <div
+                    class="flex justify-center gap-2"
+                    role="group"
+                    aria-label="{{ 'auth.confirm_code_label'|trans }}"
+                    {% if confirmationForm.vars.errors|length > 0 %}aria-describedby="confirm-code-error"{% endif %}
+                >
+                    {% for position in 1..6 %}
+                        {% set field = confirmationForm['digit' ~ position] %}
+                        <input
+                            id="confirm-digit-{{ position }}"
+                            name="{{ field.vars.full_name }}"
+                            class="field h-14 w-11 rounded-2xl px-0 text-center text-xl font-semibold{% if confirmationForm.vars.errors|length > 0 %} border-danger{% endif %}"
+                            type="text"
+                            inputmode="numeric"
+                            maxlength="1"
+                            pattern="[0-9]*"
+                            autocomplete="{{ 1 == position ? 'one-time-code' : 'off' }}"
+                            value="{{ field.vars.value }}"
+                            aria-label="{{ 'auth.confirm_digit'|trans({position: position}) }}"
+                            data-confirmation-code-target="digit"
+                            data-action="input->confirmation-code#onInput keydown->confirmation-code#onKeydown paste->confirmation-code#onPaste"
+                            {% if confirmationForm.vars.errors|length > 0 %}aria-invalid="true"{% endif %}
+                            required
+                        >
+                    {% endfor %}
+                </div>
+                <div class="mt-8">
+                    <twig:web_submit_button label="{{ 'auth.confirm_submit'|trans }}" />
+                </div>
+                {{ form_widget(confirmationForm._token) }}
+            {{ form_end(confirmationForm, { render_rest: false }) }}
+            <form class="mt-4" method="post" action="{{ path('app_public_account_confirm_resend', {_locale: app.request.locale}) }}" data-turbo="false">
+                <input type="hidden" name="_token" value="{{ csrf_token('account_confirm_resend') }}">
+                <button class="btn btn-secondary w-full" type="submit">{{ 'auth.confirm_resend'|trans }}</button>
+            </form>
+            <a class="btn btn-secondary mt-3 w-full" data-turbo-prefetch="false" href="{{ path('app_public_logout', {_locale: app.request.locale}) }}">{{ 'auth.confirm_back'|trans }}</a>
+        </div>
+    </div>
+{% endblock %}

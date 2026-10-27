@@ -1,0 +1,13 @@
+{{ 'email.confirmation_code.heading'|trans }}
+
+{{ 'email.confirmation_code.intro'|trans({name: recipient_name}) }}
+
+{{ code }}
+
+{{ 'email.confirmation_code.expires'|trans }}
+
+{{ 'email.confirmation_code.nickname'|trans({nickname: nickname}) }}
+
+{{ 'email.confirmation_code.action'|trans }}: {{ confirm_url }}
+
+{{ 'email.confirmation_code.footer'|trans }}

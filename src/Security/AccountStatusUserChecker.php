@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Security;
 
+use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -15,8 +17,11 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 final class AccountStatusUserChecker implements UserCheckerInterface
 {
+    private const string PUBLIC_FIREWALL_CONTEXT = 'security.firewall.map.context.public';
+
     public function __construct(
         private readonly ?TokenStorageInterface $tokenStorage = null,
+        private readonly ?RequestStack $requestStack = null,
     ) {
     }
 
@@ -35,7 +40,7 @@ final class AccountStatusUserChecker implements UserCheckerInterface
             );
         }
 
-        if (!$user->getStatus()->allowsBackendLogin()) {
+        if (!$user->getStatus()->allowsBackendLogin() && !$this->allowsPublicUnconfirmedLogin($user)) {
             throw new CustomUserMessageAccountStatusException($user->getStatus()->loginDeniedMessage());
         }
     }
@@ -50,11 +55,26 @@ final class AccountStatusUserChecker implements UserCheckerInterface
             return;
         }
 
+        if (UserStatus::UnconfirmedAccount === $user->getStatus() && $this->allowsPublicUnconfirmedLogin($user)) {
+            return;
+        }
+
         if (UserStatus::Active !== $user->getStatus()) {
             throw new CustomUserMessageAccountStatusException(
                 $user->getStatus()->loginDeniedMessage()
             );
         }
+    }
+
+    private function allowsPublicUnconfirmedLogin(User $user): bool
+    {
+        if (UserStatus::UnconfirmedAccount !== $user->getStatus() || !$user->hasAssignedRole(UserRole::User)) {
+            return false;
+        }
+
+        $context = $this->requestStack?->getCurrentRequest()?->attributes->get('_firewall_context');
+
+        return self::PUBLIC_FIREWALL_CONTEXT === $context;
     }
 
     private function isImpersonated(User $user): bool

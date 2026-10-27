@@ -126,22 +126,49 @@ contact:
 auth:
     unavailable: Esta função ainda não está disponível.
     login_title: Entrar
-    login_description: Entre com seu nickname e sua senha para continuar.
+    login_description: Entre com seu e-mail/nickname e sua senha para continuar.
+    login_identifier: E-mail ou nickname
     register_title: Criar conta
-    register_description: Crie uma conta para guardar seu progresso. O cadastro ainda não está ativo.
+    register_description: Crie uma conta para poder acessar.
     nickname: Nickname
     email: E-mail
     password: Senha
     no_public_access: Você não tem acesso a esta seção.
     password_confirm: Confirmar senha
-    password_hint: Mínimo de 8 caracteres.
+    password_hint: Mínimo de 5 caracteres, com letras e números.
     name: Nome
     remember: Lembrar neste dispositivo
     submit_login: Entrar
     submit_register: Criar conta
+    google_signup: Criar conta com o Google
+    google_login: Entrar com o Google
+    google_or: ou
+    google_failed: Não foi possível continuar com o Google. Tente de novo ou use o formulário.
+    google_unavailable: O acesso com o Google não está disponível neste momento.
     no_account: Não tem conta?
     has_account: Já tem conta?
     accept_terms: Aceito os
+    accept_privacy: Aceito a
+    accept_and: e a
+    confirm_title: Confirme sua conta
+    confirm_description: Enviamos um código de 6 dígitos para {email}. Ele expira em 2 horas.
+    confirm_code_label: Código de confirmação
+    confirm_digit: Dígito {position} de 6
+    confirm_submit: Continuar
+    confirm_resend: Não recebeu o código?
+    confirm_back: Voltar
+    confirm_mismatch: O código não confere. Tente de novo.
+    confirm_expired: O código expirou. Solicite um novo.
+    confirm_exhausted: Muitas tentativas. Solicite um código novo.
+    confirm_missing: Solicite um código novo.
+    confirm_resent: Enviamos um código novo para o seu e-mail.
+    confirm_cooldown: Espere um momento antes de solicitar outro código.
+    confirm_limited: Você atingiu o limite de reenvios. Tente mais tarde.
+    confirm_mail_failed: Não conseguimos enviar o e-mail. Solicite o código de novo.
+    confirm_resend_invalid: Não conseguimos reenviar o código. Tente de novo.
+    register_unavailable: Não conseguimos criar a conta com esses dados. Se você já tem uma, entre.
+    register_rate_limited: Muitas tentativas de cadastro. Tente mais tarde.
+    register_rejected: Não conseguimos criar a conta. Tente de novo.
 
 form:
     processing: Processando...
@@ -161,6 +188,7 @@ account:
     locale: Idioma regional
     time_format: Formato de hora
     avatar: Imagem de perfil
+    view_avatar: Ver imagem de perfil
     avatar_help: 'Opcional. JPG, PNG ou WebP. Tamanho máximo: 6 MB.'
     nickname_readonly: O nickname não pode ser alterado.
     remove_avatar: Remover imagem atual
@@ -170,10 +198,14 @@ account:
     new_password: Nova senha
     confirm_password: Confirmar senha
     save_password: Atualizar senha
+    create_password: Criar senha
     password_unchanged: Não foi alterada desde a criação da conta.
+    password_not_chosen: Ainda não há uma senha da plataforma. Você pode criar uma e continuar entrando com o Google.
     password_last_updated: 'Última atualização: {date}'
     complete_profile: Complete as informações do seu perfil para continuar.
+    confirmed_complete_profile: Conta confirmada com sucesso. Agora complete as informações do seu perfil para continuar.
     info_saved: Suas informações pessoais foram atualizadas.
+    profile_completed: Seu perfil foi concluído com sucesso. Você já pode usar a plataforma.
     password_saved: Sua senha foi atualizada.
     info_error: Não foi possível atualizar seu perfil. Tente de novo.
     password_error: Não foi possível atualizar sua senha. Tente de novo.
@@ -200,6 +232,9 @@ notifications:
     next: Seguinte
     page: 'Página {page} de {pages}'
     pagination: Paginação
+    user_registered:
+        title: Novo usuário na plataforma
+        message: '{name} ({email}) confirmou a conta.'
     type:
         system_info: Sistema
         user_created: Usuários
@@ -251,6 +286,26 @@ email:
             intro: 'Olá {name}, o backup da base de dados não foi concluído.'
             detail: O detalhe está na notificação da aplicação. Na configuração geral você pode revisar o último backup disponível.
             action: Abrir a configuração geral
+        footer: Esta mensagem foi enviada automaticamente.
+    confirmation_code:
+        subject: Seu código para confirmar a conta
+        heading: Confirme sua conta
+        intro: 'Olá {name}, use este código para confirmar sua conta.'
+        expires: O código expira em 2 horas e só pode ser usado uma vez.
+        nickname: 'Seu usuário para entrar é {nickname}.'
+        action: Inserir o código
+        footer: Se você não criou esta conta, ignore esta mensagem.
+    new_user:
+        subject: Um novo usuário confirmou a conta
+        heading: Novo usuário na plataforma
+        intro: 'Olá {name}, {registered_name} ({email}) confirmou a conta.'
+        action: Ver o usuário
+        footer: Esta mensagem foi enviada automaticamente.
+    welcome:
+        subject: Seu perfil está pronto
+        heading: 'Bem-vindo a {platform}'
+        intro: 'Olá {name}, obrigado por se registrar na {platform}. Sua conta está pronta e você já pode usá-la.'
+        action: Acessar
         footer: Esta mensagem foi enviada automaticamente.
 
 error:

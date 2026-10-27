@@ -126,22 +126,49 @@ contact:
 auth:
     unavailable: This feature is not available yet.
     login_title: Log in
-    login_description: Sign in with your nickname and password to continue.
+    login_description: Sign in with your email/nickname and password to continue.
+    login_identifier: Email or nickname
     register_title: Create account
-    register_description: Create an account to save your progress. Registration is not active yet.
+    register_description: Create an account to get access.
     nickname: Nickname
     email: Email
     password: Password
     no_public_access: You do not have access to this section.
     password_confirm: Confirm password
-    password_hint: At least 8 characters.
+    password_hint: At least 5 characters, including letters and numbers.
     name: Name
     remember: Remember me on this device
     submit_login: Log in
     submit_register: Create account
+    google_signup: Sign up with Google
+    google_login: Log in with Google
+    google_or: or
+    google_failed: We could not continue with Google. Try again or use the form.
+    google_unavailable: Sign-in with Google is not available right now.
     no_account: No account yet?
     has_account: Already have an account?
     accept_terms: I accept the
+    accept_privacy: I accept the
+    accept_and: and the
+    confirm_title: Confirm your account
+    confirm_description: We sent a 6-digit code to {email}. It expires in 2 hours.
+    confirm_code_label: Confirmation code
+    confirm_digit: Digit {position} of 6
+    confirm_submit: Continue
+    confirm_resend: Didn't get a code?
+    confirm_back: Go back
+    confirm_mismatch: The code does not match. Try again.
+    confirm_expired: The code expired. Request a new one.
+    confirm_exhausted: Too many attempts. Request a new code.
+    confirm_missing: Request a new code.
+    confirm_resent: We sent a new code to your email.
+    confirm_cooldown: Wait a moment before requesting another code.
+    confirm_limited: You reached the resend limit. Try again later.
+    confirm_mail_failed: We could not send the email. Request the code again.
+    confirm_resend_invalid: We could not resend the code. Try again.
+    register_unavailable: We could not create the account with these details. If you already have one, log in.
+    register_rate_limited: Too many registration attempts. Try again later.
+    register_rejected: We could not create the account. Try again.
 
 form:
     processing: Processing...
@@ -161,6 +188,7 @@ account:
     locale: Regional language
     time_format: Time format
     avatar: Profile image
+    view_avatar: View profile image
     avatar_help: 'Optional. JPG, PNG, or WebP. Maximum size: 6 MB.'
     nickname_readonly: The nickname cannot be changed.
     remove_avatar: Remove current image
@@ -170,10 +198,14 @@ account:
     new_password: New password
     confirm_password: Confirm password
     save_password: Update password
+    create_password: Create password
     password_unchanged: It has not been changed since the account was created.
+    password_not_chosen: There is no platform password yet. You can create one and still sign in with Google.
     password_last_updated: 'Last updated: {date}'
     complete_profile: Complete your profile information to continue.
+    confirmed_complete_profile: Your account was confirmed successfully. Now complete your profile information to continue.
     info_saved: Your personal information was updated.
+    profile_completed: Your profile was completed successfully. You can now use the platform.
     password_saved: Your password was updated.
     info_error: Your profile could not be updated. Try again.
     password_error: Your password could not be updated. Try again.
@@ -200,6 +232,9 @@ notifications:
     next: Next
     page: 'Page {page} of {pages}'
     pagination: Pagination
+    user_registered:
+        title: New user on the platform
+        message: '{name} ({email}) confirmed their account.'
     type:
         system_info: System
         user_created: Users
@@ -251,6 +286,26 @@ email:
             intro: 'Hello {name}, the database backup did not finish.'
             detail: The details are in the in-app notification. In general settings you can review the latest backup available.
             action: Open general settings
+        footer: This message was sent automatically.
+    confirmation_code:
+        subject: Your account confirmation code
+        heading: Confirm your account
+        intro: 'Hello {name}, use this code to confirm your account.'
+        expires: The code expires in 2 hours and can only be used once.
+        nickname: 'Your sign-in username is {nickname}.'
+        action: Enter the code
+        footer: If you did not create this account, ignore this message.
+    new_user:
+        subject: A new user confirmed their account
+        heading: New user on the platform
+        intro: 'Hello {name}, {registered_name} ({email}) confirmed their account.'
+        action: View the user
+        footer: This message was sent automatically.
+    welcome:
+        subject: Your profile is ready
+        heading: 'Welcome to {platform}'
+        intro: 'Hello {name}, thank you for registering on {platform}. Your account is ready and you can start using it.'
+        action: Access
         footer: This message was sent automatically.
 
 error:

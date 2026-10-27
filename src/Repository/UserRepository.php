@@ -59,6 +59,22 @@ class UserRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findOneByGoogleSub(string $googleSub): ?User
+    {
+        $googleSub = trim($googleSub);
+
+        if ('' === $googleSub) {
+            return null;
+        }
+
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.googleSub = :googleSub')
+            ->setParameter('googleSub', $googleSub)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function existsByNickname(string $nickname): bool
     {
         return $this->findOneByNickname($nickname) instanceof User;

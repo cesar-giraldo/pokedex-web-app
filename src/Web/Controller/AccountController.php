@@ -19,6 +19,7 @@ use App\Entity\Enum\TimeFormat;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Legal\LegalLanguageResolver;
+use App\Notification\Email\WelcomeMailer;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -48,6 +49,7 @@ final class AccountController extends AbstractController
         private readonly UserProfileImageStorage $profileImageStorage,
         private readonly GeneralSettingsProvider $generalSettingsProvider,
         private readonly LegalLanguageResolver $legalLanguageResolver,
+        private readonly WelcomeMailer $welcomeMailer,
     ) {
     }
 
@@ -72,6 +74,7 @@ final class AccountController extends AbstractController
         $passwordForm = $this->createForm(UserProfilePasswordType::class, null, [
             'user' => $user,
             'password_hasher' => $this->passwordHasher,
+            'require_current_password' => $user->hasChosenPassword(),
         ]);
 
         $infoForm->handleRequest($request);
@@ -93,9 +96,19 @@ final class AccountController extends AbstractController
         '/{_locale}/profile/avatar',
         name: 'app_public_profile_avatar',
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
+        defaults: ['variant' => 'avatar'],
         methods: ['GET'],
     )]
-    public function avatar(): Response
+    #[Route(
+        '/{_locale}/profile/image/{variant}',
+        name: 'app_public_profile_image',
+        requirements: [
+            '_locale' => SupportedLanguage::ROUTE_REQUIREMENT,
+            'variant' => 'avatar|display|original',
+        ],
+        methods: ['GET'],
+    )]
+    public function avatar(string $variant): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -105,8 +118,13 @@ final class AccountController extends AbstractController
             throw new NotFoundHttpException();
         }
 
+        $imageVariant = ImageVariant::tryFrom($variant);
+        if (!$imageVariant instanceof ImageVariant || !$imageVariant->isAllowedForProfile()) {
+            throw new NotFoundHttpException();
+        }
+
         try {
-            $stream = $this->profileImageStorage->readStream($profileImagePath, ImageVariant::Avatar);
+            $stream = $this->profileImageStorage->readStream($profileImagePath, $imageVariant);
         } catch (Throwable) {
             throw new NotFoundHttpException();
         }
@@ -125,7 +143,7 @@ final class AccountController extends AbstractController
 
         $response->headers->set(
             'Content-Type',
-            $this->profileImageStorage->resolveMimeType($profileImagePath, ImageVariant::Avatar),
+            $this->profileImageStorage->resolveMimeType($profileImagePath, $imageVariant),
         );
         $response->headers->set('Cache-Control', 'private, max-age=3600');
 
@@ -158,10 +176,10 @@ final class AccountController extends AbstractController
             return $this->renderProfile($user, $infoForm, $passwordForm);
         }
 
-        if (
-            UserStatus::UncompleteProfileInfo === $user->getStatus()
-            && $user->hasCompleteProfileContactInfo()
-        ) {
+        $profileCompleted = UserStatus::UncompleteProfileInfo === $user->getStatus()
+            && $user->hasCompleteProfileContactInfo();
+
+        if ($profileCompleted) {
             $user->setStatus(UserStatus::Active);
         }
 
@@ -182,12 +200,23 @@ final class AccountController extends AbstractController
             return $this->renderProfile($user, $infoForm, $passwordForm);
         }
 
+        $locale = $this->legalLanguageResolver
+            ->preferredForUser($user, $this->generalSettingsProvider->get())
+            ->value;
+
+        if ($profileCompleted) {
+            $this->welcomeMailer->send($user);
+            $this->addFlash('success', 'account.profile_completed');
+
+            return $this->redirectToRoute('app_public_home', [
+                '_locale' => $locale,
+            ]);
+        }
+
         $this->addFlash('success', 'account.info_saved');
 
         return $this->redirectToRoute('app_public_profile', [
-            '_locale' => $this->legalLanguageResolver
-                ->preferredForUser($user, $this->generalSettingsProvider->get())
-                ->value,
+            '_locale' => $locale,
         ]);
     }
 
@@ -212,6 +241,7 @@ final class AccountController extends AbstractController
         }
 
         $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
+        $user->setPasswordChosen(true);
         $user->setPasswordUpdatedAt(new DateTime());
 
         try {

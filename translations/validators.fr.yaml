@@ -1,0 +1,19 @@
+auth.password_mismatch: Le mot de passe et la confirmation ne correspondent pas.
+auth.password_strength: Le mot de passe doit contenir au moins 5 caractères, avec des lettres et des chiffres.
+auth.password_required: Le mot de passe est obligatoire.
+auth.password_confirm_required: Confirmez le mot de passe.
+auth.password_max: Le mot de passe ne peut pas dépasser {{ limit }} caractères.
+auth.name_required: Le prénom est obligatoire.
+auth.lastname_required: Le nom est obligatoire.
+auth.name_max: Le prénom ne peut pas dépasser {{ limit }} caractères.
+auth.lastname_max: Le nom ne peut pas dépasser {{ limit }} caractères.
+auth.email_required: L’adresse e-mail est obligatoire.
+auth.email_invalid: Saisissez une adresse e-mail valide.
+auth.email_min: L’adresse e-mail doit contenir au moins {{ limit }} caractères.
+auth.email_max: L’adresse e-mail ne peut pas dépasser {{ limit }} caractères.
+auth.email_domain: Ce domaine ne peut pas recevoir d’e-mails.
+auth.email_domain_retry: Nous n’avons pas pu vérifier le domaine de l’e-mail. Réessayez.
+auth.register_unavailable: Nous n’avons pas pu créer le compte avec ces informations. Si vous en avez déjà un, connectez-vous.
+auth.register_rejected: Nous n’avons pas pu créer le compte. Réessayez.
+auth.terms_required: Vous devez accepter les documents pour continuer.
+auth.confirm_code_required: Saisissez le code à 6 chiffres.

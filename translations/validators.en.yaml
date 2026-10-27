@@ -1,0 +1,19 @@
+auth.password_mismatch: The password and confirmation do not match.
+auth.password_strength: The password must be at least 5 characters and include letters and numbers.
+auth.password_required: The password is required.
+auth.password_confirm_required: Confirm the password.
+auth.password_max: The password cannot be longer than {{ limit }} characters.
+auth.name_required: The first name is required.
+auth.lastname_required: The last name is required.
+auth.name_max: The first name cannot be longer than {{ limit }} characters.
+auth.lastname_max: The last name cannot be longer than {{ limit }} characters.
+auth.email_required: The email address is required.
+auth.email_invalid: Enter a valid email address.
+auth.email_min: The email must be at least {{ limit }} characters.
+auth.email_max: The email cannot be longer than {{ limit }} characters.
+auth.email_domain: This domain cannot receive email.
+auth.email_domain_retry: We could not verify the email domain. Try again.
+auth.register_unavailable: We could not create the account with these details. If you already have one, log in.
+auth.register_rejected: We could not create the account. Try again.
+auth.terms_required: You must accept the documents to continue.
+auth.confirm_code_required: Enter the 6-digit code.
