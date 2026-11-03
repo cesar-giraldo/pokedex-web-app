@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace App\Admin\Controller;
 
 use App\Admin\Controller\Concerns\FlashesFormValidationErrorsTrait;
-use App\Admin\Data\IanaTimezones;
 use App\Admin\Form\GeneralSettingsDateTimeType;
 use App\Admin\Form\GeneralSettingsGeneralType;
 use App\Admin\Form\GeneralSettingsLanguageType;
+use App\Admin\Service\GeneralSettingsPageFactory;
 use App\Admin\Service\Storage\PlatformBrandingFormHandler;
-use App\Entity\Enum\SupportedLanguage;
-use App\Entity\Enum\SupportedLocale;
-use App\Entity\Enum\TimeFormat;
 use App\Entity\GeneralSettings;
+use App\Entity\Module;
 use App\Repository\GeneralSettingsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,6 +28,11 @@ use Throwable;
 final class GeneralSettingsController extends AbstractController
 {
     use FlashesFormValidationErrorsTrait;
+
+    public function __construct(
+        private readonly GeneralSettingsPageFactory $generalSettingsPageFactory,
+    ) {
+    }
 
     /**
      * Valores persistidos antes de que el formulario mapee datos no guardados.
@@ -96,6 +99,8 @@ final class GeneralSettingsController extends AbstractController
             false,
             false,
             false,
+            null,
+            'edit' === $request->query->get('modules'),
         ));
     }
 
@@ -255,6 +260,7 @@ final class GeneralSettingsController extends AbstractController
      * @param FormInterface<GeneralSettings> $generalForm
      * @param FormInterface<GeneralSettings> $languageForm
      * @param FormInterface<GeneralSettings> $dateTimeForm
+     * @param FormInterface<Module>|null     $moduleForm
      *
      * @return array<string, mixed>
      */
@@ -266,22 +272,24 @@ final class GeneralSettingsController extends AbstractController
         bool $editGeneral,
         bool $editLanguage,
         bool $editDateTime,
+        ?FormInterface $moduleForm = null,
+        bool $editModules = false,
+        bool $moduleModalOpen = false,
+        string $moduleFormMode = 'create',
     ): array {
-        return [
-            'settings' => $settings,
-            'general_form' => $generalForm,
-            'language_form' => $languageForm,
-            'datetime_form' => $dateTimeForm,
-            'language_options' => SupportedLanguage::options(),
-            'timezone_options' => IanaTimezones::options(),
-            'locale_options' => SupportedLocale::options(),
-            'time_format_options' => TimeFormat::options(),
-            'edit_general' => $editGeneral,
-            'edit_language' => $editLanguage,
-            'edit_datetime' => $editDateTime,
-            'persisted_branding' => $this->persistedBranding,
-            'active_menu' => 'auth',
-            'active_page' => 'general_settings',
-        ];
+        return $this->generalSettingsPageFactory->create(
+            $settings,
+            $generalForm,
+            $languageForm,
+            $dateTimeForm,
+            $this->persistedBranding,
+            $editGeneral,
+            $editLanguage,
+            $editDateTime,
+            $moduleForm,
+            $editModules,
+            $moduleModalOpen,
+            $moduleFormMode,
+        );
     }
 }

@@ -203,7 +203,7 @@ auth:
     forgot_password_description: Enter the email or nickname you used to register. If the account can be recovered, we will send you a link.
     forgot_password_identifier: Email or nickname
     forgot_password_submit: Send link
-    forgot_password_sent: If the account exists and can be recovered, we sent an email with the steps.
+    forgot_password_sent: Check your inbox, we sent an email with the steps.
     forgot_password_rate_limited: Too many attempts. Wait a moment and try again.
     forgot_password_back: Back to log in
     reset_password_title: Create a new password

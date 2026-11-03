@@ -67,7 +67,7 @@ final class PasswordResetControllerTest extends WebTestCase
         $this->submitIdentifier($client, 'missing-admin@example.com');
         self::assertQueuedEmailCount(0);
         $client->followRedirect();
-        self::assertSelectorTextContains('body', 'Si la cuenta existe y se puede recuperar, enviamos un correo con los pasos.');
+        self::assertSelectorTextContains('body', 'Te hemos enviado un correo electrónico para recuperar tu contraseña.');
 
         $webOnly = $this->remember('web' . bin2hex(random_bytes(3)));
         $this->createUser($webOnly, UserRole::User, UserStatus::Active);
@@ -80,7 +80,7 @@ final class PasswordResetControllerTest extends WebTestCase
         $this->submitIdentifier($client, $banned);
         self::assertQueuedEmailCount(0);
         $client->followRedirect();
-        self::assertSelectorTextContains('body', 'Si la cuenta existe y se puede recuperar, enviamos un correo con los pasos.');
+        self::assertSelectorTextContains('body', 'Te hemos enviado un correo electrónico para recuperar tu contraseña.');
     }
 
     public function testOperatorCanSetANewPasswordAndTheOldSessionStopsWorking(): void

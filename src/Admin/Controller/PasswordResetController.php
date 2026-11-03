@@ -42,7 +42,7 @@ final class PasswordResetController extends AbstractController
             if ($result->rateLimitedByIp) {
                 $form->addError(new FormError('Demasiados intentos. Espera un momento y vuelve a intentarlo.'));
             } else {
-                $this->addFlash('success', 'Si la cuenta existe y se puede recuperar, enviamos un correo con los pasos.');
+                $this->addFlash('success', 'Te hemos enviado un correo electrónico para recuperar tu contraseña.');
 
                 return $this->redirectToRoute('app_admin_forgot_password');
             }

@@ -1,0 +1,189 @@
+{% from '@admin/macros/form.html.twig' import field_error %}
+
+{% if is_granted('ROLE_DEVELOPER') %}
+	{% set module_total = module_roots|length %}
+	{% set module_midpoint = module_total is odd ? (module_total + 1) // 2 : module_total // 2 %}
+	<section
+		id="module-admin"
+		aria-labelledby="module-admin-title"
+		data-controller="module-admin"
+		data-module-admin-edit-mode-value="{{ edit_modules ? 'true' : 'false' }}"
+		data-module-admin-modal-open-value="{{ module_modal_open ? 'true' : 'false' }}"
+		data-module-admin-csrf-token-value="{{ csrf_token('module_catalog') }}"
+		data-module-admin-create-url-value="{{ path('app_backend_module_create') }}"
+		class="mb-6 rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6"
+	>
+		<div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+			<div class="w-full">
+				<h4 id="module-admin-title" class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+					Administración de Módulos
+				</h4>
+
+				<p data-module-admin-target="toggleError" class="mb-4 hidden text-sm text-error-500" role="alert"></p>
+
+				<div data-module-admin-target="view" class="{{ edit_modules ? 'hidden' : '' }}">
+					{% include '@admin/settings/general/_module_columns.html.twig' with { mode: 'view', midpoint: module_midpoint } %}
+				</div>
+
+				<div
+					data-module-admin-target="editor"
+					data-action="change->module-admin#toggleEnabled"
+					class="{{ edit_modules ? '' : 'hidden' }}"
+				>
+					<div class="mb-4">
+						<button
+							type="button"
+							data-action="click->module-admin#openCreate"
+							class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600"
+						>
+							Agregar Módulo
+						</button>
+					</div>
+					{% include '@admin/settings/general/_module_columns.html.twig' with { mode: 'edit', midpoint: module_midpoint } %}
+				</div>
+			</div>
+
+			<div>
+				<div data-module-admin-target="editButton" class="{{ edit_modules ? 'hidden' : '' }}">
+					<button
+						type="button"
+						data-action="click->module-admin#startEdit"
+						class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+					>
+						{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+						Editar
+					</button>
+				</div>
+				<div data-module-admin-target="doneButton" class="{{ edit_modules ? '' : 'hidden' }}">
+					<button
+						type="button"
+						data-action="click->module-admin#finishEdit"
+						class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+					>
+						Listo
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div
+			id="module-modal"
+			data-module-admin-target="modal"
+			class="fixed inset-0 z-99999 {{ module_modal_open ? 'flex' : 'hidden' }} items-center justify-center overflow-y-auto p-5"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="module-modal-title"
+		>
+			<div data-action="click->module-admin#closeModal" class="modal-close-btn fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
+			<div class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+				<button
+					type="button"
+					data-action="click->module-admin#closeModal"
+					class="transition-color absolute top-5 right-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300"
+					aria-label="Cerrar"
+				>
+					{{ ux_icon('heroicons:x-mark', { class: 'w-6 h-6' }) }}
+				</button>
+
+				<div class="px-2 pr-14">
+					<h4 id="module-modal-title" data-module-admin-target="modalTitle" class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+						{{ module_form_mode == 'edit' ? 'Editar módulo' : 'Agregar módulo' }}
+					</h4>
+					<p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+						Define el nombre, el identificador y el lugar del módulo en la jerarquía.
+					</p>
+				</div>
+
+				{{ form_start(module_form, {
+					action: module_form.vars.action,
+					attr: { id: 'module-form', class: 'flex flex-col', 'data-turbo': 'false' },
+					render_rest: false,
+				}) }}
+					<div class="custom-scrollbar max-h-[450px] overflow-y-auto px-2">
+						<div class="grid grid-cols-1 gap-x-6 gap-y-5">
+							{% for error in module_form.vars.errors %}
+								<p class="text-theme-xs text-error-500" role="alert">{{ error.message }}</p>
+							{% endfor %}
+
+							<twig:component_single_select
+								label="Módulo padre"
+								name="{{ module_form.parent.vars.full_name }}"
+								id="module-parent"
+								placeholder="Sin módulo padre"
+								:options="module_parent_options"
+								selected="{{ module_form.parent.vars.value ?? '' }}"
+								:required="false"
+								error="{{ field_error(module_form.parent) }}"
+								help="Opcional. Sin selección, el módulo queda en la raíz."
+							/>
+
+							<twig:component_text_input
+								label="Nombre"
+								name="{{ module_form.name.vars.full_name }}"
+								id="module-name"
+								placeholder="Nombre del módulo"
+								value="{{ module_form.name.vars.value }}"
+								:maxLength="120"
+								:required="true"
+								error="{{ field_error(module_form.name) }}"
+							/>
+
+							<twig:component_text_input
+								label="Slug"
+								name="{{ module_form.slug.vars.full_name }}"
+								id="module-slug"
+								placeholder="nombre_del_modulo"
+								value="{{ module_form.slug.vars.value }}"
+								:maxLength="64"
+								pattern="[a-z][a-z_]*"
+								patternErrorMessage="El slug solo puede contener letras minúsculas y guiones bajos, y debe empezar por una letra."
+								:required="true"
+								error="{{ field_error(module_form.slug) }}"
+								help="Solo letras minúsculas y guiones bajos. Debe empezar por una letra."
+							/>
+
+							<twig:component_text_input
+								label="Orden"
+								name="{{ module_form.sortOrder.vars.full_name }}"
+								id="module-sort-order"
+								placeholder="0.00"
+								value="{{ module_form.sortOrder.vars.value }}"
+								inputMode="decimal"
+								pattern="[0-9]{1,8}(\.[0-9]{1,2})?"
+								patternErrorMessage="El orden debe ser un número mayor o igual a 0, con hasta 2 decimales."
+								:required="true"
+								error="{{ field_error(module_form.sortOrder) }}"
+								help="Número mayor o igual a 0. Los módulos se ordenan de menor a mayor."
+							/>
+
+							<twig:component_textarea
+								label="Descripción"
+								name="{{ module_form.description.vars.full_name }}"
+								id="module-description"
+								placeholder="Descripción opcional"
+								value="{{ module_form.description.vars.value }}"
+								:rows="4"
+								:maxLength="500"
+								:required="false"
+								error="{{ field_error(module_form.description) }}"
+							/>
+						</div>
+					</div>
+
+					<div class="mt-6 flex flex-col gap-3 px-2 sm:flex-row sm:justify-end">
+						<button
+							type="button"
+							data-action="click->module-admin#closeModal"
+							class="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
+						>
+							Cancelar
+						</button>
+						<twig:component_submit_button label="Guardar" layout="responsive" />
+					</div>
+
+					{{ form_widget(module_form._token) }}
+				{{ form_end(module_form, { render_rest: false }) }}
+			</div>
+		</div>
+	</section>
+{% endif %}
