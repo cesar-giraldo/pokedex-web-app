@@ -35,6 +35,29 @@ trait EnablesPokemonFavoritesTrait
         $this->setPokemonFavoritesState(true, true);
     }
 
+    protected function enablePokemonModule(): void
+    {
+        $this->setPokemonModuleEnabled(true);
+    }
+
+    protected function setPokemonModuleEnabled(bool $enabled): void
+    {
+        $entityManager = $this->pokemonFavoritesEntityManager();
+        $repository = $this->pokemonFavoritesRepository();
+        $parent = $repository->findOneBy(['slug' => self::POKEMON_PARENT_SLUG]);
+
+        if (!$parent instanceof Module) {
+            $parent = new Module('Pokemons', self::POKEMON_PARENT_SLUG, '9.00');
+            $entityManager->persist($parent);
+            $this->createdPokemonParent = true;
+        } elseif (!$this->createdPokemonParent && null === $this->originalPokemonParentEnabled) {
+            $this->originalPokemonParentEnabled = $parent->isEnabled();
+        }
+
+        $parent->setIsEnabled($enabled);
+        $entityManager->flush();
+    }
+
     protected function setPokemonFavoritesState(bool $parentEnabled, bool $favoritesEnabled): void
     {
         $entityManager = $this->pokemonFavoritesEntityManager();

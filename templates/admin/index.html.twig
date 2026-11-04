@@ -22,12 +22,14 @@
 			</div>
 
 			<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-				{{ include('@admin/partials/_quick_access_card.html.twig', {
-					href: path('app_backend_pokemons'),
-					title: 'Pokemons',
-					image_src: asset('images/pokemon/pokeball.png', 'admin'),
-					image_alt: 'Pokemons'
-				}) }}
+				{% if is_module_enabled('module_pokemons') %}
+					{{ include('@admin/partials/_quick_access_card.html.twig', {
+						href: path('app_backend_pokemons'),
+						title: 'Pokemons',
+						image_src: asset('images/pokemon/pokeball.png', 'admin'),
+						image_alt: 'Pokemons'
+					}) }}
+				{% endif %}
 
 				{% if effective_is_granted('ROLE_DEVELOPER') or effective_is_granted('ROLE_ADMIN') %}
 					{{ include('@admin/partials/_quick_access_card.html.twig', {

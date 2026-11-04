@@ -13,6 +13,7 @@ use App\Module\EventSubscriber\ModuleAccessSubscriber;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\LegalDocumentVersionRepository;
 use App\Repository\ModuleRepository;
+use App\Tests\Web\Support\EnablesPokemonFavoritesTrait;
 use App\Web\Service\PublicLanguageResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
@@ -30,6 +31,8 @@ use const JSON_THROW_ON_ERROR;
 #[Group('functional')]
 final class PublicPagesTest extends WebTestCase
 {
+    use EnablesPokemonFavoritesTrait;
+
     private const string PARENT_SLUG = 'module_web_secure_area';
 
     private const string COOKIES_SLUG = 'module_web_show_cookies_policy';
@@ -53,6 +56,7 @@ final class PublicPagesTest extends WebTestCase
     protected function tearDown(): void
     {
         if (static::$booted) {
+            $this->restorePokemonFavorites();
             $this->restoreCookiesModule();
         }
 
@@ -79,6 +83,7 @@ final class PublicPagesTest extends WebTestCase
     public function testPublicPagesRender(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->setCookiesModuleState(true, true);
         $locale = $this->defaultLocale();
 
@@ -86,6 +91,41 @@ final class PublicPagesTest extends WebTestCase
             $client->request('GET', '/' . $locale . $path);
             self::assertResponseIsSuccessful();
             self::assertSelectorExists('h1');
+        }
+    }
+
+    public function testPokemonCatalogIsHiddenWhenTheModuleIsDisabled(): void
+    {
+        $client = static::createClient();
+        $this->enablePokemonModule();
+        $locale = $this->defaultLocale();
+        $catalogHref = '/' . $locale . '/pokemon';
+
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#home-search');
+        self::assertSelectorExists('#carousel-title');
+        self::assertSelectorExists('a[href="' . $catalogHref . '"]');
+        self::assertStringContainsString('SearchAction', (string) $client->getResponse()->getContent());
+
+        $this->setPokemonModuleEnabled(false);
+
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('h1');
+        self::assertSelectorNotExists('#home-search');
+        self::assertSelectorNotExists('#carousel-title');
+        self::assertSelectorNotExists('a[href="' . $catalogHref . '"]');
+        self::assertStringNotContainsString('SearchAction', (string) $client->getResponse()->getContent());
+
+        foreach ([$catalogHref, $catalogHref . '/1'] as $path) {
+            $client->request('GET', $path);
+            self::assertResponseRedirects('/');
+            $client->followRedirect();
+            self::assertResponseRedirects();
+            $client->followRedirect();
+            self::assertResponseIsSuccessful();
+            self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
         }
     }
 
@@ -137,6 +177,7 @@ final class PublicPagesTest extends WebTestCase
     public function testPokemonPageHidesPrivateEntries(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $locale = $this->defaultLocale();
         /** @var EntityManagerInterface $entityManager */
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
@@ -168,6 +209,7 @@ final class PublicPagesTest extends WebTestCase
     public function testPokemonGalleryPreviewFitsTheImageAndExposesNavigation(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $locale = $this->defaultLocale();
         /** @var EntityManagerInterface $entityManager */
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
@@ -297,6 +339,7 @@ final class PublicPagesTest extends WebTestCase
     public function testSeoFilesAdvertiseThePublicSite(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->setCookiesModuleState(true, true);
         $locale = $this->defaultLocale();
 
@@ -333,6 +376,7 @@ final class PublicPagesTest extends WebTestCase
     public function testFooterMarksTheCurrentPage(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->setCookiesModuleState(true, true);
         $locale = $this->defaultLocale();
         /** @var EntityManagerInterface $entityManager */

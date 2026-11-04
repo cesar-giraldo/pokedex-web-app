@@ -55,6 +55,7 @@
 					<!-- Menu Item Dashboard -->
 
 					<!-- Menu Item Pokemons -->
+					{% if is_module_enabled('module_pokemons') %}
 					<li>
 						{% set pokemonList = get_menu_classes(active_menu, active_page, 'pokemon_list', 'pokemon_list') %}
 						<a href="{{ path('app_backend_pokemons') }}"
@@ -66,6 +67,7 @@
 							</span>
 						</a>
 					</li>
+					{% endif %}
 					<!-- Menu Item Pokemons -->
 
 					<!-- Menu Item Usuarios -->

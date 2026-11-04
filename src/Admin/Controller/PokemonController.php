@@ -16,6 +16,7 @@ use App\Admin\Service\Storage\AllowedImageTypes;
 use App\Admin\Service\Storage\PokemonImageUploadException;
 use App\Admin\Service\Storage\PokemonImageUploadService;
 use App\Entity\Pokemon;
+use App\Module\RequiresModule;
 use App\Repository\PokemonRepository;
 use App\Repository\PokemonTypeRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,6 +32,7 @@ use function is_string;
 use function sprintf;
 
 #[Route('/admin')]
+#[RequiresModule(slug: 'module_pokemons')]
 final class PokemonController extends AbstractController
 {
     use AdminPaginatorTrait;

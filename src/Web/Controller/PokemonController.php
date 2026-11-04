@@ -8,6 +8,7 @@ use App\Admin\Twig\Extensions\PokemonImageExtension;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Pokemon;
 use App\Entity\User;
+use App\Module\RequiresModule;
 use App\Web\Service\PokemonFavoriteManager;
 use App\Web\Service\PublicPokemonCatalog;
 use App\Web\Service\PublicStructuredData;
@@ -20,6 +21,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function is_numeric;
 
+#[RequiresModule(slug: 'module_pokemons')]
 final class PokemonController extends AbstractController
 {
     public function __construct(

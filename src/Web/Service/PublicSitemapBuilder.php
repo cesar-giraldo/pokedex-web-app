@@ -54,13 +54,15 @@ final class PublicSitemapBuilder
             );
         }
 
-        foreach ($pokemons as $pokemon) {
-            $entries[] = $this->entry(
-                $locales,
-                $defaultLocale,
-                static fn (string $locale): array => ['_locale' => $locale, 'id' => $pokemon['id']],
-                'app_public_pokemon',
-            );
+        if ($this->moduleAvailability->isEnabled('module_pokemons')) {
+            foreach ($pokemons as $pokemon) {
+                $entries[] = $this->entry(
+                    $locales,
+                    $defaultLocale,
+                    static fn (string $locale): array => ['_locale' => $locale, 'id' => $pokemon['id']],
+                    'app_public_pokemon',
+                );
+            }
         }
 
         $body = implode("\n", $entries);
@@ -78,7 +80,15 @@ final class PublicSitemapBuilder
      */
     private function pages(): array
     {
-        $pages = self::PAGES;
+        $pages = [];
+
+        foreach (self::PAGES as $page) {
+            if ('app_public_pokedex' === $page && !$this->moduleAvailability->isEnabled('module_pokemons')) {
+                continue;
+            }
+
+            $pages[] = $page;
+        }
 
         if ($this->moduleAvailability->isEnabled('module_web_show_cookies_policy')) {
             $pages[] = 'app_public_cookies';

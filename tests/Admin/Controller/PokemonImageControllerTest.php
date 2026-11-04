@@ -9,6 +9,7 @@ use App\Entity\Pokemon;
 use App\Entity\PokemonImage;
 use App\Entity\PokemonType;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
+use App\Tests\Web\Support\EnablesPokemonFavoritesTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -27,6 +28,7 @@ use const JSON_THROW_ON_ERROR;
 final class PokemonImageControllerTest extends WebTestCase
 {
     use AdminAuthenticatedClientTrait;
+    use EnablesPokemonFavoritesTrait;
 
     private ?EntityManagerInterface $entityManager = null;
 
@@ -37,6 +39,10 @@ final class PokemonImageControllerTest extends WebTestCase
 
     protected function tearDown(): void
     {
+        if (static::$booted) {
+            $this->restorePokemonFavorites();
+        }
+
         if (null !== $this->entityManager) {
             foreach (array_reverse($this->pokemonIds) as $pokemonId) {
                 $pokemon = $this->entityManager->find(Pokemon::class, $pokemonId);
@@ -61,6 +67,7 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testReorderUpdatesSortOrder(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $first = $this->createPokemonImage($pokemon, 1, 'Uno');
@@ -100,6 +107,7 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testDeleteRemovesImage(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $image = $this->createPokemonImage($pokemon, 1, 'Eliminar');
@@ -127,6 +135,7 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testReorderRequiresCsrfToken(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
 
@@ -146,6 +155,7 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testUpdateDescriptionPersistsNormalizedValue(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $image = $this->createPokemonImage($pokemon, 1, 'Anterior');
@@ -180,6 +190,7 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testUpdateDescriptionCanBeCleared(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $image = $this->createPokemonImage($pokemon, 1, 'Quitar');
@@ -213,6 +224,7 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testUpdateDescriptionRequiresCsrfToken(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $image = $this->createPokemonImage($pokemon, 1, 'CSRF');
@@ -235,6 +247,7 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testUpdateDescriptionRejectsImageFromAnotherPokemon(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $other = $this->createTestPokemon();
@@ -261,6 +274,7 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testUpdateDescriptionRejectsValueAboveMaxLength(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $image = $this->createPokemonImage($pokemon, 1, 'Larga');
@@ -291,6 +305,7 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testDownloadReturnsOriginalAsAttachment(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $pokemon->setName('Bulbasaur Demo');
@@ -320,6 +335,7 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testDownloadRejectsImageFromAnotherPokemon(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $other = $this->createTestPokemon();
@@ -338,6 +354,7 @@ final class PokemonImageControllerTest extends WebTestCase
     public function testDownloadRequiresAuthentication(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $pokemon = $this->createTestPokemon();
         $image = $this->createPokemonImage($pokemon, 1, 'Privada');
         $imageId = $image->getId();

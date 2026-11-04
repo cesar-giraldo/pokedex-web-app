@@ -312,8 +312,36 @@ final class PokemonFavoriteControllerTest extends WebTestCase
         $client = $this->openClient();
         $this->setPokemonFavoritesState(false, true);
         $locale = $this->defaultLocale();
+        $pokemonId = $this->createPokemon('Hidden Favorite');
+        $nickname = $this->rememberNickname('fav-off-' . bin2hex(random_bytes(3)));
+        $user = $this->createUser($nickname, UserStatus::Active, true);
 
-        $this->assertFavoritesAreHidden($client, $locale);
+        foreach (['/' . $locale . '/pokemon', sprintf('/%s/pokemon/%d', $locale, $pokemonId)] as $path) {
+            $client->request('GET', $path);
+            self::assertResponseRedirects('/');
+            $client->followRedirect();
+            self::assertResponseRedirects();
+            $client->followRedirect();
+            self::assertResponseIsSuccessful();
+            self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
+        }
+
+        $client->loginUser($user, 'public');
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href$="/favorites"]');
+
+        $client->request('GET', '/' . $locale . '/favorites');
+        self::assertResponseRedirects('/');
+        $client->followRedirect();
+        self::assertResponseRedirects();
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
+
+        $this->toggle($client, 'POST', $locale, $pokemonId, 'ignored');
+        self::assertResponseRedirects('/');
+        self::assertSame(0, $this->favoriteCount($user->getId(), $pokemonId));
     }
 
     private function assertFavoritesAreHidden(KernelBrowser $client, string $locale): void
