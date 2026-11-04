@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Web\Controller;
 
 use App\Entity\Enum\SupportedLanguage;
+use App\Module\RequiresModule;
 use App\Web\Service\PublicStructuredData;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,6 +47,7 @@ final class PageController extends AbstractController
         ]);
     }
 
+    #[RequiresModule(slug: 'module_web_show_cookies_policy')]
     #[Route(
         '/{_locale}/cookies',
         name: 'app_public_cookies',

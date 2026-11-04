@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Web\Service;
 
 use App\Entity\Enum\LegalDocumentType;
+use App\Entity\Module;
+use App\Module\ModuleAvailability;
 use App\Repository\LegalDocumentVersionRepository;
+use App\Repository\ModuleRepository;
 use App\Web\Service\PublicLegalAvailability;
 use App\Web\Service\PublicSitemapBuilder;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -37,18 +40,34 @@ final class PublicSitemapBuilderTest extends TestCase
         self::assertStringContainsString('app_public_cookies', $xml);
     }
 
+    public function testSitemapOmitsCookiesWhenTheModuleIsDisabled(): void
+    {
+        $xml = $this->sitemap([], false);
+
+        self::assertStringNotContainsString('app_public_cookies', $xml);
+        self::assertStringContainsString('app_public_home', $xml);
+        self::assertStringContainsString('app_public_contact', $xml);
+    }
+
     /**
      * @param list<LegalDocumentType> $published
      */
-    private function sitemap(array $published): string
+    private function sitemap(array $published, bool $cookiesEnabled = true): string
     {
-        $urls = $this->createMock(UrlGeneratorInterface::class);
+        $urls = $this->createStub(UrlGeneratorInterface::class);
         $urls->method('generate')->willReturnCallback(
             static fn (string $route, array $params, int $referenceType): string => 'https://example.test/' . $params['_locale'] . '/' . $route,
         );
-        $versions = $this->createMock(LegalDocumentVersionRepository::class);
+        $versions = $this->createStub(LegalDocumentVersionRepository::class);
         $versions->method('findPublishedDocumentTypes')->willReturn($published);
+        $parent = new Module('Web Secure Area', 'module_web_secure_area', '1.00');
+        $parent->setIsEnabled(true);
+        $cookies = new Module('Mostrar Política de Cookies', 'module_web_show_cookies_policy', '1.30');
+        $cookies->setIsEnabled($cookiesEnabled);
+        $cookies->setParent($parent);
+        $modules = $this->createStub(ModuleRepository::class);
+        $modules->method('findAllOrdered')->willReturn([$parent, $cookies]);
 
-        return new PublicSitemapBuilder($urls, new PublicLegalAvailability($versions))->build(['es'], 'es', []);
+        return new PublicSitemapBuilder($urls, new PublicLegalAvailability($versions), new ModuleAvailability($modules))->build(['es'], 'es', []);
     }
 }

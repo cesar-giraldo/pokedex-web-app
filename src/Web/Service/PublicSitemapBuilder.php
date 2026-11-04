@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Service;
 
+use App\Module\ModuleAvailability;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 use function htmlspecialchars;
@@ -23,12 +24,12 @@ final class PublicSitemapBuilder
         'app_public_pokedex',
         'app_public_about',
         'app_public_contact',
-        'app_public_cookies',
     ];
 
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly PublicLegalAvailability $legalAvailability,
+        private readonly ModuleAvailability $moduleAvailability,
     ) {
     }
 
@@ -78,6 +79,11 @@ final class PublicSitemapBuilder
     private function pages(): array
     {
         $pages = self::PAGES;
+
+        if ($this->moduleAvailability->isEnabled('module_web_show_cookies_policy')) {
+            $pages[] = 'app_public_cookies';
+        }
+
         $legal = $this->legalAvailability->links();
 
         if ($legal['privacy']) {

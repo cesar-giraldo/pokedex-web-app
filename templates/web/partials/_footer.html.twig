@@ -27,7 +27,9 @@
                 {% if legal.terms %}
                     <li><a class="text-sm font-medium hover:text-brand" href="{{ path('app_public_terms', {_locale: locale}) }}" {% if current == 'app_public_terms' %}aria-current="page"{% endif %}>{{ 'nav.terms'|trans }}</a></li>
                 {% endif %}
-                <li><a class="text-sm font-medium hover:text-brand" href="{{ path('app_public_cookies', {_locale: locale}) }}" {% if current == 'app_public_cookies' %}aria-current="page"{% endif %}>{{ 'nav.cookies'|trans }}</a></li>
+                {% if is_module_enabled('module_web_show_cookies_policy') %}
+                    <li><a class="text-sm font-medium hover:text-brand" href="{{ path('app_public_cookies', {_locale: locale}) }}" {% if current == 'app_public_cookies' %}aria-current="page"{% endif %}>{{ 'nav.cookies'|trans }}</a></li>
+                {% endif %}
             </ul>
         </nav>
         <div>
