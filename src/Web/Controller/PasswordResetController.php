@@ -7,6 +7,7 @@ namespace App\Web\Controller;
 use App\Entity\Enum\PasswordResetChannel;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\PasswordResetToken;
+use App\Module\RequiresModule;
 use App\Security\Form\ForgotPasswordRequestType;
 use App\Security\Form\ResetPasswordType;
 use App\Security\PasswordResetService;
@@ -21,6 +22,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function is_string;
 
+#[RequiresModule(slug: 'module_web_password_recovery')]
 final class PasswordResetController extends AbstractController
 {
     #[Route(

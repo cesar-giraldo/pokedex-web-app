@@ -61,7 +61,9 @@
                         value="on"
                         :checked="loginForm['_remember_me'].vars.checked"
                     />
-                    <a class="shrink-0 text-sm font-semibold text-brand" href="{{ path('app_public_forgot_password', {_locale: app.request.locale}) }}">{{ 'auth.forgot_password'|trans }}</a>
+                    {% if is_module_enabled('module_web_password_recovery') %}
+                        <a class="shrink-0 text-sm font-semibold text-brand" href="{{ path('app_public_forgot_password', {_locale: app.request.locale}) }}">{{ 'auth.forgot_password'|trans }}</a>
+                    {% endif %}
                 </div>
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate_public') }}">
                 <twig:web_submit_button label="{{ 'auth.submit_login'|trans }}" />
