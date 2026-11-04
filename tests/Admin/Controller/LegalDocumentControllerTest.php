@@ -10,15 +10,19 @@ use App\Entity\Enum\NotificationType;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\LegalDocumentVersion;
+use App\Entity\Module;
 use App\Entity\Notification;
 use App\Entity\User;
 use App\Entity\UserLegalAcceptance;
 use App\Legal\LegalDocumentPublisher;
+use App\Module\EventSubscriber\ModuleAccessSubscriber;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\LegalDocumentRepository;
+use App\Repository\ModuleRepository;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\DomCrawler\Field\ChoiceFormField;
@@ -45,8 +49,28 @@ final class LegalDocumentControllerTest extends WebTestCase
     /** @var list<string> */
     private array $notificationTitles = [];
 
+    private const string PARENT_SLUG = 'module_admin_secure_area';
+
+    private const string LEGAL_SLUG = 'module_admin_legal_documents_management';
+
+    private ?bool $originalParentEnabled = null;
+
+    private ?bool $originalLegalEnabled = null;
+
+    private ?int $originalLegalParentId = null;
+
+    private bool $legalHadNoParent = false;
+
+    private bool $createdParent = false;
+
+    private bool $createdLegal = false;
+
     protected function tearDown(): void
     {
+        if (self::$booted) {
+            $this->restoreLegalModule();
+        }
+
         if ($this->entityManager instanceof EntityManagerInterface && $this->entityManager->isOpen()) {
             $titles = $this->notificationTitles;
 
@@ -96,7 +120,7 @@ final class LegalDocumentControllerTest extends WebTestCase
 
     public function testDeveloperCanOpenTheLegalModule(): void
     {
-        $client = static::createClient();
+        $client = $this->createLegalClient();
         $this->loginAsDeveloper($client);
 
         $client->request('GET', '/admin/legal');
@@ -109,11 +133,50 @@ final class LegalDocumentControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('nav', 'Legal');
         self::assertSelectorTextContains('body', 'Historial');
+        self::assertSelectorExists('a[href="/admin/legal"]');
+    }
+
+    public function testDeveloperIsRedirectedWhenLegalModuleIsDisabled(): void
+    {
+        $client = $this->createLegalClient();
+        $this->loginAsDeveloper($client);
+        $this->setLegalModuleState(true, false);
+
+        $this->assertLegalDenied($client, '/admin/legal');
+        $this->assertLegalDenied($client, '/admin/legal/privacy_policy');
+    }
+
+    public function testDeveloperIsRedirectedWhenParentModuleIsDisabled(): void
+    {
+        $client = $this->createLegalClient();
+        $this->loginAsDeveloper($client);
+        $this->setLegalModuleState(false, true);
+
+        $this->assertLegalDenied($client, '/admin/legal');
+    }
+
+    public function testLegalAcceptanceStaysAvailableWhenManagementModuleIsDisabled(): void
+    {
+        $client = $this->createLegalClient();
+        $this->loginAsDeveloper($client);
+        $this->setLegalModuleState(true, false);
+
+        $client->request('GET', '/admin/legal/accept');
+
+        if ($client->getResponse()->isRedirect()) {
+            $client->followRedirect();
+        }
+
+        self::assertResponseIsSuccessful();
+        self::assertStringNotContainsString(
+            ModuleAccessSubscriber::DENIED_MESSAGE,
+            (string) $client->getResponse()->getContent(),
+        );
     }
 
     public function testSavingADraftReturnsToTheVersionHistoryWithASuccessMessage(): void
     {
-        $client = static::createClient();
+        $client = $this->createLegalClient();
         $developer = $this->loginAsDeveloper($client);
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
 
@@ -143,7 +206,7 @@ final class LegalDocumentControllerTest extends WebTestCase
 
     public function testDeletingADraftReturnsToTheVersionHistoryWithASuccessMessage(): void
     {
-        $client = static::createClient();
+        $client = $this->createLegalClient();
         $developer = $this->loginAsDeveloper($client);
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
 
@@ -174,7 +237,7 @@ final class LegalDocumentControllerTest extends WebTestCase
 
     public function testOperatorCannotManageLegalDocuments(): void
     {
-        $client = static::createClient();
+        $client = $this->createLegalClient();
         $this->loginAsOperator($client);
 
         $client->request('GET', '/admin/legal');
@@ -184,7 +247,7 @@ final class LegalDocumentControllerTest extends WebTestCase
 
     public function testPublishNotifiesActiveUsersAndBlocksUntilAccepted(): void
     {
-        $client = static::createClient();
+        $client = $this->createLegalClient();
         $developer = $this->loginAsDeveloper($client);
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
         $this->publishPrivacyPolicy($developer);
@@ -224,7 +287,7 @@ final class LegalDocumentControllerTest extends WebTestCase
 
     public function testOpeningAnAcceptedLegalNotificationShowsThatPublicVersion(): void
     {
-        $client = static::createClient();
+        $client = $this->createLegalClient();
         $developer = $this->loginAsDeveloper($client);
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
 
@@ -276,7 +339,7 @@ final class LegalDocumentControllerTest extends WebTestCase
 
     public function testAcceptanceListShowsWhoAcceptedAPublishedVersion(): void
     {
-        $client = static::createClient();
+        $client = $this->createLegalClient();
         $developer = $this->loginAsDeveloper($client);
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
 
@@ -333,7 +396,7 @@ final class LegalDocumentControllerTest extends WebTestCase
 
     public function testPublishedPreviewDownloadsAPdfAndDraftsDoNot(): void
     {
-        $client = static::createClient();
+        $client = $this->createLegalClient();
         $developer = $this->loginAsDeveloper($client);
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
 
@@ -403,7 +466,7 @@ final class LegalDocumentControllerTest extends WebTestCase
 
     public function testIncompleteProfileSkipsTheLegalGate(): void
     {
-        $client = static::createClient();
+        $client = $this->createLegalClient();
         $developer = $this->loginAsDeveloper($client);
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
         $this->publishPrivacyPolicy($developer);
@@ -486,5 +549,123 @@ final class LegalDocumentControllerTest extends WebTestCase
         $this->entityManager?->flush();
 
         return $user;
+    }
+
+    private function createLegalClient(): KernelBrowser
+    {
+        $client = static::createClient();
+        $this->setLegalModuleState(true, true);
+
+        return $client;
+    }
+
+    private function assertLegalDenied(KernelBrowser $client, string $path): void
+    {
+        $client->request('GET', $path);
+
+        self::assertResponseRedirects('/admin/home');
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
+        self::assertSelectorNotExists('a[href="/admin/legal"]');
+    }
+
+    private function setLegalModuleState(bool $parentEnabled, bool $legalEnabled): void
+    {
+        $entityManager = $this->moduleEntityManager();
+        $repository = $this->moduleRepository();
+        $parent = $repository->findOneBy(['slug' => self::PARENT_SLUG]);
+
+        if (!$parent instanceof Module) {
+            $parent = new Module('Admin Secure Area', self::PARENT_SLUG, '2.00');
+            $entityManager->persist($parent);
+            $this->createdParent = true;
+        } elseif (null === $this->originalParentEnabled) {
+            $this->originalParentEnabled = $parent->isEnabled();
+        }
+
+        $legal = $repository->findOneBy(['slug' => self::LEGAL_SLUG]);
+
+        if (!$legal instanceof Module) {
+            $legal = new Module('Administración de Documentos Legales', self::LEGAL_SLUG, '2.20');
+            $legal->setParent($parent);
+            $entityManager->persist($legal);
+            $this->createdLegal = true;
+        } elseif (null === $this->originalLegalEnabled) {
+            $this->originalLegalEnabled = $legal->isEnabled();
+            $legalParent = $legal->getParent();
+
+            if (!$legalParent instanceof Module) {
+                $this->legalHadNoParent = true;
+                $legal->setParent($parent);
+            } elseif (self::PARENT_SLUG !== $legalParent->getSlug()) {
+                $this->originalLegalParentId = $legalParent->getId();
+                $legal->setParent($parent);
+            }
+        }
+
+        $parent->setIsEnabled($parentEnabled);
+        $legal->setIsEnabled($legalEnabled);
+        $entityManager->flush();
+    }
+
+    private function restoreLegalModule(): void
+    {
+        $entityManager = $this->moduleEntityManager();
+        $repository = $this->moduleRepository();
+        $legal = $repository->findOneBy(['slug' => self::LEGAL_SLUG]);
+        $parent = $repository->findOneBy(['slug' => self::PARENT_SLUG]);
+
+        if ($this->createdLegal && $legal instanceof Module) {
+            $legal->setParent(null);
+            $entityManager->flush();
+            $entityManager->remove($legal);
+            $entityManager->flush();
+            $legal = null;
+        }
+
+        if ($this->createdParent && $parent instanceof Module) {
+            $entityManager->remove($parent);
+            $entityManager->flush();
+            $parent = null;
+        }
+
+        if (!$this->createdLegal && $legal instanceof Module) {
+            if (null !== $this->originalLegalEnabled) {
+                $legal->setIsEnabled($this->originalLegalEnabled);
+            }
+
+            if ($this->legalHadNoParent) {
+                $legal->setParent(null);
+            } elseif (null !== $this->originalLegalParentId) {
+                $originalParent = $entityManager->find(Module::class, $this->originalLegalParentId);
+
+                if ($originalParent instanceof Module) {
+                    $legal->setParent($originalParent);
+                }
+            }
+        }
+
+        if (!$this->createdParent && $parent instanceof Module && null !== $this->originalParentEnabled) {
+            $parent->setIsEnabled($this->originalParentEnabled);
+        }
+
+        $entityManager->flush();
+    }
+
+    private function moduleEntityManager(): EntityManagerInterface
+    {
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        return $entityManager;
+    }
+
+    private function moduleRepository(): ModuleRepository
+    {
+        /** @var ModuleRepository $repository */
+        $repository = static::getContainer()->get(ModuleRepository::class);
+
+        return $repository;
     }
 }

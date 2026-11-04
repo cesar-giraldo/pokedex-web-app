@@ -84,7 +84,7 @@
 					{% endif %}
 					<!-- Menu Item Usuarios -->
 
-					{% if effective_is_granted('ROLE_DEVELOPER') %}
+					{% if effective_is_granted('ROLE_DEVELOPER') and is_module_enabled('module_admin_legal_documents_management') %}
 					<li>
 						{% set legalMenu = get_menu_classes(active_menu, active_page, 'legal', 'legal') %}
 						<a href="{{ path('app_backend_legal') }}"
