@@ -37,7 +37,7 @@
 					}) }}
 				{% endif %}
 
-				{% if effective_is_granted('ROLE_DEVELOPER') %}
+				{% if effective_is_granted('ROLE_DEVELOPER') and is_module_enabled('module_admin_ui_kit') %}
 					{{ include('@admin/partials/_quick_access_card.html.twig', {
 						href: path('app_design_index'),
 						title: 'UI Kit',

@@ -98,7 +98,7 @@
 					</li>
 					{% endif %}
 
-					{% if effective_is_granted('ROLE_DEVELOPER') %}
+					{% if effective_is_granted('ROLE_DEVELOPER') and is_module_enabled('module_admin_ui_kit') %}
 						<!-- Menu Item UI Kit -->
 						<li class="group-menu-ui-kit">
 							{# Call twig function (custom extension) to determine classes values #}
