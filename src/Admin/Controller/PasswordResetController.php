@@ -7,6 +7,7 @@ namespace App\Admin\Controller;
 use App\Entity\Enum\PasswordResetChannel;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\PasswordResetToken;
+use App\Module\RequiresModule;
 use App\Security\Form\ForgotPasswordRequestType;
 use App\Security\Form\ResetPasswordType;
 use App\Security\PasswordResetService;
@@ -20,6 +21,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 use function is_string;
 
+#[RequiresModule(slug: 'module_admin_password_recovery')]
 final class PasswordResetController extends AbstractController
 {
     #[Route('/admin/forgot-password', name: 'app_admin_forgot_password', methods: ['GET', 'POST'])]

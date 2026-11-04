@@ -79,7 +79,9 @@
 						value="on"
 						:checked="loginForm['_remember_me'].vars.checked"
 					/>
-					<a href="{{ path('app_admin_forgot_password') }}" class="shrink-0 text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">¿Olvidaste tu contraseña?</a>
+					{% if is_module_enabled('module_admin_password_recovery') %}
+						<a href="{{ path('app_admin_forgot_password') }}" class="shrink-0 text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400">¿Olvidaste tu contraseña?</a>
+					{% endif %}
 				</div>
 
 				<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
