@@ -18,9 +18,11 @@
                     <twig:web_alert variant="error" message="{{ error.message }}" />
                 {% endfor %}
             </div>
-            <div class="mt-8">
-                {% include '@web/auth/_google.html.twig' with {from: 'register'} only %}
-            </div>
+            {% if is_module_enabled('module_web_google_auth') %}
+                <div class="mt-8">
+                    {% include '@web/auth/_google.html.twig' with {from: 'register'} only %}
+                </div>
+            {% endif %}
             <p class="mt-6 text-sm leading-6 text-muted">{{ 'auth.register_description'|trans }}</p>
             {{ form_start(registrationForm, {
                 action: path('app_public_register', {_locale: app.request.locale}),

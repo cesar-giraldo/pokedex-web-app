@@ -7,6 +7,7 @@ namespace App\Web\Security;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use App\Module\ModuleAvailability;
 use App\Web\Service\GoogleAccountConnector;
 use App\Web\Service\PendingFavoriteReturn;
 use Psr\Log\LoggerInterface;
@@ -36,6 +37,7 @@ final class GoogleAuthenticator extends AbstractAuthenticator
         private readonly GoogleAccountConnector $connector,
         private readonly GoogleOAuthCallbackUrl $callbackUrl,
         private readonly PendingFavoriteReturn $pendingFavoriteReturn,
+        private readonly ModuleAvailability $moduleAvailability,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly LoggerInterface $logger = new NullLogger(),
     ) {
@@ -43,7 +45,9 @@ final class GoogleAuthenticator extends AbstractAuthenticator
 
     public function supports(Request $request): bool
     {
-        return GoogleOAuthSession::CHECK_ROUTE === $request->attributes->get('_route');
+        // A disabled module must reach GoogleConnectController so RequiresModule can deny it.
+        return GoogleOAuthSession::CHECK_ROUTE === $request->attributes->get('_route')
+            && $this->moduleAvailability->isEnabled('module_web_google_auth');
     }
 
     public function authenticate(Request $request): Passport
