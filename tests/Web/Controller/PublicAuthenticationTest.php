@@ -15,6 +15,7 @@ use App\Module\EventSubscriber\ModuleAccessSubscriber;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\UserRepository;
 use App\Tests\Web\Support\AcceptsPendingLegalDocumentsTrait;
+use App\Tests\Web\Support\EnablesPokemonFavoritesTrait;
 use App\Tests\Web\Support\EnablesWebSecureAreaTrait;
 use App\Web\Service\PublicLanguageResolver;
 use DateTime;
@@ -43,10 +44,20 @@ use function tempnam;
 final class PublicAuthenticationTest extends WebTestCase
 {
     use AcceptsPendingLegalDocumentsTrait;
+    use EnablesPokemonFavoritesTrait;
     use EnablesWebSecureAreaTrait;
     use MailerAssertionsTrait;
 
     private const string PASSWORD = 'Secret123';
+
+    protected function createClientWithSecureArea(): KernelBrowser
+    {
+        $client = static::createClient();
+        $this->enableWebSecureArea();
+        $this->enablePokemonFavorites();
+
+        return $client;
+    }
 
     /** @var list<string> */
     private array $nicknames = [];
@@ -54,6 +65,7 @@ final class PublicAuthenticationTest extends WebTestCase
     protected function tearDown(): void
     {
         if (static::$booted) {
+            $this->restorePokemonFavorites();
             $this->restoreWebSecureArea();
         }
 

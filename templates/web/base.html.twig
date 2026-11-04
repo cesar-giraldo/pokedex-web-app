@@ -65,6 +65,8 @@
             {% block body %}{% endblock %}
         </main>
         {% include '@web/partials/_footer.html.twig' %}
-        {% include '@web/partials/_favorite_dialog.html.twig' %}
+        {% if is_module_enabled('module_pokemons_favorites') %}
+            {% include '@web/partials/_favorite_dialog.html.twig' %}
+        {% endif %}
     </body>
 </html>

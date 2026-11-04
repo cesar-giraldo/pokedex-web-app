@@ -7,6 +7,7 @@ namespace App\Web\Controller;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Pokemon;
 use App\Entity\User;
+use App\Module\RequiresModule;
 use App\Web\Service\PokemonFavoriteManager;
 use App\Web\Service\PublicPokemonCatalog;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,6 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 use function is_string;
 
+#[RequiresModule(slug: 'module_pokemons_favorites')]
 final class PokemonFavoriteController extends AbstractController
 {
     public function __construct(

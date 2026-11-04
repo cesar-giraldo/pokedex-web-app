@@ -8,6 +8,7 @@ use App\Entity\Enum\UserStatus;
 use App\Entity\Pokemon;
 use App\Entity\User;
 use App\Legal\LegalAcceptanceService;
+use App\Module\ModuleAvailability;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,6 +26,7 @@ final class PendingFavoriteReturn
         private readonly PublicPokemonCatalog $catalog,
         private readonly PokemonFavoriteManager $favorites,
         private readonly LegalAcceptanceService $acceptance,
+        private readonly ModuleAvailability $moduleAvailability,
         private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
@@ -32,6 +34,12 @@ final class PendingFavoriteReturn
     public function redirectInsteadOf(User $user, Request $request, string $locale, Response $fallback): Response
     {
         if (!$this->canNavigate($user)) {
+            return $fallback;
+        }
+
+        if (!$this->moduleAvailability->isEnabled('module_pokemons_favorites')) {
+            $this->clearCookie($fallback, $request);
+
             return $fallback;
         }
 
