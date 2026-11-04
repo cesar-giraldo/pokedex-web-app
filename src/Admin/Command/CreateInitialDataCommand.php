@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Admin\Command;
 
+use App\Admin\Service\InitialModules;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\GeneralSettings;
+use App\Entity\Module;
 use App\Entity\User;
 use App\Legal\LegalDocumentPublisher;
 use App\Legal\LegalLanguageResolver;
 use App\Repository\GeneralSettingsRepository;
+use App\Repository\ModuleRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;
@@ -24,6 +27,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 use function is_string;
+use function sprintf;
 
 use const FILTER_VALIDATE_EMAIL;
 
@@ -36,6 +40,8 @@ final class CreateInitialDataCommand extends Command
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly GeneralSettingsRepository $generalSettingsRepository,
+        private readonly ModuleRepository $moduleRepository,
+        private readonly InitialModules $initialModules,
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly LegalDocumentPublisher $legalDocumentPublisher,
@@ -71,6 +77,7 @@ final class CreateInitialDataCommand extends Command
 
         $this->ensureGeneralSettings($io);
         $this->legalDocumentPublisher->ensureDocuments();
+        $this->ensureInitialModules($io);
 
         if (!$this->ensureInitialUser($input, $io)) {
             return Command::FAILURE;
@@ -92,6 +99,81 @@ final class CreateInitialDataCommand extends Command
         $this->entityManager->flush();
 
         $io->success('Configuraciones generales creadas correctamente.');
+    }
+
+    private function ensureInitialModules(SymfonyStyle $io): void
+    {
+        /** @var list<Module> $created */
+        $created = [];
+
+        $this->entityManager->wrapInTransaction(function () use (&$created): void {
+            /** @var array<string, Module> $bySlug */
+            $bySlug = [];
+
+            foreach ($this->initialModules->definitions() as $definition) {
+                $existing = $this->moduleRepository->findOneBy(['slug' => $definition->slug]);
+                if ($existing instanceof Module) {
+                    $bySlug[$definition->slug] = $existing;
+
+                    continue;
+                }
+
+                $module = new Module($definition->name, $definition->slug, $definition->sortOrder);
+                $module->setIsEnabled($definition->isEnabled);
+                $module->setDescription($definition->description);
+
+                if (null !== $definition->parentSlug) {
+                    $parent = $bySlug[$definition->parentSlug] ?? $this->moduleRepository->findOneBy(['slug' => $definition->parentSlug]);
+                    if (!$parent instanceof Module) {
+                        throw new RuntimeException(sprintf('El módulo padre "%s" no existe para "%s".', $definition->parentSlug, $definition->slug));
+                    }
+
+                    $module->setParent($parent);
+                }
+
+                $this->entityManager->persist($module);
+                $bySlug[$definition->slug] = $module;
+                $created[] = $module;
+            }
+        });
+
+        $this->reportCreatedModules($io, $created);
+    }
+
+    /**
+     * @param list<Module> $created
+     */
+    private function reportCreatedModules(SymfonyStyle $io, array $created): void
+    {
+        if ([] === $created) {
+            $io->warning('Ya existen los módulos iniciales. No se creó ningún registro.');
+
+            return;
+        }
+
+        $modules = [];
+        $submodules = [];
+
+        foreach ($created as $module) {
+            $parent = $module->getParent();
+            if ($parent instanceof Module) {
+                $submodules[] = sprintf('%s (%s) → %s', $module->getName(), $module->getSlug(), $parent->getSlug());
+
+                continue;
+            }
+
+            $modules[] = sprintf('%s (%s)', $module->getName(), $module->getSlug());
+        }
+
+        if ([] !== $modules) {
+            $io->section('Módulos creados');
+            $io->listing($modules);
+        }
+
+        if ([] !== $submodules) {
+            $io->section('Submódulos creados');
+            $io->listing($submodules);
+        }
     }
 
     private function ensureInitialUser(InputInterface $input, SymfonyStyle $io): bool

@@ -4,19 +4,37 @@ declare(strict_types=1);
 
 namespace App\Tests\Admin\Command;
 
+use App\Admin\Service\InitialModules;
 use App\Entity\Enum\UserRole;
 use App\Entity\GeneralSettings;
+use App\Entity\Module;
 use App\Entity\User;
 use App\Repository\GeneralSettingsRepository;
+use App\Repository\ModuleRepository;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
+
+use function sprintf;
 
 #[Group('integration')]
 final class CreateInitialDataCommandTest extends KernelTestCase
 {
     private const string INITIAL_EMAIL = 'initial-user@example.com';
+
+    /** @var list<int> */
+    private array $moduleIdsToDelete = [];
+
+    protected function tearDown(): void
+    {
+        if (self::$booted && [] !== $this->moduleIdsToDelete) {
+            $this->deleteModulesById($this->moduleIdsToDelete);
+        }
+
+        parent::tearDown();
+    }
 
     public function testCreatesInitialUserWhenItDoesNotExist(): void
     {
@@ -171,5 +189,134 @@ final class CreateInitialDataCommandTest extends KernelTestCase
 
         self::assertSame(0, $exitCode);
         self::assertStringContainsString('Ya existe un usuario', $tester->getDisplay());
+    }
+
+    public function testCreatesMissingInitialModulesWithoutDuplicatingThem(): void
+    {
+        self::bootKernel();
+
+        /** @var UserRepository $userRepository */
+        $userRepository = static::getContainer()->get(UserRepository::class);
+
+        $existingByPhone = $userRepository->createQueryBuilder('u')
+            ->andWhere('u.countryCode = :countryCode')
+            ->andWhere('u.cellphone = :cellphone')
+            ->setParameter('countryCode', 57)
+            ->setParameter('cellphone', '3155141481')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($existingByPhone instanceof User && self::INITIAL_EMAIL !== $existingByPhone->getEmail()) {
+            self::markTestSkipped('El teléfono del usuario inicial ya está asignado a otra cuenta.');
+        }
+
+        /** @var ModuleRepository $moduleRepository */
+        $moduleRepository = static::getContainer()->get(ModuleRepository::class);
+        $definitions = new InitialModules()->definitions();
+        $existingIds = [];
+
+        foreach ($definitions as $definition) {
+            $module = $moduleRepository->findOneBy(['slug' => $definition->slug]);
+            if ($module instanceof Module && null !== $module->getId()) {
+                $existingIds[$definition->slug] = $module->getId();
+            }
+        }
+
+        $command = static::getContainer()->get('App\Admin\Command\CreateInitialDataCommand');
+        $tester = new CommandTester($command);
+        $exitCode = $tester->execute([
+            '--email' => self::INITIAL_EMAIL,
+            '--password' => 'InitialSecret123',
+        ]);
+
+        self::assertSame(0, $exitCode);
+
+        $display = $tester->getDisplay();
+        $idsAfterCreate = [];
+
+        foreach ($definitions as $definition) {
+            $module = $moduleRepository->findOneBy(['slug' => $definition->slug]);
+
+            self::assertInstanceOf(Module::class, $module);
+            self::assertSame($definition->name, $module->getName());
+            self::assertSame($definition->sortOrder, $module->getSortOrder());
+            self::assertSame($definition->description, $module->getDescription());
+            self::assertSame($definition->isEnabled, $module->isEnabled());
+            self::assertSame($definition->parentSlug, $module->getParent()?->getSlug());
+
+            $id = $module->getId();
+            self::assertNotNull($id);
+            $idsAfterCreate[$definition->slug] = $id;
+
+            if (isset($existingIds[$definition->slug])) {
+                self::assertSame($existingIds[$definition->slug], $id);
+
+                continue;
+            }
+
+            $this->moduleIdsToDelete[] = $id;
+            self::assertStringContainsString($definition->slug, $display);
+
+            if (null === $definition->parentSlug) {
+                self::assertStringContainsString('Módulos creados', $display);
+                self::assertStringContainsString(sprintf('%s (%s)', $definition->name, $definition->slug), $display);
+
+                continue;
+            }
+
+            self::assertStringContainsString('Submódulos creados', $display);
+            self::assertStringContainsString(
+                sprintf('%s (%s) → %s', $definition->name, $definition->slug, $definition->parentSlug),
+                $display,
+            );
+        }
+
+        if ([] === $this->moduleIdsToDelete) {
+            self::assertStringContainsString('Ya existen los módulos iniciales', $display);
+        }
+
+        $exitCode = $tester->execute([
+            '--email' => self::INITIAL_EMAIL,
+            '--password' => 'InitialSecret123',
+        ]);
+
+        self::assertSame(0, $exitCode);
+        self::assertStringContainsString('Ya existen los módulos iniciales', $tester->getDisplay());
+
+        foreach ($definitions as $definition) {
+            $module = $moduleRepository->findOneBy(['slug' => $definition->slug]);
+
+            self::assertSame($idsAfterCreate[$definition->slug], $module?->getId());
+        }
+    }
+
+    /**
+     * @param list<int> $ids
+     */
+    private function deleteModulesById(array $ids): void
+    {
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        /** @var list<Module> $modules */
+        $modules = $entityManager->createQueryBuilder()
+            ->select('module')
+            ->from(Module::class, 'module')
+            ->where('module.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($modules as $module) {
+            $module->setParent(null);
+        }
+
+        $entityManager->flush();
+
+        foreach ($modules as $module) {
+            $entityManager->remove($module);
+        }
+
+        $entityManager->flush();
     }
 }
