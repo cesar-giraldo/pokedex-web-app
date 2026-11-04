@@ -278,6 +278,7 @@ final class PublicPagesTest extends WebTestCase
     public function testLoginPostDoesNotAuthenticateUnknownNickname(): void
     {
         $client = static::createClient();
+        $this->setCookiesModuleState(true, true);
         $locale = $this->defaultLocale();
         $crawler = $client->request('GET', '/' . $locale . '/login');
         $form = $crawler->filter('form')->form();

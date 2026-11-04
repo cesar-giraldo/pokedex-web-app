@@ -8,6 +8,7 @@ use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
+use App\Tests\Web\Support\EnablesWebSecureAreaTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -20,6 +21,7 @@ use function sprintf;
 final class UserWebImpersonationTest extends WebTestCase
 {
     use AdminAuthenticatedClientTrait;
+    use EnablesWebSecureAreaTrait;
 
     /** @var list<int> */
     private array $createdUserIds = [];
@@ -28,6 +30,10 @@ final class UserWebImpersonationTest extends WebTestCase
 
     protected function tearDown(): void
     {
+        if (static::$booted) {
+            $this->restoreWebSecureArea();
+        }
+
         if (null !== $this->entityManager) {
             foreach ($this->createdUserIds as $userId) {
                 $user = $this->entityManager->find(User::class, $userId);
@@ -45,6 +51,7 @@ final class UserWebImpersonationTest extends WebTestCase
     public function testAdminImpersonatesPublicUserAndKeepsTheAdminSession(): void
     {
         $client = static::createClient();
+        $this->enableWebSecureArea();
         $this->loginAsAdmin($client);
         $publicUser = $this->createUser('wimp', [UserRole::User], UserStatus::Active);
 
@@ -160,6 +167,7 @@ final class UserWebImpersonationTest extends WebTestCase
     public function testPublicLogoutEndsWebImpersonationWithoutDroppingTheAdminSession(): void
     {
         $client = static::createClient();
+        $this->enableWebSecureArea();
         $this->loginAsAdmin($client);
         $publicUser = $this->createUser('wout', [UserRole::User], UserStatus::Active);
 

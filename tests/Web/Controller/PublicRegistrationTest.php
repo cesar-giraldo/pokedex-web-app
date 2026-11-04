@@ -16,6 +16,7 @@ use App\Entity\User;
 use App\Entity\UserLegalAcceptance;
 use App\Repository\UserRepository;
 use App\Tests\Double\CapturingConfirmationCodeSender;
+use App\Tests\Web\Support\EnablesWebSecureAreaTrait;
 use App\Web\Service\PublicLanguageResolver;
 use App\Web\Service\SignupLegalCatalog;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +38,8 @@ use function sprintf;
 #[Group('functional')]
 final class PublicRegistrationTest extends WebTestCase
 {
+    use EnablesWebSecureAreaTrait;
+
     private const string PASSWORD = 'Secret123';
 
     /** @var list<string> */
@@ -48,6 +51,10 @@ final class PublicRegistrationTest extends WebTestCase
     protected function tearDown(): void
     {
         CapturingConfirmationCodeSender::$lastCode = null;
+
+        if (static::$booted) {
+            $this->restoreWebSecureArea();
+        }
 
         if (([] !== $this->nicknames || [] !== $this->emails) && static::$booted) {
             /** @var EntityManagerInterface $entityManager */
@@ -81,7 +88,7 @@ final class PublicRegistrationTest extends WebTestCase
 
     public function testRegisterConfirmsTheAccountAndNotifiesActiveStaff(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $email = $this->email('new');
         $admin = $this->staff('admin', [UserRole::Admin], false);
@@ -156,7 +163,7 @@ final class PublicRegistrationTest extends WebTestCase
 
     public function testDuplicateEmailUsesAGenericMessage(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $email = $this->email('dup');
         $crawler = $client->request('GET', '/' . $locale . '/register');
@@ -166,7 +173,7 @@ final class PublicRegistrationTest extends WebTestCase
         self::assertResponseRedirects();
 
         static::ensureKernelShutdown();
-        $other = static::createClient();
+        $other = $this->createClientWithSecureArea();
         $crawler = $other->request('GET', '/' . $locale . '/register');
         $form = $crawler->filter('form')->form();
         $this->fillRegistration($form, $email);
@@ -180,7 +187,7 @@ final class PublicRegistrationTest extends WebTestCase
 
     public function testMismatchedPasswordsWithAnEmptyTimeFormatStayOnTheForm(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $email = $this->email('empty-format');
         $crawler = $client->request('GET', '/' . $locale . '/register');
@@ -202,7 +209,7 @@ final class PublicRegistrationTest extends WebTestCase
 
     public function testPasswordMismatchAndAFilledHoneypotDoNotCreateUsers(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $email = $this->email('bad');
         $crawler = $client->request('GET', '/' . $locale . '/register');

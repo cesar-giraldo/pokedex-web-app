@@ -167,7 +167,8 @@ final class GoogleSignUpTest extends WebTestCase
         $client = static::createClient();
         $this->setGoogleModuleState(false, true);
 
-        $this->assertGoogleOptionIsHidden($client);
+        $this->assertGoogleAccessIsDenied($client, '/es/login');
+        $this->assertGoogleAccessIsDenied($client, '/es/register');
         $this->assertGoogleAccessIsDenied($client, '/es/connect/google?from=register');
     }
 

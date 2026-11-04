@@ -10,6 +10,7 @@ use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
 use App\Legal\LegalLanguageResolver;
+use App\Module\RequiresModule;
 use App\Web\Form\LoginFormType;
 use App\Web\Form\RegistrationFormType;
 use App\Web\Registration\AccountAlreadyExistsException;
@@ -31,6 +32,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class AuthController extends AbstractController
 {
+    #[RequiresModule(slug: 'module_web_secure_area')]
     #[Route(
         '/{_locale}/login',
         name: 'app_public_login',
@@ -70,6 +72,7 @@ final class AuthController extends AbstractController
         throw new LogicException('Symfony intercepts this route.');
     }
 
+    #[RequiresModule(slug: 'module_web_secure_area')]
     #[Route(
         '/{_locale}/register',
         name: 'app_public_register',

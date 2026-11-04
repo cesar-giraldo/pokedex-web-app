@@ -13,6 +13,7 @@ use App\Entity\UserPokemonFavorite;
 use App\Legal\LegalAcceptanceService;
 use App\Repository\UserRepository;
 use App\Tests\Web\Support\AcceptsPendingLegalDocumentsTrait;
+use App\Tests\Web\Support\EnablesWebSecureAreaTrait;
 use App\Web\Service\PendingFavoriteReturn;
 use App\Web\Service\PublicLanguageResolver;
 use Doctrine\ORM\EntityManagerInterface;
@@ -36,6 +37,7 @@ use const JSON_THROW_ON_ERROR;
 final class PokemonFavoriteControllerTest extends WebTestCase
 {
     use AcceptsPendingLegalDocumentsTrait;
+    use EnablesWebSecureAreaTrait;
 
     private const string PASSWORD = 'Secret123';
 
@@ -47,6 +49,10 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     protected function tearDown(): void
     {
+        if (static::$booted) {
+            $this->restoreWebSecureArea();
+        }
+
         if (([] !== $this->pokemonIds || [] !== $this->nicknames) && static::$booted) {
             /** @var EntityManagerInterface $entityManager */
             $entityManager = static::getContainer()->get(EntityManagerInterface::class);
@@ -312,6 +318,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     private function submitLogin(KernelBrowser $client, string $locale, string $nickname): void
     {
+        $this->enableWebSecureArea();
         $crawler = $client->request('GET', '/' . $locale . '/login');
         self::assertResponseIsSuccessful();
         $form = $crawler->filter('form')->form();

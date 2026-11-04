@@ -226,7 +226,7 @@ final class PasswordResetControllerTest extends WebTestCase
         $this->setRecoveryModuleState(false, true);
         $locale = $this->defaultLocale();
 
-        $this->assertRecoveryIsHidden($client, $locale);
+        $this->assertRecoveryDenied($client, '/' . $locale . '/login');
         $this->assertRecoveryDenied($client, '/' . $locale . '/forgot-password');
     }
 

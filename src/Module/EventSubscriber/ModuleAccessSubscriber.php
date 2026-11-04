@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -34,8 +35,29 @@ final class ModuleAccessSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
+            // Form login authenticates a POST before the controller, so the attribute cannot see it.
+            KernelEvents::REQUEST => ['denyDisabledPublicLogin', 9],
             KernelEvents::CONTROLLER => 'onController',
         ];
+    }
+
+    public function denyDisabledPublicLogin(RequestEvent $event): void
+    {
+        if (!$event->isMainRequest() || $event->hasResponse()) {
+            return;
+        }
+
+        $request = $event->getRequest();
+
+        if (!$request->isMethod('POST') || 'app_public_login' !== $request->attributes->get('_route')) {
+            return;
+        }
+
+        if ($this->moduleAvailability->isEnabled('module_web_secure_area')) {
+            return;
+        }
+
+        $event->setResponse($this->deny($request));
     }
 
     public function onController(ControllerEvent $event): void
