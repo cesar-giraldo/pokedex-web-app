@@ -21,9 +21,11 @@
                     <twig:web_alert variant="error" message="{{ error.messageKey|trans(error.messageData, 'security') }}" />
                 {% endif %}
             </div>
-            <div class="mt-8">
-                {% include '@web/auth/_google.html.twig' with {from: 'login'} only %}
-            </div>
+            {% if is_module_enabled('module_web_google_auth') %}
+                <div class="mt-8">
+                    {% include '@web/auth/_google.html.twig' with {from: 'login'} only %}
+                </div>
+            {% endif %}
             <p class="mt-6 text-sm leading-6 text-muted">{{ 'auth.login_description'|trans }}</p>
             {{ form_start(loginForm, {
                 action: path('app_public_login', {_locale: app.request.locale}),
@@ -59,7 +61,9 @@
                         value="on"
                         :checked="loginForm['_remember_me'].vars.checked"
                     />
-                    <a class="shrink-0 text-sm font-semibold text-brand" href="{{ path('app_public_forgot_password', {_locale: app.request.locale}) }}">{{ 'auth.forgot_password'|trans }}</a>
+                    {% if is_module_enabled('module_web_password_recovery') %}
+                        <a class="shrink-0 text-sm font-semibold text-brand" href="{{ path('app_public_forgot_password', {_locale: app.request.locale}) }}">{{ 'auth.forgot_password'|trans }}</a>
+                    {% endif %}
                 </div>
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate_public') }}">
                 <twig:web_submit_button label="{{ 'auth.submit_login'|trans }}" />

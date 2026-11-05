@@ -26,6 +26,73 @@
 - When relevant, use Symfony MakerBundle to scaffold entities, commands, forms, and CRUD boilerplate.
 - Write every URL path and query parameter in English. Locale prefixes (`/es`, `/en`, `/pt`, `/fr`) stay as language codes. Do not put Spanish or other translated words in route paths, slugs, or query parameter names. Page copy is translated; the URL is not.
 
+## Enabled modules and access
+A feature that belongs to a platform module is visible and reachable only while that module is active. Hiding a link is not enough: the URL must deny entry as well. Both checks use the same answer.
+
+### When a module is active
+`App\Module\ModuleAvailability::isEnabled(string $slug)` is the only check. A slug is active when all of these are true:
+
+- A `Module` row with that slug exists. A missing slug is inactive.
+- `isEnabled` is true on that row.
+- Every ancestor is enabled. A parent that is off blocks the child even when the child's own flag is still true.
+- The parent chain has no cycle. A cycle is inactive.
+
+The service loads `ModuleRepository::findAllOrdered()` once per request and implements `ResetInterface`, so a later request in the same PHPUnit client sees the flushed database state.
+
+### Show or hide the entry points
+In Twig, wrap the buttons, menu items, dashboard cards, and header, nav, and footer links with `is_module_enabled('module_slug')`. The function is registered by `App\Module\Twig\ModuleExtension`.
+
+Leave links that only exist inside a page already closed by `RequiresModule`. Do not wrap those inner links one by one.
+
+A page that must stay open when the module is off drops only the pieces that belong to the module. The public home stays available when `module_pokemons` is off, without the search form, the Pokédex panel, or the carousel. The title and the slogan stay.
+
+Builders that advertise the feature call `ModuleAvailability` directly. `PublicSitemapBuilder` omits the catalog and the Pokémon pages when `module_pokemons` is off, and omits the cookies URL when `module_web_show_cookies_policy` is off. `PublicStructuredData::websiteJson()` omits the `SearchAction` in the same Pokémon case.
+
+### Close the URL
+Put `#[RequiresModule(slug: 'module_slug')]` on the controller class, or on the single action when the rest of that controller stays open. `App\Module\EventSubscriber\ModuleAccessSubscriber` listens to `kernel.controller` and replaces the controller with a redirect when the check fails.
+
+- The flash is `error` with the literal `Acceso denegado.` (`ModuleAccessSubscriber::DENIED_MESSAGE`). It is not a translation key. Web templates print flashes through `|trans`; a missing key still shows that literal.
+- A path that starts with `/admin` redirects to `app_backend_home`. Any other path redirects to `app_home`, which then redirects to the public locale home. The public home renders the error flash.
+- `role: null` means the module flag alone. Use that when everyone who can already open the area may use the feature.
+- Pass `role` only when the feature already requires that role on top of the module. UI Kit and legal-document management use `role: 'ROLE_DEVELOPER'`. The role is checked with `EffectiveRoleChecker`.
+- Keep the existing `access_control` and `#[IsGranted]` rules. Do not raise an `access_control` role to express a disabled module: the firewall returns 403 before the subscriber, and the user never sees the flash.
+- An anonymous user stopped by the firewall goes to the login page and does not get this flash. A public page that reaches the controller gets the flash first; the firewall may then send the user to login and the flash remains.
+- An operator who opens `/admin/legal` still receives 403, because `^/admin/legal` requires `ROLE_DEVELOPER` before `^/admin`. An operator who opens UI Kit reaches the controller, because `^/admin` only requires `ROLE_OPERATOR`, and gets the flash when the role or the module does not allow it.
+
+### Requests that do not reach the controller
+Form login and the Google check authenticate before `kernel.controller`. Those two cases are already handled. Do not add another route to the request listener unless authentication consumes the request before the controller.
+
+- POST `app_public_login` is denied on `kernel.request` at priority 9, before the firewall listener at priority 8, only when `module_web_secure_area` is off (`denyDisabledPublicLogin`).
+- `GoogleAuthenticator::supports()` returns false when `module_web_google_auth` is off, so `RequiresModule` on `GoogleConnectController` can deny `/connect/google/check`.
+- Public logout is not gated.
+- `/admin/legal/accept` (`Admin\Controller\LegalAcceptanceController`) is the acceptance of a published document. It is not legal-document management and stays open when `module_admin_legal_documents_management` is off. The management routes live on `LegalDocumentController`.
+- Do not gate `/media/pokemon-images/...`, `/api/v1/pokemon`, or `/internal-pokemon-search`.
+- `PendingFavoriteReturn` clears the pending-favorite cookie and returns the fallback when the user can navigate but `module_pokemons_favorites` is off. It keeps the cookie when the user cannot navigate yet.
+
+### Catalog
+Slugs, parents, sort order, and descriptions live in `src/Admin/Service/InitialModules.php`. `Version20261105150000` inserts any missing slug with `is_enabled` true and does not change `is_enabled` on a row that already exists. The initial-data command inserts a slug only when it is missing and does not update an existing row. `module_admin_secure_area` groups admin password recovery, legal-document management, and UI Kit. Turning it off hides and denies those children. It does not close `/admin` or the admin login.
+
+| Slug | Parent |
+| ---- | ------ |
+| `module_web_secure_area` | root |
+| `module_web_google_auth` | `module_web_secure_area` |
+| `module_web_password_recovery` | `module_web_secure_area` |
+| `module_web_show_cookies_policy` | `module_web_secure_area` |
+| `module_admin_secure_area` | root |
+| `module_admin_password_recovery` | `module_admin_secure_area` |
+| `module_admin_legal_documents_management` | `module_admin_secure_area` |
+| `module_admin_ui_kit` | `module_admin_secure_area` |
+| `module_pokemons` | root |
+| `module_pokemons_favorites` | `module_pokemons` |
+
+### Tests
+The PHPUnit database (`dbname_suffix: '_test'`) has an empty `modules` table, so a missing slug is inactive and every gated page redirects until the test enables it.
+
+- `WebTestCase::createClient()` must be the first kernel boot. Enable the module after that.
+- Restore the module in `tearDown()` while `static::$booted` is still true, before `parent::tearDown()`.
+- If the test created the row, delete it on teardown. Delete a child before its parent: the parent foreign key is `RESTRICT`. If the row already existed, restore the original `isEnabled` and parent.
+- Reuse `tests/Web/Support/EnablesWebSecureAreaTrait.php` and `tests/Web/Support/EnablesPokemonFavoritesTrait.php`. `enablePokemonModule()` toggles only the `module_pokemons` root. Do not copy that setup into another test.
+
 ## Frontend / Asset Conventions
 - Prefer Twig templates plus Stimulus controllers over introducing a separate frontend framework.
 - Use AssetMapper and importmap.php rather than Webpack/Vite unless explicitly requested.
@@ -77,6 +144,7 @@ Mirror the source context (`src/Admin`, `src/Web`, `src/Api`) under `tests/`, th
 - Reuse shared test helpers from `tests/Admin/Support/` (e.g. `AdminAuthenticatedClientTrait`) in functional admin tests; do not duplicate login/setup logic.
 - Mock external HTTP (PokeAPI, Gotenberg, S3) in unit tests; use container overrides in functional tests when the real service must not run.
 - Clean up persisted test data in `tearDown()` when writing integration or functional tests that touch the database.
+- A functional test that opens a module-gated page enables that module after `createClient()` and restores it in `tearDown()`. The rules are in "Enabled modules and access".
 
 ### What NOT to do
 - Do not put `WebTestCase` classes outside `tests/*/Controller/`.

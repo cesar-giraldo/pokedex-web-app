@@ -33,6 +33,7 @@ use function in_array;
  * - id: identificador único del input (se autogenera si se omite)
  * - value: valor enviado cuando está activado
  * - variant: estilo visual del track; brand (default) o dark
+ * - labelClass: clases de tipografía del texto (sustituyen text-sm font-medium)
  * - checked: estado inicial activado/desactivado
  * - required, disabled: estados del campo
  * - error, help: mensajes de validación y ayuda
@@ -52,6 +53,8 @@ final class ToggleSwitchComponent
     public string $value = '1';
 
     public string $variant = 'brand';
+
+    public string $labelClass = '';
 
     public bool $checked = false;
 
@@ -81,10 +84,12 @@ final class ToggleSwitchComponent
     #[ExposeInTemplate('labelClasses')]
     public function getLabelClasses(): string
     {
+        $typography = '' !== $this->labelClass ? $this->labelClass : 'text-sm font-medium';
+
         if ($this->disabled) {
-            return 'flex cursor-not-allowed items-center gap-3 text-sm font-medium text-gray-400 select-none';
+            return 'flex min-w-0 cursor-not-allowed items-center gap-3 text-gray-400 select-none ' . $typography;
         }
 
-        return 'flex cursor-pointer items-center gap-3 text-sm font-medium text-gray-700 select-none dark:text-gray-400';
+        return 'flex min-w-0 cursor-pointer items-center gap-3 text-gray-700 select-none dark:text-gray-400 ' . $typography;
     }
 }

@@ -55,6 +55,7 @@
 					<!-- Menu Item Dashboard -->
 
 					<!-- Menu Item Pokemons -->
+					{% if is_module_enabled('module_pokemons') %}
 					<li>
 						{% set pokemonList = get_menu_classes(active_menu, active_page, 'pokemon_list', 'pokemon_list') %}
 						<a href="{{ path('app_backend_pokemons') }}"
@@ -66,6 +67,7 @@
 							</span>
 						</a>
 					</li>
+					{% endif %}
 					<!-- Menu Item Pokemons -->
 
 					<!-- Menu Item Usuarios -->
@@ -84,7 +86,7 @@
 					{% endif %}
 					<!-- Menu Item Usuarios -->
 
-					{% if effective_is_granted('ROLE_DEVELOPER') %}
+					{% if effective_is_granted('ROLE_DEVELOPER') and is_module_enabled('module_admin_legal_documents_management') %}
 					<li>
 						{% set legalMenu = get_menu_classes(active_menu, active_page, 'legal', 'legal') %}
 						<a href="{{ path('app_backend_legal') }}"
@@ -98,7 +100,7 @@
 					</li>
 					{% endif %}
 
-					{% if effective_is_granted('ROLE_DEVELOPER') %}
+					{% if effective_is_granted('ROLE_DEVELOPER') and is_module_enabled('module_admin_ui_kit') %}
 						<!-- Menu Item UI Kit -->
 						<li class="group-menu-ui-kit">
 							{# Call twig function (custom extension) to determine classes values #}

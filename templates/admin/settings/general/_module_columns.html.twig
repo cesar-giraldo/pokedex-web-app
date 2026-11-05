@@ -1,0 +1,18 @@
+{% if module_roots is empty %}
+	<p class="text-sm text-gray-500 dark:text-gray-400">No hay módulos definidos.</p>
+{% else %}
+	<div class="grid grid-cols-1 gap-x-8 gap-y-3 md:grid-cols-2">
+		<div class="flex flex-col gap-3">
+			{% include '@admin/settings/general/_module_nodes.html.twig' with {
+				nodes: module_roots|slice(0, midpoint),
+				mode: mode,
+			} %}
+		</div>
+		<div class="flex flex-col gap-3">
+			{% include '@admin/settings/general/_module_nodes.html.twig' with {
+				nodes: module_roots|slice(midpoint),
+				mode: mode,
+			} %}
+		</div>
+	</div>
+{% endif %}

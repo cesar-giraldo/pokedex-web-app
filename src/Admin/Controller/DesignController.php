@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Admin\Controller;
 
+use App\Module\RequiresModule;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/admin/ui-kit')]
+#[RequiresModule(slug: 'module_admin_ui_kit', role: 'ROLE_DEVELOPER')]
 final class DesignController extends AbstractController
 {
     #[Route('/index', name: 'app_design_index')]

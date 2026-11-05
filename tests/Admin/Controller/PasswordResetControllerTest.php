@@ -6,7 +6,10 @@ namespace App\Tests\Admin\Controller;
 
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
+use App\Entity\Module;
 use App\Entity\User;
+use App\Module\EventSubscriber\ModuleAccessSubscriber;
+use App\Repository\ModuleRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
@@ -28,26 +31,46 @@ final class PasswordResetControllerTest extends WebTestCase
 
     private const string PASSWORD = 'Secret123';
 
+    private const string PARENT_SLUG = 'module_admin_secure_area';
+
+    private const string RECOVERY_SLUG = 'module_admin_password_recovery';
+
     /** @var list<string> */
     private array $nicknames = [];
 
+    private ?bool $originalParentEnabled = null;
+
+    private ?bool $originalRecoveryEnabled = null;
+
+    private ?int $originalRecoveryParentId = null;
+
+    private bool $recoveryHadNoParent = false;
+
+    private bool $createdParent = false;
+
+    private bool $createdRecovery = false;
+
     protected function tearDown(): void
     {
-        if ([] !== $this->nicknames && static::$booted) {
-            /** @var EntityManagerInterface $entityManager */
-            $entityManager = static::getContainer()->get(EntityManagerInterface::class);
-            /** @var UserRepository $users */
-            $users = static::getContainer()->get(UserRepository::class);
+        if (self::$booted) {
+            $this->restoreRecoveryModule();
 
-            foreach ($this->nicknames as $nickname) {
-                $user = $users->findOneByNickname($nickname);
+            if ([] !== $this->nicknames) {
+                /** @var EntityManagerInterface $entityManager */
+                $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+                /** @var UserRepository $users */
+                $users = static::getContainer()->get(UserRepository::class);
 
-                if ($user instanceof User) {
-                    $entityManager->remove($user);
+                foreach ($this->nicknames as $nickname) {
+                    $user = $users->findOneByNickname($nickname);
+
+                    if ($user instanceof User) {
+                        $entityManager->remove($user);
+                    }
                 }
-            }
 
-            $entityManager->flush();
+                $entityManager->flush();
+            }
         }
 
         parent::tearDown();
@@ -56,6 +79,7 @@ final class PasswordResetControllerTest extends WebTestCase
     public function testLoginLinksToRecoveryAndBlockedAccountsStaySilent(): void
     {
         $client = static::createClient();
+        $this->setRecoveryModuleState(true, true);
         $crawler = $client->request('GET', '/admin/login');
         self::assertResponseIsSuccessful();
         $link = $crawler->selectLink('¿Olvidaste tu contraseña?');
@@ -67,7 +91,7 @@ final class PasswordResetControllerTest extends WebTestCase
         $this->submitIdentifier($client, 'missing-admin@example.com');
         self::assertQueuedEmailCount(0);
         $client->followRedirect();
-        self::assertSelectorTextContains('body', 'Si la cuenta existe y se puede recuperar, enviamos un correo con los pasos.');
+        self::assertSelectorTextContains('body', 'Te hemos enviado un correo electrónico para recuperar tu contraseña.');
 
         $webOnly = $this->remember('web' . bin2hex(random_bytes(3)));
         $this->createUser($webOnly, UserRole::User, UserStatus::Active);
@@ -80,12 +104,13 @@ final class PasswordResetControllerTest extends WebTestCase
         $this->submitIdentifier($client, $banned);
         self::assertQueuedEmailCount(0);
         $client->followRedirect();
-        self::assertSelectorTextContains('body', 'Si la cuenta existe y se puede recuperar, enviamos un correo con los pasos.');
+        self::assertSelectorTextContains('body', 'Te hemos enviado un correo electrónico para recuperar tu contraseña.');
     }
 
     public function testOperatorCanSetANewPasswordAndTheOldSessionStopsWorking(): void
     {
         $client = static::createClient();
+        $this->setRecoveryModuleState(true, true);
         $nickname = $this->remember('op' . bin2hex(random_bytes(3)));
         $this->createUser($nickname, UserRole::Operator, UserStatus::Active);
         $client->request('GET', '/admin/login');
@@ -129,6 +154,29 @@ final class PasswordResetControllerTest extends WebTestCase
 
         $client->request('GET', $path);
         self::assertSelectorTextContains('h1', 'Enlace no disponible');
+    }
+
+    public function testRecoveryIsHiddenWhenTheModuleIsDisabled(): void
+    {
+        $client = static::createClient();
+        $this->setRecoveryModuleState(true, false);
+
+        $client->request('GET', '/admin/login');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href="/admin/forgot-password"]');
+
+        $this->assertRecoveryDenied($client, '/admin/forgot-password');
+        $this->assertRecoveryDenied($client, '/admin/reset-password/not-a-valid-token');
+    }
+
+    public function testRecoveryIsHiddenWhenTheParentModuleIsDisabled(): void
+    {
+        $client = static::createClient();
+        $this->setRecoveryModuleState(false, true);
+
+        $client->request('GET', '/admin/login');
+        self::assertSelectorNotExists('a[href="/admin/forgot-password"]');
+        $this->assertRecoveryDenied($client, '/admin/forgot-password');
     }
 
     private function submitIdentifier(KernelBrowser $client, string $identifier): void
@@ -177,6 +225,122 @@ final class PasswordResetControllerTest extends WebTestCase
         $user->setPassword($hasher->hashPassword($user, self::PASSWORD));
         $entityManager->persist($user);
         $entityManager->flush();
+    }
+
+    private function assertRecoveryDenied(KernelBrowser $client, string $path): void
+    {
+        $client->request('GET', $path);
+
+        self::assertResponseRedirects('/admin/home');
+        $client->followRedirect();
+        self::assertResponseRedirects('/admin/login');
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
+        self::assertSelectorNotExists('a[href="/admin/forgot-password"]');
+    }
+
+    private function setRecoveryModuleState(bool $parentEnabled, bool $recoveryEnabled): void
+    {
+        $entityManager = $this->entityManager();
+        $repository = $this->moduleRepository();
+        $parent = $repository->findOneBy(['slug' => self::PARENT_SLUG]);
+
+        if (!$parent instanceof Module) {
+            $parent = new Module('Admin Secure Area', self::PARENT_SLUG, '2.00');
+            $entityManager->persist($parent);
+            $this->createdParent = true;
+        } elseif (null === $this->originalParentEnabled) {
+            $this->originalParentEnabled = $parent->isEnabled();
+        }
+
+        $recovery = $repository->findOneBy(['slug' => self::RECOVERY_SLUG]);
+
+        if (!$recovery instanceof Module) {
+            $recovery = new Module('Recuperación de Contraseña', self::RECOVERY_SLUG, '2.10');
+            $recovery->setParent($parent);
+            $entityManager->persist($recovery);
+            $this->createdRecovery = true;
+        } elseif (null === $this->originalRecoveryEnabled) {
+            $this->originalRecoveryEnabled = $recovery->isEnabled();
+            $recoveryParent = $recovery->getParent();
+
+            if (!$recoveryParent instanceof Module) {
+                $this->recoveryHadNoParent = true;
+                $recovery->setParent($parent);
+            } elseif (self::PARENT_SLUG !== $recoveryParent->getSlug()) {
+                $this->originalRecoveryParentId = $recoveryParent->getId();
+                $recovery->setParent($parent);
+            }
+        }
+
+        $parent->setIsEnabled($parentEnabled);
+        $recovery->setIsEnabled($recoveryEnabled);
+        $entityManager->flush();
+    }
+
+    private function restoreRecoveryModule(): void
+    {
+        if (null === $this->originalParentEnabled && null === $this->originalRecoveryEnabled && !$this->createdParent && !$this->createdRecovery) {
+            return;
+        }
+
+        $entityManager = $this->entityManager();
+        $repository = $this->moduleRepository();
+        $recovery = $repository->findOneBy(['slug' => self::RECOVERY_SLUG]);
+        $parent = $repository->findOneBy(['slug' => self::PARENT_SLUG]);
+
+        if ($this->createdRecovery && $recovery instanceof Module) {
+            $recovery->setParent(null);
+            $entityManager->flush();
+            $entityManager->remove($recovery);
+            $entityManager->flush();
+            $recovery = null;
+        }
+
+        if ($this->createdParent && $parent instanceof Module) {
+            $entityManager->remove($parent);
+            $entityManager->flush();
+            $parent = null;
+        }
+
+        if (!$this->createdRecovery && $recovery instanceof Module) {
+            if (null !== $this->originalRecoveryEnabled) {
+                $recovery->setIsEnabled($this->originalRecoveryEnabled);
+            }
+
+            if ($this->recoveryHadNoParent) {
+                $recovery->setParent(null);
+            } elseif (null !== $this->originalRecoveryParentId) {
+                $originalParent = $entityManager->find(Module::class, $this->originalRecoveryParentId);
+
+                if ($originalParent instanceof Module) {
+                    $recovery->setParent($originalParent);
+                }
+            }
+        }
+
+        if (!$this->createdParent && $parent instanceof Module && null !== $this->originalParentEnabled) {
+            $parent->setIsEnabled($this->originalParentEnabled);
+        }
+
+        $entityManager->flush();
+    }
+
+    private function entityManager(): EntityManagerInterface
+    {
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        return $entityManager;
+    }
+
+    private function moduleRepository(): ModuleRepository
+    {
+        /** @var ModuleRepository $repository */
+        $repository = static::getContainer()->get(ModuleRepository::class);
+
+        return $repository;
     }
 
     private function remember(string $nickname): string

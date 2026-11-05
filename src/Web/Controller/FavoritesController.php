@@ -7,6 +7,7 @@ namespace App\Web\Controller;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use App\Module\RequiresModule;
 use App\Web\Service\PokemonFavoriteManager;
 use App\Web\Service\PublicPokemonCatalog;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,6 +19,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use function is_numeric;
 
 #[IsGranted('PUBLIC_ACCOUNT')]
+#[RequiresModule(slug: 'module_pokemons_favorites')]
 final class FavoritesController extends AbstractController
 {
     public function __construct(

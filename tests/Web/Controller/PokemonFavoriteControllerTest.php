@@ -11,8 +11,11 @@ use App\Entity\Pokemon;
 use App\Entity\User;
 use App\Entity\UserPokemonFavorite;
 use App\Legal\LegalAcceptanceService;
+use App\Module\EventSubscriber\ModuleAccessSubscriber;
 use App\Repository\UserRepository;
 use App\Tests\Web\Support\AcceptsPendingLegalDocumentsTrait;
+use App\Tests\Web\Support\EnablesPokemonFavoritesTrait;
+use App\Tests\Web\Support\EnablesWebSecureAreaTrait;
 use App\Web\Service\PendingFavoriteReturn;
 use App\Web\Service\PublicLanguageResolver;
 use Doctrine\ORM\EntityManagerInterface;
@@ -36,6 +39,8 @@ use const JSON_THROW_ON_ERROR;
 final class PokemonFavoriteControllerTest extends WebTestCase
 {
     use AcceptsPendingLegalDocumentsTrait;
+    use EnablesPokemonFavoritesTrait;
+    use EnablesWebSecureAreaTrait;
 
     private const string PASSWORD = 'Secret123';
 
@@ -47,6 +52,11 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     protected function tearDown(): void
     {
+        if (static::$booted) {
+            $this->restorePokemonFavorites();
+            $this->restoreWebSecureArea();
+        }
+
         if (([] !== $this->pokemonIds || [] !== $this->nicknames) && static::$booted) {
             /** @var EntityManagerInterface $entityManager */
             $entityManager = static::getContainer()->get(EntityManagerInterface::class);
@@ -77,7 +87,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     public function testAnonymousAndIncompleteRequestsAreForbidden(): void
     {
-        $client = static::createClient();
+        $client = $this->openClient();
         $locale = $this->defaultLocale();
         $pokemonId = $this->createPokemon('Forbidden Favorite');
 
@@ -103,7 +113,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     public function testActiveStaffWithoutThePublicRoleCannotChangeFavorites(): void
     {
-        $client = static::createClient();
+        $client = $this->openClient();
         $locale = $this->defaultLocale();
         $pokemonId = $this->createPokemon('Staff Favorite');
         $nickname = $this->rememberNickname('fav-staff-' . bin2hex(random_bytes(3)));
@@ -125,7 +135,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     public function testActiveUserCanAddAndRemoveAFavoriteWithoutDuplicatingIt(): void
     {
-        $client = static::createClient();
+        $client = $this->openClient();
         $locale = $this->defaultLocale();
         $pokemonId = $this->createPokemon('Toggle Favorite');
         $hiddenId = $this->createPokemon('Hidden Toggle Favorite', true);
@@ -164,7 +174,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     public function testFavoritesPageListsOnlyTheSignedInUsersPokemon(): void
     {
-        $client = static::createClient();
+        $client = $this->openClient();
         $locale = $this->defaultLocale();
         $name = 'Owned Favorite ' . bin2hex(random_bytes(3));
         $pokemonId = $this->createPokemon($name);
@@ -192,7 +202,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     public function testActiveLoginWithAVisiblePokemonCookieReturnsToThatPokemon(): void
     {
-        $client = static::createClient();
+        $client = $this->openClient();
         $locale = $this->defaultLocale();
         $pokemonId = $this->createPokemon('Cookie Favorite');
         $nickname = $this->rememberNickname('fav-ret-' . bin2hex(random_bytes(3)));
@@ -206,7 +216,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     public function testInvalidCookieIsDiscardedAndLoginContinuesHome(): void
     {
-        $client = static::createClient();
+        $client = $this->openClient();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('fav-bad-' . bin2hex(random_bytes(3)));
         $this->createUser($nickname, UserStatus::Active, true);
@@ -220,7 +230,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     public function testTheCookieWaitsUntilTheAccountCanOpenThePokemonPage(): void
     {
-        $client = static::createClient();
+        $client = $this->openClient();
         $locale = $this->defaultLocale();
         $pokemonId = $this->createPokemon('Waiting Favorite');
         $nickname = $this->rememberNickname('fav-wait-' . bin2hex(random_bytes(3)));
@@ -261,7 +271,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     public function testPendingLegalAcceptanceKeepsTheCookieUntilTheDocumentsAreAccepted(): void
     {
-        $client = static::createClient();
+        $client = $this->openClient();
         $locale = $this->defaultLocale();
         $pokemonId = $this->createPokemon('Legal Favorite');
         $nickname = $this->rememberNickname('fav-law-' . bin2hex(random_bytes(3)));
@@ -288,6 +298,93 @@ final class PokemonFavoriteControllerTest extends WebTestCase
         $this->assertReturnedFavorite($client, $locale, $pokemonId, $user->getId());
     }
 
+    public function testFavoritesAreHiddenWhenTheModuleIsDisabled(): void
+    {
+        $client = $this->openClient();
+        $this->setPokemonFavoritesState(true, false);
+        $locale = $this->defaultLocale();
+
+        $this->assertFavoritesAreHidden($client, $locale);
+    }
+
+    public function testFavoritesAreHiddenWhenTheParentModuleIsDisabled(): void
+    {
+        $client = $this->openClient();
+        $this->setPokemonFavoritesState(false, true);
+        $locale = $this->defaultLocale();
+        $pokemonId = $this->createPokemon('Hidden Favorite');
+        $nickname = $this->rememberNickname('fav-off-' . bin2hex(random_bytes(3)));
+        $user = $this->createUser($nickname, UserStatus::Active, true);
+
+        foreach (['/' . $locale . '/pokemon', sprintf('/%s/pokemon/%d', $locale, $pokemonId)] as $path) {
+            $client->request('GET', $path);
+            self::assertResponseRedirects('/');
+            $client->followRedirect();
+            self::assertResponseRedirects();
+            $client->followRedirect();
+            self::assertResponseIsSuccessful();
+            self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
+        }
+
+        $client->loginUser($user, 'public');
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href$="/favorites"]');
+
+        $client->request('GET', '/' . $locale . '/favorites');
+        self::assertResponseRedirects('/');
+        $client->followRedirect();
+        self::assertResponseRedirects();
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
+
+        $this->toggle($client, 'POST', $locale, $pokemonId, 'ignored');
+        self::assertResponseRedirects('/');
+        self::assertSame(0, $this->favoriteCount($user->getId(), $pokemonId));
+    }
+
+    private function assertFavoritesAreHidden(KernelBrowser $client, string $locale): void
+    {
+        $pokemonId = $this->createPokemon('Hidden Favorite');
+        $nickname = $this->rememberNickname('fav-off-' . bin2hex(random_bytes(3)));
+        $user = $this->createUser($nickname, UserStatus::Active, true);
+
+        $client->request('GET', '/' . $locale . '/pokemon');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('button.favorite-button');
+        self::assertSelectorNotExists('#favorite-dialog');
+
+        $client->request('GET', sprintf('/%s/pokemon/%d', $locale, $pokemonId));
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('button.favorite-button');
+
+        $client->loginUser($user, 'public');
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href$="/favorites"]');
+
+        $client->request('GET', '/' . $locale . '/favorites');
+        self::assertResponseRedirects('/');
+        $client->followRedirect();
+        self::assertResponseRedirects();
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
+
+        $this->toggle($client, 'POST', $locale, $pokemonId, 'ignored');
+        self::assertResponseRedirects('/');
+        self::assertSame(0, $this->favoriteCount($user->getId(), $pokemonId));
+    }
+
+    private function openClient(): KernelBrowser
+    {
+        $client = static::createClient();
+        $this->enablePokemonFavorites();
+
+        return $client;
+    }
+
     private function toggle(KernelBrowser $client, string $method, string $locale, int $pokemonId, ?string $token): void
     {
         $server = ['HTTP_ACCEPT' => 'application/json'];
@@ -312,6 +409,7 @@ final class PokemonFavoriteControllerTest extends WebTestCase
 
     private function submitLogin(KernelBrowser $client, string $locale, string $nickname): void
     {
+        $this->enableWebSecureArea();
         $crawler = $client->request('GET', '/' . $locale . '/login');
         self::assertResponseIsSuccessful();
         $form = $crawler->filter('form')->form();

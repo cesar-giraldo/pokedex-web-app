@@ -9,6 +9,7 @@ use App\Admin\Service\Excel\PokemonListExcelExporter;
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
+use App\Tests\Web\Support\EnablesPokemonFavoritesTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -17,6 +18,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 final class PokemonControllerExportExcelTest extends WebTestCase
 {
     use AdminAuthenticatedClientTrait;
+    use EnablesPokemonFavoritesTrait;
 
     private ?EntityManagerInterface $entityManager = null;
 
@@ -24,6 +26,10 @@ final class PokemonControllerExportExcelTest extends WebTestCase
 
     protected function tearDown(): void
     {
+        if (static::$booted) {
+            $this->restorePokemonFavorites();
+        }
+
         if (null !== $this->entityManager && null !== $this->pokemonId) {
             $pokemon = $this->entityManager->find(Pokemon::class, $this->pokemonId);
             if (null !== $pokemon) {
@@ -44,6 +50,7 @@ final class PokemonControllerExportExcelTest extends WebTestCase
     public function testExportExcelReturnsSpreadsheetResponse(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $this->createTestPokemon();
 
@@ -69,6 +76,7 @@ final class PokemonControllerExportExcelTest extends WebTestCase
     public function testExportExcelRedirectsWithFlashWhenGenerationFails(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $this->createTestPokemon();
 

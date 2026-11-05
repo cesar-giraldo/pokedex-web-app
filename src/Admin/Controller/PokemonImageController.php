@@ -12,6 +12,7 @@ use App\Admin\Service\Storage\PokemonImageUploadException;
 use App\Admin\Service\Storage\PokemonImageUploadService;
 use App\Entity\Pokemon;
 use App\Entity\PokemonImage;
+use App\Module\RequiresModule;
 use App\Repository\PokemonImageRepository;
 use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,6 +42,7 @@ use function strtolower;
 use const PATHINFO_EXTENSION;
 
 #[Route('/admin')]
+#[RequiresModule(slug: 'module_pokemons')]
 final class PokemonImageController extends AbstractController
 {
     public function __construct(

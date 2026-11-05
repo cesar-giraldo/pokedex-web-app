@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Web\Controller;
 
 use App\Entity\Enum\SupportedLanguage;
+use App\Module\RequiresModule;
 use App\Web\Security\GoogleAuthorizationClient;
 use App\Web\Security\GoogleOAuthCallbackUrl;
 use App\Web\Security\GoogleOAuthSession;
@@ -17,6 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use function bin2hex;
 use function random_bytes;
 
+#[RequiresModule(slug: 'module_web_google_auth')]
 final class GoogleConnectController extends AbstractController
 {
     public function __construct(

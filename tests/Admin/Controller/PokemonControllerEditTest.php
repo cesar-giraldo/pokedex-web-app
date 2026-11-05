@@ -6,7 +6,9 @@ namespace App\Tests\Admin\Controller;
 
 use App\Entity\Pokemon;
 use App\Entity\PokemonType;
+use App\Module\EventSubscriber\ModuleAccessSubscriber;
 use App\Tests\Admin\Support\AdminAuthenticatedClientTrait;
+use App\Tests\Web\Support\EnablesPokemonFavoritesTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -17,6 +19,7 @@ use function sprintf;
 final class PokemonControllerEditTest extends WebTestCase
 {
     use AdminAuthenticatedClientTrait;
+    use EnablesPokemonFavoritesTrait;
 
     private ?EntityManagerInterface $entityManager = null;
 
@@ -24,6 +27,10 @@ final class PokemonControllerEditTest extends WebTestCase
 
     protected function tearDown(): void
     {
+        if (static::$booted) {
+            $this->restorePokemonFavorites();
+        }
+
         if (null !== $this->entityManager && null !== $this->pokemonId) {
             $pokemon = $this->entityManager->find(Pokemon::class, $this->pokemonId);
             if (null !== $pokemon) {
@@ -44,6 +51,7 @@ final class PokemonControllerEditTest extends WebTestCase
     public function testEditPageDisplaysPokemonData(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
 
@@ -63,6 +71,7 @@ final class PokemonControllerEditTest extends WebTestCase
     public function testEditUpdatesPokemonAndRedirectsWithFlash(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $type = $pokemon->getType();
@@ -101,6 +110,7 @@ final class PokemonControllerEditTest extends WebTestCase
     public function testEditWithInvalidDataShowsValidationErrors(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $pokemon = $this->createTestPokemon();
         $type = $pokemon->getType();
@@ -127,10 +137,50 @@ final class PokemonControllerEditTest extends WebTestCase
     public function testEditReturnsNotFoundForMissingPokemon(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $this->loginAsAdmin($client);
         $client->request('GET', '/admin/pokemons/999999999/edit');
 
         self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testCatalogIsHiddenWhenTheModuleIsDisabled(): void
+    {
+        $client = static::createClient();
+        $this->enablePokemonModule();
+        $this->loginAsOperator($client);
+
+        $client->request('GET', '/admin/home');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorCount(2, 'a[href="/admin/pokemons"]');
+
+        $this->setPokemonModuleEnabled(false);
+
+        $client->request('GET', '/admin/home');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href="/admin/pokemons"]');
+
+        foreach ([
+            '/admin/pokemons',
+            '/admin/pokemons/1/edit',
+            '/admin/pokemons/export/pdf',
+            '/admin/pokemons/1/images/1/download',
+        ] as $path) {
+            $client->request('GET', $path);
+            self::assertResponseRedirects('/admin/home');
+            $client->followRedirect();
+            self::assertResponseIsSuccessful();
+            self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
+        }
+
+        $client->request('GET', '/admin/logout');
+        self::assertResponseRedirects('/admin/login');
+        $client->followRedirect();
+
+        $client->request('GET', '/admin/pokemons');
+        self::assertResponseRedirects('/admin/login');
+        $client->followRedirect();
+        self::assertSelectorTextNotContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
     }
 
     private function createTestPokemon(): Pokemon

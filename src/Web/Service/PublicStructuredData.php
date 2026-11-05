@@ -6,6 +6,7 @@ namespace App\Web\Service;
 
 use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\Pokemon;
+use App\Module\ModuleAvailability;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -27,26 +28,30 @@ final class PublicStructuredData
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly TranslatorInterface $translator,
         private readonly GeneralSettingsProvider $settings,
+        private readonly ModuleAvailability $moduleAvailability,
     ) {
     }
 
     public function websiteJson(string $locale): string
     {
         $home = $this->absolute('app_public_home', ['_locale' => $locale]);
-        $search = $this->absolute('app_public_pokedex', ['_locale' => $locale]);
-
-        return $this->encode([
+        $website = [
             '@context' => 'https://schema.org',
             '@type' => 'WebSite',
             'name' => $this->siteName(),
             'url' => $home,
             'inLanguage' => $locale,
-            'potentialAction' => [
+        ];
+
+        if ($this->moduleAvailability->isEnabled('module_pokemons')) {
+            $website['potentialAction'] = [
                 '@type' => 'SearchAction',
-                'target' => $search . '?q={search_term_string}',
+                'target' => $this->absolute('app_public_pokedex', ['_locale' => $locale]) . '?q={search_term_string}',
                 'query-input' => 'required name=search_term_string',
-            ],
-        ]);
+            ];
+        }
+
+        return $this->encode($website);
     }
 
     public function collectionJson(string $locale, string $name, string $description): string

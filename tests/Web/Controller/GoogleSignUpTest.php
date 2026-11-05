@@ -8,9 +8,12 @@ use App\Entity\AccountConfirmationCode;
 use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
+use App\Entity\Module;
 use App\Entity\Notification;
 use App\Entity\User;
 use App\Entity\UserLegalAcceptance;
+use App\Module\EventSubscriber\ModuleAccessSubscriber;
+use App\Repository\ModuleRepository;
 use App\Repository\UserRepository;
 use App\Tests\Double\FakeGoogleIdTokenVerifier;
 use App\Web\Security\GoogleIdentity;
@@ -31,12 +34,32 @@ use const PHP_URL_QUERY;
 #[Group('functional')]
 final class GoogleSignUpTest extends WebTestCase
 {
+    private const string PARENT_SLUG = 'module_web_secure_area';
+
+    private const string GOOGLE_SLUG = 'module_web_google_auth';
+
     /** @var list<string> */
     private array $emails = [];
+
+    private ?bool $originalParentEnabled = null;
+
+    private ?bool $originalGoogleEnabled = null;
+
+    private ?int $originalGoogleParentId = null;
+
+    private bool $googleHadNoParent = false;
+
+    private bool $createdParent = false;
+
+    private bool $createdGoogle = false;
 
     protected function tearDown(): void
     {
         FakeGoogleIdTokenVerifier::$identity = null;
+
+        if (static::$booted) {
+            $this->restoreGoogleModule();
+        }
 
         if ([] !== $this->emails && static::$booted) {
             /** @var EntityManagerInterface $entityManager */
@@ -68,6 +91,7 @@ final class GoogleSignUpTest extends WebTestCase
     public function testTheGoogleButtonSitsOutsideTheManualForms(): void
     {
         $client = static::createClient();
+        $this->setGoogleModuleState(true, true);
 
         $register = $client->request('GET', '/es/register');
         self::assertResponseIsSuccessful();
@@ -94,6 +118,7 @@ final class GoogleSignUpTest extends WebTestCase
         );
 
         $client = static::createClient();
+        $this->setGoogleModuleState(true, true);
         $client->request('GET', '/es/connect/google?from=register');
         self::assertResponseRedirects();
         $state = $this->oauthState($client);
@@ -125,6 +150,152 @@ final class GoogleSignUpTest extends WebTestCase
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
         self::assertSame(0, $entityManager->getRepository(AccountConfirmationCode::class)->count(['user' => $user]));
         self::assertSame(0, $entityManager->getRepository(UserLegalAcceptance::class)->count(['user' => $user]));
+    }
+
+    public function testTheGoogleOptionIsHiddenWhenTheModuleIsDisabled(): void
+    {
+        $client = static::createClient();
+        $this->setGoogleModuleState(true, false);
+
+        $this->assertGoogleOptionIsHidden($client);
+        $this->assertGoogleAccessIsDenied($client, '/es/connect/google?from=login');
+        $this->assertGoogleAccessIsDenied($client, '/connect/google/check?code=ok&state=ignored');
+    }
+
+    public function testTheGoogleOptionIsHiddenWhenTheParentModuleIsDisabled(): void
+    {
+        $client = static::createClient();
+        $this->setGoogleModuleState(false, true);
+
+        $this->assertGoogleAccessIsDenied($client, '/es/login');
+        $this->assertGoogleAccessIsDenied($client, '/es/register');
+        $this->assertGoogleAccessIsDenied($client, '/es/connect/google?from=register');
+    }
+
+    private function assertGoogleOptionIsHidden(KernelBrowser $client): void
+    {
+        $client->request('GET', '/es/login');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href*="/connect/google"]');
+
+        $client->request('GET', '/es/register');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href*="/connect/google"]');
+    }
+
+    private function assertGoogleAccessIsDenied(KernelBrowser $client, string $path): void
+    {
+        $client->request('GET', $path);
+
+        self::assertResponseRedirects('/');
+        $client->followRedirect();
+        self::assertResponseRedirects();
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
+    }
+
+    private function setGoogleModuleState(bool $parentEnabled, bool $googleEnabled): void
+    {
+        $entityManager = $this->entityManager();
+        $repository = $this->moduleRepository();
+        $parent = $repository->findOneBy(['slug' => self::PARENT_SLUG]);
+
+        if (!$parent instanceof Module) {
+            $parent = new Module('Web Secure Area', self::PARENT_SLUG, '1.00');
+            $entityManager->persist($parent);
+            $this->createdParent = true;
+        } elseif (null === $this->originalParentEnabled) {
+            $this->originalParentEnabled = $parent->isEnabled();
+        }
+
+        $google = $repository->findOneBy(['slug' => self::GOOGLE_SLUG]);
+
+        if (!$google instanceof Module) {
+            $google = new Module('Login con Google', self::GOOGLE_SLUG, '1.10');
+            $google->setParent($parent);
+            $entityManager->persist($google);
+            $this->createdGoogle = true;
+        } elseif (null === $this->originalGoogleEnabled) {
+            $this->originalGoogleEnabled = $google->isEnabled();
+            $googleParent = $google->getParent();
+
+            if (!$googleParent instanceof Module) {
+                $this->googleHadNoParent = true;
+                $google->setParent($parent);
+            } elseif (self::PARENT_SLUG !== $googleParent->getSlug()) {
+                $this->originalGoogleParentId = $googleParent->getId();
+                $google->setParent($parent);
+            }
+        }
+
+        $parent->setIsEnabled($parentEnabled);
+        $google->setIsEnabled($googleEnabled);
+        $entityManager->flush();
+    }
+
+    private function restoreGoogleModule(): void
+    {
+        if (null === $this->originalParentEnabled && null === $this->originalGoogleEnabled && !$this->createdParent && !$this->createdGoogle) {
+            return;
+        }
+
+        $entityManager = $this->entityManager();
+        $repository = $this->moduleRepository();
+        $google = $repository->findOneBy(['slug' => self::GOOGLE_SLUG]);
+        $parent = $repository->findOneBy(['slug' => self::PARENT_SLUG]);
+
+        if ($this->createdGoogle && $google instanceof Module) {
+            $google->setParent(null);
+            $entityManager->flush();
+            $entityManager->remove($google);
+            $entityManager->flush();
+            $google = null;
+        }
+
+        if ($this->createdParent && $parent instanceof Module) {
+            $entityManager->remove($parent);
+            $entityManager->flush();
+            $parent = null;
+        }
+
+        if (!$this->createdGoogle && $google instanceof Module) {
+            if (null !== $this->originalGoogleEnabled) {
+                $google->setIsEnabled($this->originalGoogleEnabled);
+            }
+
+            if ($this->googleHadNoParent) {
+                $google->setParent(null);
+            } elseif (null !== $this->originalGoogleParentId) {
+                $originalParent = $entityManager->find(Module::class, $this->originalGoogleParentId);
+
+                if ($originalParent instanceof Module) {
+                    $google->setParent($originalParent);
+                }
+            }
+        }
+
+        if (!$this->createdParent && $parent instanceof Module && null !== $this->originalParentEnabled) {
+            $parent->setIsEnabled($this->originalParentEnabled);
+        }
+
+        $entityManager->flush();
+    }
+
+    private function entityManager(): EntityManagerInterface
+    {
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        return $entityManager;
+    }
+
+    private function moduleRepository(): ModuleRepository
+    {
+        /** @var ModuleRepository $repository */
+        $repository = static::getContainer()->get(ModuleRepository::class);
+
+        return $repository;
     }
 
     private function oauthState(KernelBrowser $client): string

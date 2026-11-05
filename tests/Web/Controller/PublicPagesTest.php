@@ -6,13 +6,18 @@ namespace App\Tests\Web\Controller;
 
 use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\Enum\LegalDocumentType;
+use App\Entity\Module;
 use App\Entity\Pokemon;
 use App\Entity\PokemonImage;
+use App\Module\EventSubscriber\ModuleAccessSubscriber;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\LegalDocumentVersionRepository;
+use App\Repository\ModuleRepository;
+use App\Tests\Web\Support\EnablesPokemonFavoritesTrait;
 use App\Web\Service\PublicLanguageResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -26,12 +31,35 @@ use const JSON_THROW_ON_ERROR;
 #[Group('functional')]
 final class PublicPagesTest extends WebTestCase
 {
+    use EnablesPokemonFavoritesTrait;
+
+    private const string PARENT_SLUG = 'module_web_secure_area';
+
+    private const string COOKIES_SLUG = 'module_web_show_cookies_policy';
+
     private ?int $pokemonId = null;
 
     private ?int $hiddenPokemonId = null;
 
+    private ?bool $originalParentEnabled = null;
+
+    private ?bool $originalCookiesEnabled = null;
+
+    private ?int $originalCookiesParentId = null;
+
+    private bool $cookiesHadNoParent = false;
+
+    private bool $createdParent = false;
+
+    private bool $createdCookies = false;
+
     protected function tearDown(): void
     {
+        if (static::$booted) {
+            $this->restorePokemonFavorites();
+            $this->restoreCookiesModule();
+        }
+
         $ids = array_filter([$this->pokemonId, $this->hiddenPokemonId]);
 
         if ([] !== $ids && static::$booted) {
@@ -55,12 +83,49 @@ final class PublicPagesTest extends WebTestCase
     public function testPublicPagesRender(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
+        $this->setCookiesModuleState(true, true);
         $locale = $this->defaultLocale();
 
         foreach (['/pokemon', '/about', '/contact', '/cookies', '/login', '/register'] as $path) {
             $client->request('GET', '/' . $locale . $path);
             self::assertResponseIsSuccessful();
             self::assertSelectorExists('h1');
+        }
+    }
+
+    public function testPokemonCatalogIsHiddenWhenTheModuleIsDisabled(): void
+    {
+        $client = static::createClient();
+        $this->enablePokemonModule();
+        $locale = $this->defaultLocale();
+        $catalogHref = '/' . $locale . '/pokemon';
+
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('#home-search');
+        self::assertSelectorExists('#carousel-title');
+        self::assertSelectorExists('a[href="' . $catalogHref . '"]');
+        self::assertStringContainsString('SearchAction', (string) $client->getResponse()->getContent());
+
+        $this->setPokemonModuleEnabled(false);
+
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('h1');
+        self::assertSelectorNotExists('#home-search');
+        self::assertSelectorNotExists('#carousel-title');
+        self::assertSelectorNotExists('a[href="' . $catalogHref . '"]');
+        self::assertStringNotContainsString('SearchAction', (string) $client->getResponse()->getContent());
+
+        foreach ([$catalogHref, $catalogHref . '/1'] as $path) {
+            $client->request('GET', $path);
+            self::assertResponseRedirects('/');
+            $client->followRedirect();
+            self::assertResponseRedirects();
+            $client->followRedirect();
+            self::assertResponseIsSuccessful();
+            self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
         }
     }
 
@@ -112,6 +177,7 @@ final class PublicPagesTest extends WebTestCase
     public function testPokemonPageHidesPrivateEntries(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $locale = $this->defaultLocale();
         /** @var EntityManagerInterface $entityManager */
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
@@ -143,6 +209,7 @@ final class PublicPagesTest extends WebTestCase
     public function testPokemonGalleryPreviewFitsTheImageAndExposesNavigation(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
         $locale = $this->defaultLocale();
         /** @var EntityManagerInterface $entityManager */
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
@@ -253,6 +320,7 @@ final class PublicPagesTest extends WebTestCase
     public function testLoginPostDoesNotAuthenticateUnknownNickname(): void
     {
         $client = static::createClient();
+        $this->setCookiesModuleState(true, true);
         $locale = $this->defaultLocale();
         $crawler = $client->request('GET', '/' . $locale . '/login');
         $form = $crawler->filter('form')->form();
@@ -271,6 +339,8 @@ final class PublicPagesTest extends WebTestCase
     public function testSeoFilesAdvertiseThePublicSite(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
+        $this->setCookiesModuleState(true, true);
         $locale = $this->defaultLocale();
 
         $client->request('GET', '/robots.txt');
@@ -306,6 +376,8 @@ final class PublicPagesTest extends WebTestCase
     public function testFooterMarksTheCurrentPage(): void
     {
         $client = static::createClient();
+        $this->enablePokemonModule();
+        $this->setCookiesModuleState(true, true);
         $locale = $this->defaultLocale();
         /** @var EntityManagerInterface $entityManager */
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
@@ -359,6 +431,7 @@ final class PublicPagesTest extends WebTestCase
     public function testFooterLegalSectionMatchesPublishedDocuments(): void
     {
         $client = static::createClient();
+        $this->setCookiesModuleState(true, true);
         $locale = $this->defaultLocale();
         /** @var LegalDocumentVersionRepository $versions */
         $versions = static::getContainer()->get(LegalDocumentVersionRepository::class);
@@ -402,6 +475,7 @@ final class PublicPagesTest extends WebTestCase
     public function testCookiesPageExplainsEachCookieInTheVisitorLanguage(): void
     {
         $client = static::createClient();
+        $this->setCookiesModuleState(true, true);
         $locale = $this->defaultLocale();
         $client->request('GET', '/' . $locale . '/cookies');
         self::assertResponseIsSuccessful();
@@ -453,6 +527,146 @@ final class PublicPagesTest extends WebTestCase
                 $entityManager->flush();
             }
         }
+    }
+
+    public function testCookiesPolicyIsHiddenWhenTheModuleIsDisabled(): void
+    {
+        $client = static::createClient();
+        $this->setCookiesModuleState(true, false);
+        $locale = $this->defaultLocale();
+
+        $this->assertCookiesPolicyIsHidden($client, $locale);
+    }
+
+    public function testCookiesPolicyIsHiddenWhenTheParentModuleIsDisabled(): void
+    {
+        $client = static::createClient();
+        $this->setCookiesModuleState(false, true);
+        $locale = $this->defaultLocale();
+
+        $this->assertCookiesPolicyIsHidden($client, $locale);
+    }
+
+    private function assertCookiesPolicyIsHidden(KernelBrowser $client, string $locale): void
+    {
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('footer a[href$="/cookies"]');
+
+        $client->request('GET', '/sitemap.xml');
+        self::assertResponseIsSuccessful();
+        self::assertStringNotContainsString('/' . $locale . '/cookies', (string) $client->getResponse()->getContent());
+
+        $client->request('GET', '/' . $locale . '/cookies');
+        self::assertResponseRedirects('/');
+        $client->followRedirect();
+        self::assertResponseRedirects();
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
+    }
+
+    private function setCookiesModuleState(bool $parentEnabled, bool $cookiesEnabled): void
+    {
+        $entityManager = $this->entityManager();
+        $repository = $this->moduleRepository();
+        $parent = $repository->findOneBy(['slug' => self::PARENT_SLUG]);
+
+        if (!$parent instanceof Module) {
+            $parent = new Module('Web Secure Area', self::PARENT_SLUG, '1.00');
+            $entityManager->persist($parent);
+            $this->createdParent = true;
+        } elseif (null === $this->originalParentEnabled) {
+            $this->originalParentEnabled = $parent->isEnabled();
+        }
+
+        $cookies = $repository->findOneBy(['slug' => self::COOKIES_SLUG]);
+
+        if (!$cookies instanceof Module) {
+            $cookies = new Module('Mostrar Política de Cookies', self::COOKIES_SLUG, '1.30');
+            $cookies->setParent($parent);
+            $entityManager->persist($cookies);
+            $this->createdCookies = true;
+        } elseif (null === $this->originalCookiesEnabled) {
+            $this->originalCookiesEnabled = $cookies->isEnabled();
+            $cookiesParent = $cookies->getParent();
+
+            if (!$cookiesParent instanceof Module) {
+                $this->cookiesHadNoParent = true;
+                $cookies->setParent($parent);
+            } elseif (self::PARENT_SLUG !== $cookiesParent->getSlug()) {
+                $this->originalCookiesParentId = $cookiesParent->getId();
+                $cookies->setParent($parent);
+            }
+        }
+
+        $parent->setIsEnabled($parentEnabled);
+        $cookies->setIsEnabled($cookiesEnabled);
+        $entityManager->flush();
+    }
+
+    private function restoreCookiesModule(): void
+    {
+        if (null === $this->originalParentEnabled && null === $this->originalCookiesEnabled && !$this->createdParent && !$this->createdCookies) {
+            return;
+        }
+
+        $entityManager = $this->entityManager();
+        $repository = $this->moduleRepository();
+        $cookies = $repository->findOneBy(['slug' => self::COOKIES_SLUG]);
+        $parent = $repository->findOneBy(['slug' => self::PARENT_SLUG]);
+
+        if ($this->createdCookies && $cookies instanceof Module) {
+            $cookies->setParent(null);
+            $entityManager->flush();
+            $entityManager->remove($cookies);
+            $entityManager->flush();
+            $cookies = null;
+        }
+
+        if ($this->createdParent && $parent instanceof Module) {
+            $entityManager->remove($parent);
+            $entityManager->flush();
+            $parent = null;
+        }
+
+        if (!$this->createdCookies && $cookies instanceof Module) {
+            if (null !== $this->originalCookiesEnabled) {
+                $cookies->setIsEnabled($this->originalCookiesEnabled);
+            }
+
+            if ($this->cookiesHadNoParent) {
+                $cookies->setParent(null);
+            } elseif (null !== $this->originalCookiesParentId) {
+                $originalParent = $entityManager->find(Module::class, $this->originalCookiesParentId);
+
+                if ($originalParent instanceof Module) {
+                    $cookies->setParent($originalParent);
+                }
+            }
+        }
+
+        if (!$this->createdParent && $parent instanceof Module && null !== $this->originalParentEnabled) {
+            $parent->setIsEnabled($this->originalParentEnabled);
+        }
+
+        $entityManager->flush();
+    }
+
+    private function entityManager(): EntityManagerInterface
+    {
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+
+        return $entityManager;
+    }
+
+    private function moduleRepository(): ModuleRepository
+    {
+        /** @var ModuleRepository $repository */
+        $repository = static::getContainer()->get(ModuleRepository::class);
+
+        return $repository;
     }
 
     private function defaultLocale(): string

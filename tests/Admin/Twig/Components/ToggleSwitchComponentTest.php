@@ -43,4 +43,14 @@ final class ToggleSwitchComponentTest extends TestCase
         self::assertStringContainsString('cursor-not-allowed', $disabled->getLabelClasses());
         self::assertStringContainsString('text-gray-400', $disabled->getLabelClasses());
     }
+
+    public function testLabelClassesUseCustomTypography(): void
+    {
+        $component = new ToggleSwitchComponent();
+        $component->labelClass = 'text-base font-semibold';
+        $component->mount();
+
+        self::assertStringContainsString('text-base font-semibold', $component->getLabelClasses());
+        self::assertStringNotContainsString('text-sm', $component->getLabelClasses());
+    }
 }

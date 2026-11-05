@@ -11,9 +11,12 @@ use App\Entity\Enum\SupportedLanguage;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\User;
+use App\Module\EventSubscriber\ModuleAccessSubscriber;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\UserRepository;
 use App\Tests\Web\Support\AcceptsPendingLegalDocumentsTrait;
+use App\Tests\Web\Support\EnablesPokemonFavoritesTrait;
+use App\Tests\Web\Support\EnablesWebSecureAreaTrait;
 use App\Web\Service\PublicLanguageResolver;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -41,15 +44,31 @@ use function tempnam;
 final class PublicAuthenticationTest extends WebTestCase
 {
     use AcceptsPendingLegalDocumentsTrait;
+    use EnablesPokemonFavoritesTrait;
+    use EnablesWebSecureAreaTrait;
     use MailerAssertionsTrait;
 
     private const string PASSWORD = 'Secret123';
+
+    protected function createClientWithSecureArea(): KernelBrowser
+    {
+        $client = static::createClient();
+        $this->enableWebSecureArea();
+        $this->enablePokemonFavorites();
+
+        return $client;
+    }
 
     /** @var list<string> */
     private array $nicknames = [];
 
     protected function tearDown(): void
     {
+        if (static::$booted) {
+            $this->restorePokemonFavorites();
+            $this->restoreWebSecureArea();
+        }
+
         if ([] !== $this->nicknames && static::$booted) {
             /** @var EntityManagerInterface $entityManager */
             $entityManager = static::getContainer()->get(EntityManagerInterface::class);
@@ -82,7 +101,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testActiveUserLogsInWithNicknameAndSeesTheAccountMenu(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('web' . bin2hex(random_bytes(3)));
         $this->createUser($nickname, [UserRole::User], UserStatus::Active, 'Ada', 'web-' . $nickname . '@example.com', 57, $this->phone());
@@ -106,7 +125,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testLoginAndRootOpenInThePreferredLanguage(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         /** @var EntityManagerInterface $entityManager */
         $entityManager = static::getContainer()->get(EntityManagerInterface::class);
         /** @var GeneralSettingsRepository $repository */
@@ -144,7 +163,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testEmailShapedNicknameLogsInFromTheSameTextField(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('ada' . bin2hex(random_bytes(2)) . '@e.co');
         $this->createUser($nickname, [UserRole::User], UserStatus::Active);
@@ -158,7 +177,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testStaffWithoutStoredUserRoleIsRejected(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('op' . bin2hex(random_bytes(3)));
         $this->createUser($nickname, [UserRole::Operator], UserStatus::Active);
@@ -174,7 +193,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testRejectedStaffLoginClearsTheRememberMeCookie(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('oprm' . bin2hex(random_bytes(2)));
         $this->createUser($nickname, [UserRole::Operator], UserStatus::Active);
@@ -204,7 +223,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testNicknameStaysReadOnlyAndTheSessionRemainsValid(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('nick' . bin2hex(random_bytes(3)));
         $this->createUser(
@@ -243,7 +262,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testAccountWithUserRoleBesidesAHigherRoleCanLogIn(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('both' . bin2hex(random_bytes(2)));
         $this->createUser($nickname, [UserRole::Admin, UserRole::User], UserStatus::Active);
@@ -255,7 +274,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testDeniedStatusesStayOnTheLoginPage(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
 
         /** @var list<array{UserStatus, string}> $cases */
@@ -279,7 +298,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testUnconfirmedAccountIsSentToTheConfirmationScreen(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('pend' . bin2hex(random_bytes(2)));
         $this->createUser($nickname, [UserRole::User], UserStatus::UnconfirmedAccount);
@@ -301,7 +320,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testTemporaryLockShowsTheTranslatedWaitMessage(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('lock' . bin2hex(random_bytes(2)));
         $user = $this->createUser($nickname, [UserRole::User], UserStatus::Active);
@@ -322,7 +341,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testIncompleteProfileIsSentToProfileAndCannotOpenFavorites(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('inc' . bin2hex(random_bytes(3)));
         $this->createUser($nickname, [UserRole::User], UserStatus::UncompleteProfileInfo);
@@ -349,7 +368,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testCompletingContactInfoActivatesTheAccount(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('done' . bin2hex(random_bytes(2)));
         $this->createUser($nickname, [UserRole::User], UserStatus::UncompleteProfileInfo);
@@ -401,7 +420,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testPasswordChangeUpdatesTheHash(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('pwd' . bin2hex(random_bytes(3)));
         $this->createUser($nickname, [UserRole::User], UserStatus::Active, 'Ada', 'pwd-' . $nickname . '@example.com', 57, $this->phone());
@@ -451,7 +470,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testAGoogleBornAccountCreatesItsFirstPasswordWithoutTheCurrentOne(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('gpass' . bin2hex(random_bytes(3)));
         $this->createUser($nickname, [UserRole::User], UserStatus::Active, 'Ada', 'gpass-' . $nickname . '@example.com', 57, $this->phone());
@@ -495,7 +514,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testInvalidFieldsRenderErrorMessages(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('err' . bin2hex(random_bytes(3)));
         $this->createUser($nickname, [UserRole::User], UserStatus::Active, 'Ada', 'err-' . $nickname . '@example.com', 57, $this->phone());
@@ -533,7 +552,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testLogoutClearsThePublicSession(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('out' . bin2hex(random_bytes(3)));
         $this->createUser($nickname, [UserRole::User], UserStatus::Active);
@@ -549,7 +568,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testFavoritesRequiresAnActiveSession(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
 
         $client->request('GET', '/' . $locale . '/favorites');
@@ -559,7 +578,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
     public function testAvatarIsServedOnlyToTheSignedInAccount(): void
     {
-        $client = static::createClient();
+        $client = $this->createClientWithSecureArea();
         $locale = $this->defaultLocale();
         $nickname = $this->rememberNickname('img' . bin2hex(random_bytes(3)));
         $this->createUser($nickname, [UserRole::User], UserStatus::Active, 'Ada', 'img-' . $nickname . '@example.com', 57, $this->phone());
@@ -617,6 +636,59 @@ final class PublicAuthenticationTest extends WebTestCase
         ));
         self::assertSelectorExists('button[data-gallery-target="previousButton"][hidden]');
         self::assertSelectorExists('button[data-gallery-target="nextButton"][hidden]');
+    }
+
+    public function testLoginAndRegistrationAreHiddenWhenTheSecureAreaIsDisabled(): void
+    {
+        $client = $this->createClientWithSecureArea();
+        $locale = $this->defaultLocale();
+        $nickname = $this->rememberNickname('sec' . bin2hex(random_bytes(3)));
+        $this->createUser($nickname, [UserRole::User], UserStatus::Active, 'Ada', $nickname . '@example.com', 57, $this->phone());
+
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('header a[href$="/login"]');
+        self::assertSelectorExists('header a[href$="/register"]');
+
+        $crawler = $client->request('GET', '/' . $locale . '/login');
+        self::assertResponseIsSuccessful();
+        $form = $crawler->filter('form')->form();
+        $form['_username'] = $nickname;
+        $form['_password'] = self::PASSWORD;
+
+        $this->setWebSecureAreaEnabled(false);
+
+        $client->request('GET', '/' . $locale);
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('header a[href$="/login"]');
+        self::assertSelectorNotExists('header a[href$="/register"]');
+
+        $this->assertSecureAreaDenied($client, '/' . $locale . '/login');
+        $this->assertSecureAreaDenied($client, '/' . $locale . '/register');
+
+        $client->request('POST', '/' . $locale . '/register');
+        self::assertResponseRedirects('/');
+
+        $client->submit($form);
+        self::assertResponseRedirects('/');
+        $client->followRedirect();
+        self::assertResponseRedirects();
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
+        self::assertNull($client->getRequest()->getSession()->get('_security_public'));
+    }
+
+    private function assertSecureAreaDenied(KernelBrowser $client, string $path): void
+    {
+        $client->request('GET', $path);
+
+        self::assertResponseRedirects('/');
+        $client->followRedirect();
+        self::assertResponseRedirects();
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('body', ModuleAccessSubscriber::DENIED_MESSAGE);
     }
 
     private function submitLogin(KernelBrowser $client, string $locale, string $nickname, string $password): void

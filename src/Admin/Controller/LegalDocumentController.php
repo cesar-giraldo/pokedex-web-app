@@ -16,6 +16,7 @@ use App\Entity\User;
 use App\Legal\Exception\LegalPublicationException;
 use App\Legal\LegalDocumentPublisher;
 use App\Legal\LegalLanguageResolver;
+use App\Module\RequiresModule;
 use App\Repository\GeneralSettingsRepository;
 use App\Repository\LegalDocumentRepository;
 use App\Repository\LegalDocumentVersionRepository;
@@ -34,6 +35,7 @@ use function strtolower;
 
 #[Route('/admin/legal')]
 #[IsGranted('ROLE_DEVELOPER')]
+#[RequiresModule(slug: 'module_admin_legal_documents_management', role: 'ROLE_DEVELOPER')]
 final class LegalDocumentController extends AbstractController
 {
     use AdminPaginatorTrait;

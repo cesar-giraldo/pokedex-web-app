@@ -1,0 +1,59 @@
+{% for node in nodes %}
+	{% set name_size = node.depth == 0 ? 'text-base font-semibold' : 'text-sm font-medium' %}
+	{% set name_state = node.module.enabled ? 'text-gray-800 dark:text-white/90' : 'text-gray-400 line-through' %}
+	<div
+		class="flex items-center justify-between gap-3"
+		style="padding-left: {{ node.depth * 1.25 }}rem"
+		data-module-id="{{ node.module.id }}"
+		data-module-name="{{ node.module.name|e('html_attr') }}"
+		data-module-slug="{{ node.module.slug|e('html_attr') }}"
+		data-module-sort-order="{{ node.module.sortOrder|e('html_attr') }}"
+		data-module-description="{{ node.module.description|default('')|e('html_attr') }}"
+		data-module-parent-id="{{ node.module.parent ? node.module.parent.id : '' }}"
+		data-module-excluded-ids="{{ node.excludedParentIds|join(',') }}"
+		data-module-update-url="{{ path('app_backend_module_update', { id: node.module.id }) }}"
+		data-enabled-url="{{ path('app_backend_module_enabled', { id: node.module.id }) }}"
+	>
+		{% if mode == 'edit' %}
+			<div class="group/tooltip relative min-w-0 flex-1" {% if node.module.description %}title="{{ node.module.description }}"{% endif %}>
+				<twig:component_toggle_switch
+					label="{{ node.module.name }}"
+					id="module-enabled-{{ node.module.id }}"
+					name="module_enabled_{{ node.module.id }}"
+					:checked="node.module.enabled"
+					:disabled="node.locked"
+					labelClass="{{ name_size }} break-words"
+				/>
+				{% if node.module.description %}
+					<div class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 hidden group-hover/tooltip:block">
+						<div class="max-w-xs rounded-md bg-gray-900 px-2.5 py-1.5 text-xs font-medium whitespace-normal text-white shadow-md dark:bg-white dark:text-gray-900">
+							{{ node.module.description }}
+						</div>
+					</div>
+				{% endif %}
+			</div>
+			<button
+				type="button"
+				class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+				data-action="click->module-admin#openEdit"
+				aria-label="Editar {{ node.module.name }}"
+			>
+				{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+			</button>
+		{% else %}
+			<div class="group/tooltip relative min-w-0">
+				<p data-module-view-name class="{{ name_size }} {{ name_state }} break-words" {% if node.module.description %}title="{{ node.module.description }}"{% endif %}>
+					{{ node.module.name }}
+				</p>
+				{% if node.module.description %}
+					<div class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 hidden group-hover/tooltip:block">
+						<div class="max-w-xs rounded-md bg-gray-900 px-2.5 py-1.5 text-xs font-medium whitespace-normal text-white shadow-md dark:bg-white dark:text-gray-900">
+							{{ node.module.description }}
+						</div>
+					</div>
+				{% endif %}
+			</div>
+		{% endif %}
+	</div>
+	{% include '@admin/settings/general/_module_nodes.html.twig' with { nodes: node.children, mode: mode } %}
+{% endfor %}

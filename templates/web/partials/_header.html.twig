@@ -34,7 +34,7 @@
                     panel_id: 'header-notifications-desktop',
                 } %}
                 {% include '@web/partials/_account_menu.html.twig' %}
-            {% else %}
+            {% elseif is_module_enabled('module_web_secure_area') %}
                 <a href="{{ path('app_public_login', {_locale: locale}) }}" class="nav-link header-login text-sm font-medium text-ink hover:text-brand" {% if current == 'app_public_login' %}aria-current="page"{% endif %}>{{ 'nav.login'|trans }}</a>
                 <a href="{{ path('app_public_register', {_locale: locale}) }}" class="btn btn-primary">{{ 'nav.register'|trans }}</a>
             {% endif %}
@@ -59,7 +59,7 @@
                             {% include '@web/partials/_language_switcher.html.twig' with {variant: 'list'} %}
                         </div>
                     {% endif %}
-                    {% if not is_account_user %}
+                    {% if not is_account_user and is_module_enabled('module_web_secure_area') %}
                         <div class="mt-4 flex flex-col gap-2">
                             <a href="{{ path('app_public_login', {_locale: locale}) }}" class="btn btn-secondary header-login-mobile" {% if current == 'app_public_login' %}aria-current="page"{% endif %}>{{ 'nav.login'|trans }}</a>
                             <a href="{{ path('app_public_register', {_locale: locale}) }}" class="btn btn-primary">{{ 'nav.register'|trans }}</a>
