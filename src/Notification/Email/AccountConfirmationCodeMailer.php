@@ -30,6 +30,14 @@ final class AccountConfirmationCodeMailer implements AccountConfirmationCodeSend
 
     public function send(User $user, string $plainCode): void
     {
+        if (!$user->acceptsAutomaticContact()) {
+            $this->logger->info('Se omitió el código de confirmación porque la cuenta no admite avisos automáticos.', [
+                'user_id' => $user->getId(),
+            ]);
+
+            return;
+        }
+
         $emailAddress = $user->getEmail();
 
         if (null === $emailAddress || '' === trim($emailAddress)) {

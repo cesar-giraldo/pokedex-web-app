@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Notification;
 
 use App\Entity\Enum\NotificationType;
+use App\Entity\Enum\UserStatus;
 use App\Entity\Notification;
 use App\Entity\User;
 use App\Notification\Exception\NotificationAccessDeniedException;
@@ -77,6 +78,46 @@ final class NotificationServiceTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $service->notify($this->userWithId(1), NotificationType::SystemInfo, '  ', 'mensaje');
+    }
+
+    public function testNotifySkipsInactiveAndBannedRecipients(): void
+    {
+        $inactive = $this->userWithId(1);
+        $inactive->setStatus(UserStatus::Inactive);
+        $banned = $this->userWithId(2);
+        $banned->setStatus(UserStatus::Banned);
+        $active = $this->userWithId(3);
+        $active->setStatus(UserStatus::Active);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())->method('persist')->with(self::isInstanceOf(Notification::class));
+        $entityManager->expects(self::once())->method('flush');
+
+        $service = new NotificationService($entityManager, $this->createStub(NotificationRepository::class));
+        $created = $service->notify(
+            recipients: [$inactive, $banned, $active],
+            type: NotificationType::SystemInfo,
+            title: 'Aviso',
+            message: 'Detalle',
+        );
+
+        self::assertCount(1, $created);
+        self::assertSame($active, $created[0]->getRecipient());
+    }
+
+    public function testNotifyDoesNotFlushWhenEveryRecipientIsInactive(): void
+    {
+        $inactive = $this->userWithId(1);
+        $inactive->setStatus(UserStatus::Inactive);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::never())->method('persist');
+        $entityManager->expects(self::never())->method('flush');
+
+        $service = new NotificationService($entityManager, $this->createStub(NotificationRepository::class));
+        $created = $service->notify($inactive, NotificationType::SystemInfo, 'Aviso', 'Detalle');
+
+        self::assertSame([], $created);
     }
 
     public function testMarkAsReadPersistsOnlyForTheRecipient(): void

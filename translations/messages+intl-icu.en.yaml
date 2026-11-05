@@ -261,6 +261,22 @@ account:
     select_time_format: Select a time format
     show_password: Show password
     hide_password: Hide password
+    status_title: Account status
+    status_summary: 'Your account was created {date} and its status is {status}.'
+    status:
+        active: active
+        uncomplete_profile_info: incomplete profile information
+        unconfirmed_account: unconfirmed
+        banned: suspended
+        inactive: inactive
+    deactivate: Deactivate account
+    deactivate_title: Deactivate account
+    deactivate_message: 'Are you sure you want to deactivate your account? You will not be able to sign in again.'
+    deactivate_cancel: Cancel
+    deactivate_confirm: Yes, deactivate my account
+    deactivate_password_invalid: The current password is incorrect.
+    deactivate_forbidden: You cannot deactivate this account.
+    deactivated: Your account has been deactivated.
 
 notifications:
     title: Notifications

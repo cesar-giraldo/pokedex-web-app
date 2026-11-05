@@ -7,6 +7,7 @@ namespace App\Tests\Notification\Email;
 use App\Admin\Service\GeneralSettingsProvider;
 use App\Entity\Enum\NotificationType;
 use App\Entity\Enum\SupportedLocale;
+use App\Entity\Enum\UserStatus;
 use App\Entity\GeneralSettings;
 use App\Entity\User;
 use App\Legal\LegalLanguageResolver;
@@ -83,6 +84,22 @@ final class DatabaseBackupStatusMailerTest extends TestCase
 
         $mailer = $this->mailer($transport, $logger);
         $mailer->notify([$this->developer(null, SupportedLocale::SpanishColombia, 'Ada', 4)], NotificationType::DatabaseBackupCompleted);
+    }
+
+    public function testSkipsInactiveAndBannedRecipients(): void
+    {
+        $transport = $this->createMock(MailerInterface::class);
+        $transport->expects(self::never())->method('send');
+
+        $inactive = $this->developer('inactive@example.com', SupportedLocale::SpanishColombia, 'Ina', 8);
+        $inactive->setStatus(UserStatus::Inactive);
+        $banned = $this->developer('banned@example.com', SupportedLocale::SpanishColombia, 'Ban', 9);
+        $banned->setStatus(UserStatus::Banned);
+
+        $this->mailer($transport, $this->createStub(LoggerInterface::class))->notify(
+            [$inactive, $banned],
+            NotificationType::DatabaseBackupCompleted,
+        );
     }
 
     public function testRejectsANotificationTypeThatIsNotABackup(): void

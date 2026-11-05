@@ -46,6 +46,7 @@ use function array_key_exists;
 use function bin2hex;
 use function file_put_contents;
 use function mkdir;
+use function preg_replace;
 use function random_bytes;
 use function str_ends_with;
 use function sys_get_temp_dir;
@@ -81,7 +82,8 @@ final class GenerateDatabaseBackupCommandTest extends TestCase
 
         self::assertSame(Command::SUCCESS, $status);
         self::assertStringContainsString('Backup almacenado', $tester->getDisplay());
-        self::assertStringContainsString('No se notificará el backup: no hay developers activos y visibles.', $tester->getDisplay());
+        $display = preg_replace('/\s+/', ' ', $tester->getDisplay()) ?? '';
+        self::assertStringContainsString('No se notificará el backup: no hay developers activos y visibles.', $display);
     }
 
     public function testDoesNotRecordMetadataWhenExportFails(): void

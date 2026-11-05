@@ -438,7 +438,7 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorTextContains('#profile-avatar-help', $this->trans($locale, 'account.avatar_help'));
         self::assertSelectorNotExists('#profile-remove-avatar');
         self::assertSelectorNotExists('[data-controller="gallery"]');
-        self::assertSelectorCount(3, '[data-controller="password-input"]');
+        self::assertSelectorCount(4, '[data-controller="password-input"]');
         self::assertSelectorExists('[data-action="click->password-input#toggleVisibility"]');
         self::assertSelectorCount(2, '[data-controller="submit-button"]');
         self::assertSame(
@@ -497,7 +497,7 @@ final class PublicAuthenticationTest extends WebTestCase
         $crawler = $client->followRedirect();
         self::assertSelectorTextContains('main [role="status"]', $this->trans($locale, 'account.password_saved'));
         self::assertSelectorExists('#profile-current-password');
-        self::assertSelectorCount(3, '[data-controller="password-input"]');
+        self::assertSelectorCount(4, '[data-controller="password-input"]');
         self::assertTrue($this->reload($nickname)->hasChosenPassword());
 
         $form = $crawler->filter('form[name="user_profile_password"]')->form();

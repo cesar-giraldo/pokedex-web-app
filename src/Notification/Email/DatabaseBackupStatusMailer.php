@@ -49,6 +49,14 @@ final class DatabaseBackupStatusMailer
         );
 
         foreach ($recipients as $recipient) {
+            if (!$recipient->acceptsAutomaticContact()) {
+                $this->logger->info('Se omitió el correo de backup porque la cuenta no admite avisos automáticos.', [
+                    'user_id' => $recipient->getId(),
+                ]);
+
+                continue;
+            }
+
             $emailAddress = $recipient->getEmail();
 
             if (null === $emailAddress || '' === trim($emailAddress)) {

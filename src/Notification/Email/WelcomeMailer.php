@@ -31,6 +31,14 @@ final class WelcomeMailer
 
     public function send(User $user): void
     {
+        if (!$user->acceptsAutomaticContact()) {
+            $this->logger->info('Se omitió el correo de bienvenida porque la cuenta no admite avisos automáticos.', [
+                'user_id' => $user->getId(),
+            ]);
+
+            return;
+        }
+
         $emailAddress = $user->getEmail();
 
         if (null === $emailAddress || '' === trim($emailAddress)) {
