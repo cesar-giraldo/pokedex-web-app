@@ -70,7 +70,7 @@ Form login and the Google check authenticate before `kernel.controller`. Those t
 - `PendingFavoriteReturn` clears the pending-favorite cookie and returns the fallback when the user can navigate but `module_pokemons_favorites` is off. It keeps the cookie when the user cannot navigate yet.
 
 ### Catalog
-Slugs, parents, sort order, and descriptions live in `src/Admin/Service/InitialModules.php`. The initial-data command inserts a slug only when it is missing and does not update an existing row.
+Slugs, parents, sort order, and descriptions live in `src/Admin/Service/InitialModules.php`. `Version20261105150000` inserts any missing slug with `is_enabled` true and does not change `is_enabled` on a row that already exists. The initial-data command inserts a slug only when it is missing and does not update an existing row. `module_admin_secure_area` groups admin password recovery, legal-document management, and UI Kit. Turning it off hides and denies those children. It does not close `/admin` or the admin login.
 
 | Slug | Parent |
 | ---- | ------ |

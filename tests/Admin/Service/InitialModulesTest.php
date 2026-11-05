@@ -52,6 +52,10 @@ final class InitialModulesTest extends TestCase
         self::assertStringContainsString('página de inicio', (string) $this->definition($definitions, 'module_pokemons')->description);
         self::assertStringNotContainsString('home page', (string) $this->definition($definitions, 'module_pokemons')->description);
         self::assertStringNotContainsString('signifoca', (string) $this->definition($definitions, 'module_web_google_auth')->description);
+        $adminSecureArea = (string) $this->definition($definitions, 'module_admin_secure_area')->description;
+        self::assertStringContainsString('recuperación de contraseña del admin', $adminSecureArea);
+        self::assertStringContainsString('siguen disponibles', $adminSecureArea);
+        self::assertStringNotContainsString('login en el admin', $adminSecureArea);
     }
 
     /**

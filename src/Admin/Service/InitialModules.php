@@ -54,7 +54,7 @@ final class InitialModules
                 slug: 'module_admin_secure_area',
                 sortOrder: '2.00',
                 parentSlug: null,
-                description: 'Módulo de login en el admin (por defecto siempre habilitado).',
+                description: 'Agrupa la recuperación de contraseña del admin, la administración de documentos legales y UI Kit. Si se deshabilita, esas funciones se ocultan y se deniega su acceso. El inicio de sesión y el resto del panel siguen disponibles.',
                 isEnabled: true,
             ),
             new InitialModuleDefinition(
