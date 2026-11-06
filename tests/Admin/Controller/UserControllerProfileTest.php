@@ -182,13 +182,20 @@ final class UserControllerProfileTest extends WebTestCase
         $user = $userRepository->findOneByNickname($nickname);
         self::assertInstanceOf(User::class, $user);
 
+        /** @var UserPasswordHasherInterface $hasher */
+        $hasher = $container->get(UserPasswordHasherInterface::class);
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $container->get(EntityManagerInterface::class);
+        $user->setPassword($hasher->hashPassword($user, 'SecurePass12'));
+        $entityManager->flush();
+
         $client->loginUser($user, 'main');
 
         $client->request('POST', '/admin/profile', [
             'user_profile_password' => [
-                'currentPassword' => 'Secret123',
-                'plainPassword' => 'Secret123',
-                'confirmPassword' => 'Secret123',
+                'currentPassword' => 'SecurePass12',
+                'plainPassword' => 'SecurePass12',
+                'confirmPassword' => 'SecurePass12',
                 '_token' => $this->getPasswordFormToken($client),
             ],
         ]);
@@ -223,8 +230,8 @@ final class UserControllerProfileTest extends WebTestCase
         $client->request('POST', '/admin/profile', [
             'user_profile_password' => [
                 'currentPassword' => 'WrongPassword',
-                'plainPassword' => 'NewPass1',
-                'confirmPassword' => 'NewPass1',
+                'plainPassword' => 'SecurePass12',
+                'confirmPassword' => 'SecurePass12',
                 '_token' => $this->getPasswordFormToken($client),
             ],
         ]);

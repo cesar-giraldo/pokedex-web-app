@@ -1,5 +1,5 @@
 auth.password_mismatch: Le mot de passe et la confirmation ne correspondent pas.
-auth.password_strength: Le mot de passe doit contenir au moins 5 caractères, avec des lettres et des chiffres.
+auth.password_strength: Le mot de passe doit contenir au moins 8 caractères, avec des lettres et des chiffres.
 auth.password_required: Le mot de passe est obligatoire.
 auth.password_confirm_required: Confirmez le mot de passe.
 auth.password_max: Le mot de passe ne peut pas dépasser {{ limit }} caractères.

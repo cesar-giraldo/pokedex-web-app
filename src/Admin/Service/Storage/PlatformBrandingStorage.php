@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Admin\Service\Storage;
 
+use App\Admin\Service\SvgSanitizer;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use function bin2hex;
+use function file_get_contents;
+use function is_string;
 use function preg_match;
 use function random_bytes;
 use function sprintf;
@@ -22,6 +25,7 @@ final class PlatformBrandingStorage
     public function __construct(
         private readonly ObjectStorage $objectStorage,
         private readonly string $storagePrefix,
+        private readonly SvgSanitizer $svgSanitizer = new SvgSanitizer(),
     ) {
     }
 
@@ -37,8 +41,20 @@ final class PlatformBrandingStorage
 
     public function write(string $objectKey, UploadedFile $file): void
     {
+        $contents = file_get_contents($file->getPathname());
+
+        if (!is_string($contents)) {
+            throw new PlatformBrandingUploadException('No se pudo leer el archivo SVG.');
+        }
+
+        $sanitized = $this->svgSanitizer->sanitize($contents);
+
+        if (null === $sanitized) {
+            throw new PlatformBrandingUploadException('El archivo SVG no es válido.');
+        }
+
         try {
-            $this->objectStorage->writeUploadedFile($objectKey, $file);
+            $this->objectStorage->write($objectKey, $sanitized);
         } catch (ObjectStorageException $exception) {
             throw new PlatformBrandingUploadException($exception->getMessage(), previous: $exception);
         }

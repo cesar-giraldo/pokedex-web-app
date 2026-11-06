@@ -34,7 +34,7 @@ final class PasswordResetControllerTest extends WebTestCase
     use AcceptsPendingLegalDocumentsTrait;
     use MailerAssertionsTrait;
 
-    private const string PASSWORD = 'Secret123';
+    private const string PASSWORD = 'CurrentPass12';
 
     private const string PARENT_SLUG = 'module_web_secure_area';
 
@@ -146,13 +146,13 @@ final class PasswordResetControllerTest extends WebTestCase
         $this->submitPasswords($client, $crawler, self::PASSWORD, self::PASSWORD);
         self::assertSelectorTextContains('body', $this->trans($locale, 'auth.password_same_as_current', 'validators'));
         $crawler = $client->getCrawler();
-        $this->submitPasswords($client, $crawler, 'Newpass1', 'Otherpass1');
+        $this->submitPasswords($client, $crawler, 'SecurePass12', 'OtherPass12');
         self::assertSelectorTextContains('body', $this->trans($locale, 'auth.password_mismatch', 'validators'));
         $crawler = $client->getCrawler();
         $this->submitPasswords($client, $crawler, 'abcdef', 'abcdef');
         self::assertSelectorTextContains('body', $this->trans($locale, 'auth.password_strength', 'validators'));
         $crawler = $client->getCrawler();
-        $this->submitPasswords($client, $crawler, 'Newpass1', 'Newpass1');
+        $this->submitPasswords($client, $crawler, 'SecurePass12', 'SecurePass12');
         $completed = self::getMailerMessage(0);
 
         $this->assertRedirectEndsWith($client, '/' . $locale . '/login');
@@ -161,7 +161,7 @@ final class PasswordResetControllerTest extends WebTestCase
         self::assertNull($client->getRequest()->getSession()->get('_security_public'));
         self::assertInstanceOf(TemplatedEmail::class, $completed);
         self::assertEmailHtmlBodyContains($completed, $this->trans($locale, 'email.password_reset_completed.heading'));
-        self::assertEmailHtmlBodyNotContains($completed, 'Newpass1');
+        self::assertEmailHtmlBodyNotContains($completed, 'SecurePass12');
 
         $updated = $this->reload($nickname);
         self::assertTrue($updated->hasChosenPassword());
@@ -171,7 +171,7 @@ final class PasswordResetControllerTest extends WebTestCase
         $client->request('GET', '/' . $locale . '/profile');
         $this->assertRedirectEndsWith($client, '/' . $locale . '/login');
 
-        $this->submitLogin($client, $locale, $nickname, 'Newpass1');
+        $this->submitLogin($client, $locale, $nickname, 'SecurePass12');
         $this->assertRedirectEndsWith($client, '/' . $locale);
         $client->request('GET', '/' . $locale . '/logout');
         $this->submitLogin($client, $locale, $nickname, self::PASSWORD);
@@ -194,9 +194,9 @@ final class PasswordResetControllerTest extends WebTestCase
         $this->submitIdentifier($client, $locale, $nickname);
         $path = $this->resetPath(self::getMailerMessage(0));
         $crawler = $client->request('GET', $path);
-        $this->submitPasswords($client, $crawler, 'Newpass1', 'Newpass1');
+        $this->submitPasswords($client, $crawler, 'SecurePass12', 'SecurePass12');
         $client->followRedirect();
-        $this->submitLogin($client, $locale, $nickname, 'Newpass1');
+        $this->submitLogin($client, $locale, $nickname, 'SecurePass12');
         $this->assertRedirectEndsWith($client, '/' . $locale . '/account/confirm');
         self::assertSame(UserStatus::UnconfirmedAccount, $this->reload($nickname)->getStatus());
 

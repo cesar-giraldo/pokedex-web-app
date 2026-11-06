@@ -8,6 +8,11 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
+use function max;
+use function min;
+use function rawurlencode;
+use function trim;
+
 class PokeAPIClient
 {
     // El HttpClient se inyecta automáticamente aquí
@@ -19,10 +24,16 @@ class PokeAPIClient
 
     public function getPokemonByName(string $name): ?PokemonDetails
     {
+        $name = trim($name);
+
+        if ('' === $name) {
+            return null;
+        }
+
         try {
             $response = $this->httpClient->request(
                 'GET',
-                "https://pokeapi.co/api/v2/pokemon/$name"
+                'https://pokeapi.co/api/v2/pokemon/' . rawurlencode($name)
             );
             $result = $response->toArray();
 
@@ -69,10 +80,13 @@ class PokeAPIClient
      */
     public function listPokemons(int $limit = 20, int $offset = 0): array
     {
+        $limit = max(1, min(100, $limit));
+        $offset = max(0, $offset);
+
         try {
             $response = $this->httpClient->request(
                 'GET',
-                "https://pokeapi.co/api/v2/pokemon/?limit=$limit&offset=$offset"
+                'https://pokeapi.co/api/v2/pokemon/?limit=' . $limit . '&offset=' . $offset
             );
             $result = $response->toArray();
 
@@ -89,10 +103,16 @@ class PokeAPIClient
 
     public function getPokemonTypeByName(string $name): ?PokemonTypeDetails
     {
+        $name = trim($name);
+
+        if ('' === $name) {
+            return null;
+        }
+
         try {
             $response = $this->httpClient->request(
                 'GET',
-                "https://pokeapi.co/api/v2/type/$name"
+                'https://pokeapi.co/api/v2/type/' . rawurlencode($name)
             );
             $result = $response->toArray();
 

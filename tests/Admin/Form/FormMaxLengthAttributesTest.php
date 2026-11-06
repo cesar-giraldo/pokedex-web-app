@@ -172,8 +172,8 @@ final class FormMaxLengthAttributesTest extends KernelTestCase
             'preferredLanguage' => 'es',
             'locale' => 'es-CO',
             'timeFormat' => '12h',
-            'plainPassword' => 'Secret1',
-            'confirmPassword' => 'Secret1',
+            'plainPassword' => 'SecurePass12',
+            'confirmPassword' => 'SecurePass12',
         ]);
 
         self::assertFalse($form->isValid());

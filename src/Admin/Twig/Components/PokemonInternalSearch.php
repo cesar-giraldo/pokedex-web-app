@@ -7,11 +7,13 @@ namespace App\Admin\Twig\Components;
 use App\Entity\Pokemon;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
+#[IsGranted('ROLE_OPERATOR')]
 #[AsLiveComponent(
     name: 'pokemon_internal_search',
     template: '@web/components/pokemon_internal_search.html.twig'

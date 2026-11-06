@@ -88,7 +88,7 @@ final class ImpersonationPolicyTest extends TestCase
         self::assertTrue($this->policy->canImpersonateOnWeb($developer, $incompleteUser));
         self::assertTrue($this->policy->canImpersonateOnWeb($admin, $incompleteUser));
         self::assertTrue($this->policy->canImpersonateOnWeb($developer, $adminWithPublicRole));
-        self::assertTrue($this->policy->canImpersonateOnWeb($admin, $adminWithPublicRole));
+        self::assertFalse($this->policy->canImpersonateOnWeb($admin, $adminWithPublicRole));
         self::assertFalse($this->policy->canImpersonateOnWeb($operator, $publicUser));
     }
 

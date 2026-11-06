@@ -164,7 +164,7 @@ auth:
     password: Senha
     no_public_access: Você não tem acesso a esta seção.
     password_confirm: Confirmar senha
-    password_hint: Mínimo de 5 caracteres, com letras e números.
+    password_hint: Mínimo de 8 caracteres, com letras e números.
     name: Nome
     remember: Lembrar neste dispositivo
     submit_login: Entrar
@@ -276,6 +276,7 @@ account:
     deactivate_confirm: Sim, desativar minha conta
     deactivate_password_invalid: A senha atual está incorreta.
     deactivate_forbidden: Você não pode desativar esta conta.
+    impersonation_readonly: Você está vendo este perfil como outro usuário. Seus dados e sua senha não podem ser alterados durante a personificação.
     deactivate_invalid: Não foi possível confirmar a solicitação. Tente de novo.
     deactivated: Sua conta foi desativada.
 

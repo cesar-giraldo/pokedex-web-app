@@ -14,7 +14,7 @@ final class HtmlExceptionPageTest extends WebTestCase
 {
     public function testWebNotFoundReturnsCustomPageInProduction(): void
     {
-        $client = static::createClient(['environment' => 'prod', 'debug' => false]);
+        $client = static::createClient(['debug' => false]);
         $client->request('GET', '/this-route-does-not-exist');
 
         self::assertResponseStatusCodeSame(404);
@@ -24,12 +24,12 @@ final class HtmlExceptionPageTest extends WebTestCase
 
     public function testAdminNotFoundReturnsCustomPageInProduction(): void
     {
-        $client = static::createClient(['environment' => 'prod', 'debug' => false]);
+        $client = static::createClient(['debug' => false]);
         $client->request('GET', '/admin/this-route-does-not-exist');
 
         self::assertResponseStatusCodeSame(404);
         self::assertSelectorTextContains('h1', 'Not Found');
-        self::assertSelectorExists('a[href="/admin/pokemons"]');
+        self::assertSelectorExists('a[href="/admin/home"]');
     }
 
     public function testWebInternalServerErrorPreviewReturnsCustomPage(): void

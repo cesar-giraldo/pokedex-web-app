@@ -129,8 +129,8 @@ final class PasswordResetControllerTest extends WebTestCase
         self::assertSelectorExists('meta[name="referrer"][content="no-referrer"]');
         self::assertSelectorTextContains('h1', 'Crea una contraseña nueva');
         $form = $crawler->filter('form')->form();
-        $form['reset_password[plainPassword]'] = 'Newpass1';
-        $form['reset_password[confirmPassword]'] = 'Newpass1';
+        $form['reset_password[plainPassword]'] = 'SecurePass12';
+        $form['reset_password[confirmPassword]'] = 'SecurePass12';
         $client->submit($form);
 
         self::assertResponseRedirects('/admin/login');
@@ -148,7 +148,7 @@ final class PasswordResetControllerTest extends WebTestCase
         $client->request('GET', '/admin/login');
         $client->submitForm('Iniciar sesión', [
             '_username' => $nickname,
-            '_password' => 'Newpass1',
+            '_password' => 'SecurePass12',
         ]);
         self::assertResponseRedirects('/admin/home');
 

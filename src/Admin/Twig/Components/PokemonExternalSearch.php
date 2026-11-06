@@ -6,11 +6,13 @@ namespace App\Admin\Twig\Components;
 
 use App\Admin\Service\PokeAPI\PokeAPIClient;
 use App\Admin\Service\PokeAPI\PokemonDetails;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
+#[IsGranted('ROLE_OPERATOR')]
 #[AsLiveComponent(
     name: 'pokemon_external_search',
     template: '@web/components/pokemon_external_search.html.twig'

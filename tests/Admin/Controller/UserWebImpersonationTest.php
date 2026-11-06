@@ -82,7 +82,9 @@ final class UserWebImpersonationTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('Listado de Usuarios', (string) $client->getResponse()->getContent());
 
-        $client->request('GET', '/es/impersonation/exit');
+        $client->request('POST', '/es/impersonation/exit', [
+            '_token' => $this->csrfToken($client, 'impersonation_exit'),
+        ]);
         self::assertResponseRedirects('/admin/users');
         $client->followRedirect();
         self::assertResponseIsSuccessful();
@@ -137,7 +139,9 @@ final class UserWebImpersonationTest extends WebTestCase
             (string) $client->getResponse()->getContent(),
         );
 
-        $client->request('GET', '/es/impersonation/exit');
+        $client->request('POST', '/es/impersonation/exit', [
+            '_token' => $this->csrfToken($client, 'impersonation_exit'),
+        ]);
         self::assertResponseRedirects('/admin/users');
     }
 

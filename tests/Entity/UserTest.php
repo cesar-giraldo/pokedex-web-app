@@ -14,6 +14,8 @@ use DateTime;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
+use function hash;
+
 #[Group('unit')]
 final class UserTest extends TestCase
 {
@@ -26,14 +28,14 @@ final class UserTest extends TestCase
         self::assertTrue($user->hasBackendAccess());
     }
 
-    public function testLocksAccountAfterFourthFailedAttempt(): void
+    public function testLocksAccountAfterMaxFailedAttempts(): void
     {
         $user = new User();
 
-        $user->recordFailedLoginAttempt();
-        $user->recordFailedLoginAttempt();
-        $user->recordFailedLoginAttempt();
-        self::assertNull($user->getNoLoginUntil());
+        for ($attempt = 1; $attempt < User::MAX_FAILED_LOGIN_ATTEMPTS; ++$attempt) {
+            $user->recordFailedLoginAttempt();
+            self::assertNull($user->getNoLoginUntil());
+        }
 
         $user->recordFailedLoginAttempt();
         self::assertNotNull($user->getNoLoginUntil());
@@ -69,11 +71,12 @@ final class UserTest extends TestCase
 
     public function testResetsFailedAttemptsOnSuccessfulLogin(): void
     {
-        $user = new User()
-            ->recordFailedLoginAttempt()
-            ->recordFailedLoginAttempt()
-            ->recordFailedLoginAttempt()
-            ->recordFailedLoginAttempt();
+        $user = new User();
+
+        for ($attempt = 0; $attempt < User::MAX_FAILED_LOGIN_ATTEMPTS; ++$attempt) {
+            $user->recordFailedLoginAttempt();
+        }
+
         self::assertTrue($user->isLoginTemporarilyBlocked());
 
         $user->resetFailedLoginAttempts();
@@ -239,5 +242,18 @@ final class UserTest extends TestCase
 
         $user->setStatus(UserStatus::Banned);
         self::assertFalse($user->acceptsAutomaticContact());
+    }
+
+    public function testSerializeReplacesPasswordWithChecksum(): void
+    {
+        $user = new User();
+        $user->setPassword('hashed-secret');
+
+        $serialized = $user->__serialize();
+
+        self::assertSame(
+            hash('crc32c', 'hashed-secret'),
+            $serialized["\0" . User::class . "\0password"],
+        );
     }
 }

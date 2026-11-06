@@ -49,8 +49,8 @@ final class UserFormValidationTest extends KernelTestCase
             'preferredLanguage' => 'es',
             'locale' => 'es-CO',
             'timeFormat' => '12h',
-            'plainPassword' => 'Secret1',
-            'confirmPassword' => 'Secret1',
+            'plainPassword' => 'SecurePass12',
+            'confirmPassword' => 'SecurePass12',
         ]);
 
         self::assertFalse($form->isValid());
@@ -86,8 +86,8 @@ final class UserFormValidationTest extends KernelTestCase
             'preferredLanguage' => 'es',
             'locale' => 'es-CO',
             'timeFormat' => '12h',
-            'plainPassword' => 'Secret1',
-            'confirmPassword' => 'Secret1',
+            'plainPassword' => 'SecurePass12',
+            'confirmPassword' => 'SecurePass12',
         ]);
 
         self::assertFalse($form->isValid());
@@ -123,8 +123,8 @@ final class UserFormValidationTest extends KernelTestCase
             'preferredLanguage' => 'es',
             'locale' => 'es-CO',
             'timeFormat' => '12h',
-            'plainPassword' => 'Secret1',
-            'confirmPassword' => 'Secret1',
+            'plainPassword' => 'SecurePass12',
+            'confirmPassword' => 'SecurePass12',
         ]);
 
         self::assertTrue($form->get('email')->isValid(), (string) $form->get('email')->getErrors(true, false));
@@ -159,8 +159,8 @@ final class UserFormValidationTest extends KernelTestCase
             'preferredLanguage' => 'es',
             'locale' => 'es-CO',
             'timeFormat' => '12h',
-            'plainPassword' => 'Secret1',
-            'confirmPassword' => 'Secret1',
+            'plainPassword' => 'SecurePass12',
+            'confirmPassword' => 'SecurePass12',
         ]);
 
         self::assertFalse($form->isValid());

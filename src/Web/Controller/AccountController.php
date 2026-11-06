@@ -32,6 +32,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Throwable;
 
@@ -52,6 +54,7 @@ final class AccountController extends AbstractController
         private readonly LegalLanguageResolver $legalLanguageResolver,
         private readonly WelcomeMailer $welcomeMailer,
         private readonly PendingFavoriteReturn $pendingFavoriteReturn,
+        private readonly TokenStorageInterface $tokenStorage,
     ) {
     }
 
@@ -79,9 +82,18 @@ final class AccountController extends AbstractController
             'require_current_password' => $user->hasChosenPassword(),
         ]);
 
+        $locale = $request->getLocale();
+
+        // Un administrador que suplanta al usuario puede ver el perfil, pero no
+        // cambiar su identidad ni sus credenciales (sería una toma de cuenta).
+        if ($request->isMethod('POST') && $this->isImpersonating()) {
+            $this->addFlash('error', 'account.impersonation_readonly');
+
+            return $this->redirectToRoute('app_public_profile', ['_locale' => $locale]);
+        }
+
         $infoForm->handleRequest($request);
         $passwordForm->handleRequest($request);
-        $locale = $request->getLocale();
 
         if ($infoForm->isSubmitted()) {
             return $this->handleInfoForm($request, $user, $infoForm, $passwordForm);
@@ -150,6 +162,11 @@ final class AccountController extends AbstractController
         $response->headers->set('Cache-Control', 'private, max-age=3600');
 
         return $response;
+    }
+
+    private function isImpersonating(): bool
+    {
+        return $this->tokenStorage->getToken() instanceof SwitchUserToken;
     }
 
     /**
@@ -281,6 +298,7 @@ final class AccountController extends AbstractController
             'languageOptions' => $this->languageOptions(),
             'localeOptions' => SupportedLocale::options(),
             'timeFormatOptions' => TimeFormat::options(),
+            'profileReadOnly' => $this->isImpersonating(),
         ]);
     }
 }

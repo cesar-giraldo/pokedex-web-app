@@ -165,7 +165,7 @@
 			:maxLength="form_field_max_length(form.plainPassword)"
 			:required="form.plainPassword.vars.required"
 			error="{{ field_error(form.plainPassword) }}"
-			help="{{ password_help|default('Mínimo 5 caracteres, con letras y números.') }}"
+			help="{{ password_help|default('Mínimo 8 caracteres, con letras y números.') }}"
 		/>
 
 		<twig:component_password_input

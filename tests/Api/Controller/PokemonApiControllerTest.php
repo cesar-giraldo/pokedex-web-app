@@ -19,6 +19,11 @@ final class PokemonApiControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertResponseHeaderSame('Content-Type', 'application/json');
+        self::assertResponseHasHeader('X-Total-Count');
+        self::assertResponseHasHeader('X-Page');
+        self::assertResponseHasHeader('X-Per-Page');
+        self::assertSame('1', $client->getResponse()->headers->get('X-Page'));
+        self::assertSame('20', $client->getResponse()->headers->get('X-Per-Page'));
     }
 
     public function testUnknownApiRouteReturnsJsonNotFound(): void

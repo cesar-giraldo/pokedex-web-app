@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Validator\Constraints;
 
-use DOMDocument;
-use DOMElement;
+use App\Admin\Service\SvgSanitizer;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -16,13 +15,16 @@ use function file_get_contents;
 use function is_string;
 use function pathinfo;
 use function strtolower;
-use function trim;
 
-use const LIBXML_NONET;
 use const PATHINFO_EXTENSION;
 
 final class SvgFileValidator extends ConstraintValidator
 {
+    public function __construct(
+        private readonly SvgSanitizer $svgSanitizer = new SvgSanitizer(),
+    ) {
+    }
+
     public function validate(mixed $value, Constraint $constraint): void
     {
         if (!$constraint instanceof SvgFile) {
@@ -53,44 +55,19 @@ final class SvgFileValidator extends ConstraintValidator
             return;
         }
 
-        if (!$this->hasSvgRoot($value)) {
+        if (!$this->isSafeSvg($value)) {
             $this->context->buildViolation($constraint->invalidMessage)->addViolation();
         }
     }
 
-    private function hasSvgRoot(UploadedFile $file): bool
+    private function isSafeSvg(UploadedFile $file): bool
     {
         $contents = file_get_contents($file->getPathname());
 
-        if (!is_string($contents) || '' === trim($contents)) {
+        if (!is_string($contents)) {
             return false;
         }
 
-        $previousUseErrors = libxml_use_internal_errors(true);
-        libxml_set_external_entity_loader(self::disableExternalEntity(...));
-
-        try {
-            $document = new DOMDocument();
-            $loaded = $document->loadXML($contents, LIBXML_NONET);
-            $root = $document->documentElement;
-        } finally {
-            libxml_clear_errors();
-            libxml_use_internal_errors($previousUseErrors);
-            libxml_set_external_entity_loader(null);
-        }
-
-        $localName = $root instanceof DOMElement ? $root->localName : null;
-
-        return true === $loaded && is_string($localName) && 'svg' === strtolower($localName);
-    }
-
-    /**
-     * @param array<string, mixed> $context
-     */
-    private static function disableExternalEntity(?string $publicId, ?string $systemId, array $context): null
-    {
-        unset($publicId, $systemId, $context);
-
-        return null;
+        return null !== $this->svgSanitizer->sanitize($contents);
     }
 }

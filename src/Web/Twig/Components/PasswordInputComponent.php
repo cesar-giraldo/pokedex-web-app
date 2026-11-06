@@ -23,7 +23,7 @@ use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
  *     :maxLength="100"
  *     :required="true"
  *     :disabled="false"
- *     error="La contraseña debe tener al menos 5 caracteres e incluir letras y números."
+ *     error="La contraseña debe tener al menos 8 caracteres e incluir letras y números."
  *     help="Texto de ayuda opcional."
  * />
  *

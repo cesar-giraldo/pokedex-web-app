@@ -29,6 +29,9 @@
                 {% for message in app.flashes('error') %}
                     <twig:web_alert variant="error" message="{{ message|trans }}" />
                 {% endfor %}
+                {% if profileReadOnly|default(false) %}
+                    <twig:web_alert variant="warning" message="{{ 'account.impersonation_readonly'|trans }}" />
+                {% endif %}
             </div>
 
             <section
@@ -192,7 +195,9 @@
                         />
                     </div>
                     {{ form_widget(infoForm._token) }}
-                    <twig:web_submit_button label="{{ 'account.save'|trans }}" />
+                    {% if not profileReadOnly|default(false) %}
+                        <twig:web_submit_button label="{{ 'account.save'|trans }}" />
+                    {% endif %}
                 {{ form_end(infoForm, { render_rest: false }) }}
                 {% if user.profileImagePath %}
                     {% include '@web/partials/_image_gallery_dialog.html.twig' with {
@@ -249,7 +254,9 @@
                         error="{{ field_error(passwordForm.confirmPassword) }}"
                     />
                     {{ form_widget(passwordForm._token) }}
-                    <twig:web_submit_button label="{{ (user.hasChosenPassword ? 'account.save_password' : 'account.create_password')|trans }}" />
+                    {% if not profileReadOnly|default(false) %}
+                        <twig:web_submit_button label="{{ (user.hasChosenPassword ? 'account.save_password' : 'account.create_password')|trans }}" />
+                    {% endif %}
                 {{ form_end(passwordForm, { render_rest: false }) }}
             </section>
 

@@ -21,6 +21,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
+use function hash;
 use function in_array;
 use function mb_substr;
 use function sprintf;
@@ -51,9 +52,9 @@ use function trim;
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    public const int MAX_FAILED_LOGIN_ATTEMPTS = 4;
+    public const int MAX_FAILED_LOGIN_ATTEMPTS = 10;
 
-    public const int LOGIN_LOCK_MINUTES = 60;
+    public const int LOGIN_LOCK_MINUTES = 15;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -698,6 +699,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function __serialize(): array
+    {
+        $data = (array) $this;
+        $data["\0" . self::class . "\0password"] = hash('crc32c', $this->password);
+
+        return $data;
     }
 
     private function normalizeClientIp(?string $clientIp): ?string

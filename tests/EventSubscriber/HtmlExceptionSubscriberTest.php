@@ -31,7 +31,7 @@ final class HtmlExceptionSubscriberTest extends TestCase
             )
             ->willReturn('<html>404</html>');
 
-        $subscriber = new HtmlExceptionSubscriber($twig, 'prod');
+        $subscriber = new HtmlExceptionSubscriber($twig, false);
         $event = $this->createExceptionEvent(new NotFoundHttpException(), '/missing-page');
 
         $subscriber->onKernelException($event);
@@ -52,7 +52,7 @@ final class HtmlExceptionSubscriberTest extends TestCase
             )
             ->willReturn('<html>500</html>');
 
-        $subscriber = new HtmlExceptionSubscriber($twig, 'prod');
+        $subscriber = new HtmlExceptionSubscriber($twig, false);
         $event = $this->createExceptionEvent(new RuntimeException('Server failure'), '/admin/pokemons');
 
         $subscriber->onKernelException($event);
@@ -67,7 +67,7 @@ final class HtmlExceptionSubscriberTest extends TestCase
         $twig = $this->createMock(Environment::class);
         $twig->expects(self::never())->method('render');
 
-        $subscriber = new HtmlExceptionSubscriber($twig, 'prod');
+        $subscriber = new HtmlExceptionSubscriber($twig, false);
         $event = $this->createExceptionEvent(new AccessDeniedHttpException(), '/admin/pokemons');
 
         $subscriber->onKernelException($event);
@@ -80,7 +80,7 @@ final class HtmlExceptionSubscriberTest extends TestCase
         $twig = $this->createMock(Environment::class);
         $twig->expects(self::never())->method('render');
 
-        $subscriber = new HtmlExceptionSubscriber($twig, 'prod');
+        $subscriber = new HtmlExceptionSubscriber($twig, false);
         $event = $this->createExceptionEvent(new NotFoundHttpException(), '/api/v1/pokemon/999');
 
         $subscriber->onKernelException($event);
@@ -93,7 +93,7 @@ final class HtmlExceptionSubscriberTest extends TestCase
         $twig = $this->createMock(Environment::class);
         $twig->method('render')->willThrowException(new RuntimeException('Database is down'));
 
-        $subscriber = new HtmlExceptionSubscriber($twig, 'prod');
+        $subscriber = new HtmlExceptionSubscriber($twig, false);
         $event = $this->createExceptionEvent(new RuntimeException('Database is down'), '/es');
 
         $subscriber->onKernelException($event);
@@ -103,12 +103,12 @@ final class HtmlExceptionSubscriberTest extends TestCase
         self::assertStringContainsString('<h1>Internal Server Error</h1>', (string) $event->getResponse()->getContent());
     }
 
-    public function testSkipsCustomPagesOutsideProduction(): void
+    public function testSkipsCustomPagesWhenDebugIsEnabled(): void
     {
         $twig = $this->createMock(Environment::class);
         $twig->expects(self::never())->method('render');
 
-        $subscriber = new HtmlExceptionSubscriber($twig, 'dev');
+        $subscriber = new HtmlExceptionSubscriber($twig, true);
         $event = $this->createExceptionEvent(new NotFoundHttpException(), '/missing-page');
 
         $subscriber->onKernelException($event);

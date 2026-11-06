@@ -31,28 +31,28 @@ final class PasswordStrengthValidatorTest extends ConstraintValidatorTestCase
 
     public function testValidPassword(): void
     {
-        $this->validator->validate('abc12', new PasswordStrength());
+        $this->validator->validate('Secret12', new PasswordStrength());
         $this->assertNoViolation();
     }
 
     public function testTooShortPasswordIsInvalid(): void
     {
-        $this->validator->validate('ab1', new PasswordStrength());
-        $this->buildViolation('La contraseña debe tener al menos 5 caracteres e incluir letras y números.')
+        $this->validator->validate('Secret1', new PasswordStrength());
+        $this->buildViolation('La contraseña debe tener al menos 8 caracteres e incluir letras y números.')
             ->assertRaised();
     }
 
     public function testPasswordWithoutNumbersIsInvalid(): void
     {
-        $this->validator->validate('abcdef', new PasswordStrength());
-        $this->buildViolation('La contraseña debe tener al menos 5 caracteres e incluir letras y números.')
+        $this->validator->validate('SecurePassword', new PasswordStrength());
+        $this->buildViolation('La contraseña debe tener al menos 8 caracteres e incluir letras y números.')
             ->assertRaised();
     }
 
     public function testPasswordWithoutLettersIsInvalid(): void
     {
-        $this->validator->validate('12345', new PasswordStrength());
-        $this->buildViolation('La contraseña debe tener al menos 5 caracteres e incluir letras y números.')
+        $this->validator->validate('12345678', new PasswordStrength());
+        $this->buildViolation('La contraseña debe tener al menos 8 caracteres e incluir letras y números.')
             ->assertRaised();
     }
 }
