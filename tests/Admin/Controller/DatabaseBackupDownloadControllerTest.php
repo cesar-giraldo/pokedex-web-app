@@ -92,7 +92,7 @@ final class DatabaseBackupDownloadControllerTest extends WebTestCase
         self::assertSame('-- dump contents', $client->getInternalResponse()->getContent());
     }
 
-    public function testAdminCanDownloadExistingBackup(): void
+    public function testAdminCannotDownloadExistingBackup(): void
     {
         $client = static::createClient();
         $this->loginAsAdmin($client);
@@ -100,7 +100,7 @@ final class DatabaseBackupDownloadControllerTest extends WebTestCase
 
         $client->request('GET', '/admin/database-backup/download');
 
-        self::assertResponseIsSuccessful();
+        self::assertResponseStatusCodeSame(403);
     }
 
     public function testOperatorCannotDownloadBackup(): void

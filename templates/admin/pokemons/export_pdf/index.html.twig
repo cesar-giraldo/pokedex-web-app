@@ -229,10 +229,12 @@
         <section class="cards">
             {% for pokemon in pokemons %}
                 {% set sprite = pokemon.spriteFront ?: pokemon.spriteBack %}
-                {% if sprite and (sprite starts with 'http://' or sprite starts with 'https://') %}
-                    {% set spriteUrl = sprite %}
-                {% elseif sprite %}
-                    {% set spriteUrl = absolute_url(sprite) %}
+                {% if sprite and pokemon_sprite_is_allowed(sprite) %}
+                    {% if sprite starts with 'https://' %}
+                        {% set spriteUrl = sprite %}
+                    {% else %}
+                        {% set spriteUrl = absolute_url(sprite) %}
+                    {% endif %}
                 {% else %}
                     {% set spriteUrl = absolute_url(asset('images/pokemon/pokeball.png', 'shared')) %}
                 {% endif %}

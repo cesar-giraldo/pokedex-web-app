@@ -164,7 +164,7 @@ auth:
     password: Password
     no_public_access: You do not have access to this section.
     password_confirm: Confirm password
-    password_hint: At least 5 characters, including letters and numbers.
+    password_hint: At least 8 characters, including letters and numbers.
     name: Name
     remember: Remember me on this device
     submit_login: Log in
@@ -276,6 +276,7 @@ account:
     deactivate_confirm: Yes, deactivate my account
     deactivate_password_invalid: The current password is incorrect.
     deactivate_forbidden: You cannot deactivate this account.
+    impersonation_readonly: You are viewing this profile as another user. Its data and password cannot be changed while impersonating.
     deactivate_invalid: The request could not be confirmed. Try again.
     deactivated: Your account has been deactivated.
 

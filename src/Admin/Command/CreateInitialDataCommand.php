@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Command;
 
 use App\Admin\Service\InitialModules;
+use App\Admin\Validator\Constraints\PasswordStrength;
 use App\Entity\Enum\UserRole;
 use App\Entity\Enum\UserStatus;
 use App\Entity\GeneralSettings;
@@ -27,7 +28,9 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 use function is_string;
+use function preg_match;
 use function sprintf;
+use function strlen;
 
 use const FILTER_VALIDATE_EMAIL;
 
@@ -196,6 +199,12 @@ final class CreateInitialDataCommand extends Command
             return false;
         }
 
+        if (!$this->isStrongPassword($plainPassword)) {
+            $io->error('La contraseña debe tener al menos 8 caracteres e incluir letras y números.');
+
+            return false;
+        }
+
         $user = new User()
             ->setName('Cesar')
             ->setLastname('Giraldo')
@@ -283,5 +292,14 @@ final class CreateInitialDataCommand extends Command
         }
 
         return $password;
+    }
+
+    private function isStrongPassword(string $plainPassword): bool
+    {
+        if (strlen($plainPassword) < PasswordStrength::MIN_LENGTH) {
+            return false;
+        }
+
+        return 1 === preg_match('/[a-zA-Z]/', $plainPassword) && 1 === preg_match('/\d/', $plainPassword);
     }
 }

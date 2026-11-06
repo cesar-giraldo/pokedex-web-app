@@ -29,7 +29,7 @@ final class PasswordStrengthValidator extends ConstraintValidator
             throw new UnexpectedValueException($value, 'string');
         }
 
-        if (strlen($value) < 5) {
+        if (strlen($value) < PasswordStrength::MIN_LENGTH) {
             $this->context->buildViolation($constraint->message)->addViolation();
 
             return;

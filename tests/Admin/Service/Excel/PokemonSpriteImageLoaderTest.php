@@ -39,7 +39,10 @@ final class PokemonSpriteImageLoaderTest extends TestCase
         ]);
 
         $loader = new PokemonSpriteImageLoader($httpClient, dirname(__DIR__, 4));
-        $pokemon = $this->createPokemon('https://example.com/pikachu.png', null);
+        $pokemon = $this->createPokemon(
+            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
+            null,
+        );
 
         $result = $loader->load($pokemon);
 
@@ -48,6 +51,34 @@ final class PokemonSpriteImageLoaderTest extends TestCase
         self::assertFileExists($result['path']);
 
         unlink($result['path']);
+    }
+
+    public function testLoadIgnoresRemoteSpriteOutsideTheAllowList(): void
+    {
+        $httpClient = new MockHttpClient([
+            new MockResponse('should-not-download', ['http_code' => 200]),
+        ]);
+
+        $loader = new PokemonSpriteImageLoader($httpClient, dirname(__DIR__, 4));
+        $result = $loader->load($this->createPokemon('https://example.com/pikachu.png', null));
+
+        self::assertNotNull($result);
+        self::assertFalse($result['temporary']);
+        self::assertStringEndsWith('/public/admin/images/pokemon/pokeball.png', $result['path']);
+    }
+
+    public function testLoadRejectsLocalPathTraversal(): void
+    {
+        $loader = new PokemonSpriteImageLoader(
+            new MockHttpClient(),
+            dirname(__DIR__, 4),
+        );
+
+        $result = $loader->load($this->createPokemon('/../composer.json', null));
+
+        self::assertNotNull($result);
+        self::assertFalse($result['temporary']);
+        self::assertStringEndsWith('/public/admin/images/pokemon/pokeball.png', $result['path']);
     }
 
     public function testLoadResolvesLocalPublicPath(): void

@@ -1,5 +1,5 @@
 auth.password_mismatch: A senha e a confirmação não coincidem.
-auth.password_strength: A senha deve ter pelo menos 5 caracteres e incluir letras e números.
+auth.password_strength: A senha deve ter pelo menos 8 caracteres e incluir letras e números.
 auth.password_required: A senha é obrigatória.
 auth.password_confirm_required: Confirme a senha.
 auth.password_max: A senha não pode ter mais de {{ limit }} caracteres.

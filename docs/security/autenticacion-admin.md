@@ -11,7 +11,7 @@ Este documento describe cómo funciona el login del backend (`/admin`), qué reg
 | Firewall | `main` en `config/packages/security.yaml` |
 | Formulario | `POST /admin/login` con CSRF stateless |
 | Acceso al backend | Requiere `ROLE_ADMIN` (o superior) |
-| Sesión persistente | `remember_me` (7 días, cookie `REMEMBERME`) |
+| Sesión persistente | `remember_me` (2 días, cookie `REMEMBERME`) |
 
 ---
 
@@ -157,8 +157,8 @@ Constantes en `User`:
 
 | Constante | Valor | Significado |
 | --------- | ----- | ----------- |
-| `MAX_FAILED_LOGIN_ATTEMPTS` | `4` | Al cuarto intento fallido se activa bloqueo |
-| `LOGIN_LOCK_MINUTES` | `60` | Duración del bloqueo (`noLoginUntil`) |
+| `MAX_FAILED_LOGIN_ATTEMPTS` | `10` | Al décimo intento fallido se activa bloqueo |
+| `LOGIN_LOCK_MINUTES` | `15` | Duración del bloqueo (`noLoginUntil`) |
 
 ### Reglas de negocio
 
@@ -167,9 +167,10 @@ Constantes en `User`:
 | 0 | Nickname inexistente → denegar sin tocar BD | `onLoginFailure` retorna si no hay usuario |
 | 1 | Nickname existe + contraseña incorrecta → +1 intento | Solo si la excepción es `BadCredentialsException` |
 | 2 | Login exitoso → reiniciar contador y bloqueo | `resetFailedLoginAttempts()` limpia contador y `noLoginUntil` |
-| 3 | Tras 4 intentos fallidos → bloqueo 1 hora | `User::recordFailedLoginAttempt()` |
+| 3 | Tras 10 intentos fallidos → bloqueo 15 minutos | `User::recordFailedLoginAttempt()` |
 | 4 | Credenciales correctas + bloqueo activo → denegar con mensaje de espera | `UserChecker::checkPreAuth()` antes de verificar contraseña; el mensaje muestra los **minutos restantes** |
 | 5 | Contraseña incorrecta + bloqueo activo → no incrementar | `isLoginTemporarilyBlocked()` retorna antes de incrementar |
+| 6 | Un fallo en el login público no bloquea cuentas con acceso al admin | `PublicSecuritySubscriber` omite `hasBackendAccess()` |
 
 > **Orden Symfony:** `checkPreAuth` se ejecuta **antes** de validar la contraseña. Si hay bloqueo temporal, la contraseña no se comprueba y el fallo no cuenta como intento de contraseña incorrecta.
 
@@ -189,7 +190,7 @@ login_throttling:
     interval: '15 minutes'
 ```
 
-Limita intentos agregados por dirección IP y nickname, independientemente del bloqueo por cuenta. Complementa las 4 fallas / 1 h por usuario.
+Limita intentos agregados por dirección IP y nickname, independientemente del bloqueo por cuenta. Complementa las 10 fallas / 15 min por usuario.
 
 En entorno `test` el límite se relaja (`1000` intentos) para no romper la suite PHPUnit.
 
@@ -216,7 +217,7 @@ Con este valor, un nickname que no existe produce el mensaje genérico **"Creden
 | Configuración | Valor |
 | ------------- | ----- |
 | Cookie | `REMEMBERME` |
-| Duración | 604800 s (7 días) |
+| Duración | 172800 s (2 días) |
 | Path | `/` |
 
 Al cerrar sesión (`GET /admin/logout`):

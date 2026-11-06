@@ -117,7 +117,7 @@ docker compose exec database-postgresql psql -U app -d app_pokedex -c "\dt"
 docker compose exec database-mysql mysql -uapp -papp app_pokedex -e "SHOW TABLES;"
 ```
 
-Desde el host, conecta a `127.0.0.1` y el `DATABASE_PORT` configurado.
+Desde el host, conecta a `127.0.0.1` y el `DATABASE_PORT` configurado. Compose publica el puerto de la base de datos y de Gotenberg solo en `127.0.0.1`.
 
 ---
 

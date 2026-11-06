@@ -100,7 +100,7 @@ final class PlatformBrandingFormHandlerTest extends TestCase
         $settings->setPlatformLogoDark($previousPath);
 
         $filesystem = $this->createStub(FilesystemOperator::class);
-        $filesystem->method('writeStream')->willThrowException(UnableToWriteFile::atLocation('key'));
+        $filesystem->method('write')->willThrowException(UnableToWriteFile::atLocation('key'));
         $filesystem->method('fileExists')->willReturn(false);
 
         $handler = new PlatformBrandingFormHandler(
@@ -124,7 +124,7 @@ final class PlatformBrandingFormHandlerTest extends TestCase
 
         $writes = 0;
         $filesystem = $this->createStub(FilesystemOperator::class);
-        $filesystem->method('writeStream')->willReturnCallback(static function () use (&$writes): void {
+        $filesystem->method('write')->willReturnCallback(static function () use (&$writes): void {
             ++$writes;
 
             if ($writes > 1) {

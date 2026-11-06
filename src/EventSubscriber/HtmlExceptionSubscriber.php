@@ -21,15 +21,15 @@ use const ENT_HTML5;
 use const ENT_QUOTES;
 
 /**
- * Renders custom HTML error pages for non-API requests in production only.
- * In dev and test, Symfony keeps the debug exception page for easier troubleshooting.
+ * Renders custom HTML error pages for non-API requests when debug is off.
+ * With debug on, Symfony keeps the exception page for easier troubleshooting.
  */
 final class HtmlExceptionSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private readonly Environment $twig,
-        #[Autowire('%kernel.environment%')]
-        private readonly string $environment,
+        #[Autowire('%kernel.debug%')]
+        private readonly bool $debug,
     ) {
     }
 
@@ -42,7 +42,7 @@ final class HtmlExceptionSubscriber implements EventSubscriberInterface
 
     public function onKernelException(ExceptionEvent $event): void
     {
-        if ('prod' !== $this->environment) {
+        if ($this->debug) {
             return;
         }
 

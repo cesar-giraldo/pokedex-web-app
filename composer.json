@@ -31,7 +31,7 @@
         "symfony/doctrine-messenger": "8.1.*",
         "symfony/dotenv": "8.1.*",
         "symfony/expression-language": "8.1.*",
-        "symfony/flex": "^2.11",
+        "symfony/flex": "^2.12",
         "symfony/form": "8.1.*",
         "symfony/framework-bundle": "8.1.*",
         "symfony/html-sanitizer": "8.1.*",
@@ -48,20 +48,20 @@
         "symfony/runtime": "8.1.*",
         "symfony/security-bundle": "8.1.*",
         "symfony/serializer": "8.1.*",
-        "symfony/stimulus-bundle": "^3.6",
+        "symfony/stimulus-bundle": "^3.7",
         "symfony/string": "8.1.*",
         "symfony/translation": "8.1.*",
         "symfony/twig-bundle": "8.1.*",
         "symfony/uid": "8.1.*",
-        "symfony/ux-icons": "^3.6",
-        "symfony/ux-live-component": "^3.6",
-        "symfony/ux-turbo": "^3.6",
+        "symfony/ux-icons": "^3.7",
+        "symfony/ux-live-component": "^3.7",
+        "symfony/ux-turbo": "^3.7",
         "symfony/validator": "8.1.*",
         "symfony/web-link": "8.1.*",
         "symfony/yaml": "8.1.*",
         "symfonycasts/tailwind-bundle": "^0.12.0",
         "twig/extra-bundle": "^2.12|^3.0",
-        "twig/twig": "^2.12|^3.28"
+        "twig/twig": "^2.12|^3.30"
     },
     "config": {
         "allow-plugins": {
@@ -141,7 +141,7 @@
         "symfony/css-selector": "8.1.*",
         "symfony/debug-bundle": "8.1.*",
         "symfony/maker-bundle": "^1.68",
-        "symfony/phpunit-bridge": "^8.1.9",
+        "symfony/phpunit-bridge": "^8.1.10",
         "symfony/stopwatch": "8.1.*",
         "symfony/web-profiler-bundle": "8.1.*"
     }

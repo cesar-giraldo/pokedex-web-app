@@ -91,7 +91,7 @@ security:
             remember_me:
                 name: REMEMBERME
                 secret: '%kernel.secret%'
-                lifetime: 604800
+                lifetime: 172800
                 path: /
                 samesite: lax
 
@@ -118,6 +118,7 @@ security:
         - { path: ^/media, roles: PUBLIC_ACCESS }
         - { path: ^/admin/settings/general/branding/platform-(icon|auth-logo)$, roles: PUBLIC_ACCESS }
         - { path: ^/admin/settings/general/branding/, roles: ROLE_OPERATOR }
+        - { path: ^/admin/database-backup, roles: ROLE_DEVELOPER }
         - { path: ^/admin/settings, roles: ROLE_DEVELOPER }
         - { path: ^/admin/legal/accept, roles: ROLE_OPERATOR }
         - { path: ^/admin/legal, roles: ROLE_DEVELOPER }

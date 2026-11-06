@@ -76,26 +76,42 @@ export default class extends Controller {
     }
 
     renderPokemon(data) {
+        const name = this.escapeHtml(data.name);
+        const sprite = this.escapeHtml(data.sprites?.front_default ?? '');
+        const hp = this.escapeHtml(data.stats.find(s => s.stat.name === 'hp')?.base_stat ?? '-');
 
         this.pokemonDetailsTarget.innerHTML = `
             <div class="flex items-center gap-4">
-                <img src="${data.sprites.front_default}" alt="${data.name}" class="w-20 h-20">
+                <img src="${sprite}" alt="${name}" class="w-20 h-20">
                 <div>
-                    <h3 class="text-xl font-bold">${data.name}</h3>
-                    <div>HP: ${data.stats.find(s => s.stat.name === 'hp')?.base_stat ?? '-'} </div>
+                    <h3 class="text-xl font-bold">${name}</h3>
+                    <div>HP: ${hp} </div>
                 </div>
             </div>`;
     }
 
     renderInternalPokemon(data) {
+        const name = this.escapeHtml(data.name);
+        const sprite = this.escapeHtml(data.spriteFront ?? '');
+        const hp = this.escapeHtml(data.healthPoints ?? '-');
+
         this.pokemonDetailsTarget.innerHTML = `
             <div class="flex items-center gap-4">
-                <img src="${data.spriteFront}" alt="${data.name}" class="w-20 h-20">
+                <img src="${sprite}" alt="${name}" class="w-20 h-20">
                 <div>
-                    <h3 class="text-xl font-bold">${data.name}</h3>
-                    <div>HP: ${data.healthPoints ?? '-'} </div>
+                    <h3 class="text-xl font-bold">${name}</h3>
+                    <div>HP: ${hp} </div>
                 </div>
             </div>`;
+    }
+
+    escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     showSpinner(visible) {

@@ -47,6 +47,10 @@ final class LegalAcceptanceController extends AbstractController
                 throw $this->createAccessDeniedException('Token CSRF inválido.');
             }
 
+            if ($this->isGranted('IS_IMPERSONATOR')) {
+                throw $this->createAccessDeniedException('No se puede aceptar un documento legal durante una suplantación.');
+            }
+
             if (!$request->request->getBoolean('accepted')) {
                 $error = 'Debes marcar la casilla para continuar.';
             } else {

@@ -121,6 +121,10 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
             return;
         }
 
+        if ($user->hasBackendAccess()) {
+            return;
+        }
+
         if (!$event->getException() instanceof BadCredentialsException) {
             return;
         }

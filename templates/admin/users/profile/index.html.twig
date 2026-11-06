@@ -159,14 +159,16 @@
 					</div>
 				</div>
 
-				<button
-					type="button"
-					data-action="click->user-profile#toggleInfoModal"
-					class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
-				>
-					{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
-					Editar
-				</button>
+				{% if not is_impersonating() %}
+					<button
+						type="button"
+						data-action="click->user-profile#toggleInfoModal"
+						class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+					>
+						{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+						Editar
+					</button>
+				{% endif %}
 			</div>
 		</div>
 
@@ -198,18 +200,22 @@
 					</div>
 				</div>
 
-				<button
-					type="button"
-					data-action="click->user-profile#togglePasswordModal"
-					class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
-				>
-					{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
-					Cambiar Contraseña
-				</button>
+				{% if not is_impersonating() %}
+					<button
+						type="button"
+						data-action="click->user-profile#togglePasswordModal"
+						class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+					>
+						{{ ux_icon('heroicons:pencil-square', { class: 'w-5 h-5' }) }}
+						Cambiar Contraseña
+					</button>
+				{% endif %}
 			</div>
 		</div>
 
-		{% include '@admin/users/profile/_info_modal.html.twig' %}
-		{% include '@admin/users/profile/_password_modal.html.twig' %}
+		{% if not is_impersonating() %}
+			{% include '@admin/users/profile/_info_modal.html.twig' %}
+			{% include '@admin/users/profile/_password_modal.html.twig' %}
+		{% endif %}
 	</div>
 {% endblock %}

@@ -6,7 +6,10 @@ namespace App\Admin\Controller;
 
 use App\Admin\Service\DatabaseBackup\DatabaseBackupObjectKeyBuilder;
 use App\Admin\Service\Storage\ObjectStorage;
+use App\Entity\User;
 use App\Repository\GeneralSettingsRepository;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,13 +25,14 @@ use function fopen;
 use function stream_copy_to_stream;
 
 #[Route('/admin')]
-#[IsGranted('ROLE_ADMIN')]
+#[IsGranted('ROLE_DEVELOPER')]
 final class DatabaseBackupDownloadController extends AbstractController
 {
     public function __construct(
         private readonly GeneralSettingsRepository $generalSettingsRepository,
         private readonly ObjectStorage $objectStorage,
         private readonly DatabaseBackupObjectKeyBuilder $objectKeyBuilder,
+        private readonly LoggerInterface $logger = new NullLogger(),
     ) {
     }
 
@@ -77,6 +81,12 @@ final class DatabaseBackupDownloadController extends AbstractController
             HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $filename),
         );
         $response->headers->set('Cache-Control', 'private, no-store');
+
+        $user = $this->getUser();
+        $this->logger->info('Se descargó un backup de la base de datos.', [
+            'user_id' => $user instanceof User ? $user->getId() : null,
+            'object_key' => $objectKey,
+        ]);
 
         return $response;
     }

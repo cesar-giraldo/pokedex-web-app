@@ -70,7 +70,10 @@ final class ImpersonationPolicy
             return false;
         }
 
-        return $targetRole->hierarchyRank() <= $impersonatorRole->hierarchyRank();
+        // Solo se puede suplantar a alguien con menor rango. Un Developer puede
+        // suplantar a cualquiera que no sea Developer; un Admin no puede suplantar
+        // a otro Admin (sería una escalada lateral sobre una cuenta del mismo nivel).
+        return $targetRole->hierarchyRank() < $impersonatorRole->hierarchyRank();
     }
 
     private function isDeveloper(User $user): bool

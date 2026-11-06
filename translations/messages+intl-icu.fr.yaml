@@ -164,7 +164,7 @@ auth:
     password: Mot de passe
     no_public_access: Vous n’avez pas accès à cette section.
     password_confirm: Confirmer le mot de passe
-    password_hint: 5 caractères minimum, avec des lettres et des chiffres.
+    password_hint: 8 caractères minimum, avec des lettres et des chiffres.
     name: Nom
     remember: Se souvenir de moi sur cet appareil
     submit_login: Connexion
@@ -276,6 +276,7 @@ account:
     deactivate_confirm: Oui, désactiver mon compte
     deactivate_password_invalid: Le mot de passe actuel est incorrect.
     deactivate_forbidden: Vous ne pouvez pas désactiver ce compte.
+    impersonation_readonly: 'Vous consultez ce profil en tant qu''un autre utilisateur. Ses données et son mot de passe ne peuvent pas être modifiés pendant l''usurpation.'
     deactivate_invalid: La demande n’a pas pu être confirmée. Réessayez.
     deactivated: Votre compte a été désactivé.
 

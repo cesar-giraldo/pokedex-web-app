@@ -7,8 +7,11 @@
                 nickname: app.user.nickname,
             }) }}
         </p>
-        <a href="{{ path('app_public_impersonation_exit', {_locale: app.request.locale}) }}" data-turbo-prefetch="false" class="text-sm font-semibold underline-offset-2 hover:underline">
-            {{ 'impersonation.exit'|trans }}
-        </a>
+        <form method="post" action="{{ path('app_public_impersonation_exit', {_locale: app.request.locale}) }}" class="m-0 inline">
+            <input type="hidden" name="_token" value="{{ csrf_token('impersonation_exit') }}">
+            <button type="submit" data-turbo-prefetch="false" class="text-sm font-semibold underline-offset-2 hover:underline">
+                {{ 'impersonation.exit'|trans }}
+            </button>
+        </form>
     </div>
 </div>

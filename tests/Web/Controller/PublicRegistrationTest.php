@@ -40,7 +40,7 @@ final class PublicRegistrationTest extends WebTestCase
 {
     use EnablesWebSecureAreaTrait;
 
-    private const string PASSWORD = 'Secret123';
+    private const string PASSWORD = 'SecurePass12';
 
     /** @var list<string> */
     private array $nicknames = [];

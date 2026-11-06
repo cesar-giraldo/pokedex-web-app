@@ -22,10 +22,14 @@ final class ImpersonationController extends AbstractController
         '/{_locale}/impersonation/exit',
         name: 'app_public_impersonation_exit',
         requirements: ['_locale' => SupportedLanguage::ROUTE_REQUIREMENT],
-        methods: ['GET'],
+        methods: ['POST'],
     )]
     public function exit(Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('impersonation_exit', $request->request->getString('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF inválido.');
+        }
+
         if ($this->publicUserImpersonator->stop($request)) {
             return $this->redirectToRoute('app_backend_users');
         }

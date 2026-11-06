@@ -1,6 +1,10 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
     secret: '%env(APP_SECRET)%'
+    trusted_hosts: ['%env(TRUSTED_HOSTS)%']
+    # Behind a reverse proxy, set TRUSTED_PROXIES and uncomment:
+    # trusted_proxies: '%env(csv:TRUSTED_PROXIES)%'
+    # trusted_headers: ['x-forwarded-for', 'x-forwarded-port', 'x-forwarded-proto', 'x-forwarded-host']
 
     # Note that the session will be started ONLY if you read or write from it.
     session: true

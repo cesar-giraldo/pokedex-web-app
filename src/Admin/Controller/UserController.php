@@ -354,6 +354,12 @@ final class UserController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
+        if ($request->isMethod('POST') && $this->effectiveRoleChecker->isImpersonating()) {
+            $this->addFlash('error', 'No puedes modificar el perfil mientras suplanta a otro usuario.');
+
+            return $this->redirectToRoute('app_backend_user_profile');
+        }
+
         $profileFormOptions = $this->buildProfileFormOptions();
         $countryOptions = WorldCountryCodes::viewOptions($profileFormOptions['country_choice_key']);
 

@@ -15,6 +15,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -25,6 +27,7 @@ final class LegalAcceptanceController extends AbstractController
         private readonly LegalAcceptanceService $acceptanceService,
         private readonly PendingFavoriteReturn $pendingFavoriteReturn,
         private readonly TranslatorInterface $translator,
+        private readonly TokenStorageInterface $tokenStorage,
     ) {
     }
 
@@ -61,6 +64,12 @@ final class LegalAcceptanceController extends AbstractController
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('public_legal_accept', $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException('Token CSRF inválido.');
+            }
+
+            // La aceptación es un acto personal: nadie puede aceptar en nombre
+            // del usuario mientras lo suplanta.
+            if ($this->tokenStorage->getToken() instanceof SwitchUserToken) {
+                throw $this->createAccessDeniedException('No se puede aceptar un documento legal durante una suplantación.');
             }
 
             if (!$request->request->getBoolean('accepted')) {

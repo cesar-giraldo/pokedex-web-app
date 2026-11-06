@@ -52,8 +52,8 @@ final class UserCreateTypeTest extends KernelTestCase
             'preferredLanguage' => 'es',
             'locale' => 'es-CO',
             'timeFormat' => '12h',
-            'plainPassword' => 'Secret1',
-            'confirmPassword' => 'Secret1',
+            'plainPassword' => 'SecurePass12',
+            'confirmPassword' => 'SecurePass12',
         ]);
 
         if (!$form->isValid()) {
@@ -108,8 +108,8 @@ final class UserCreateTypeTest extends KernelTestCase
             'preferredLanguage' => 'en',
             'locale' => 'es-CO',
             'timeFormat' => '12h',
-            'plainPassword' => 'Secret1',
-            'confirmPassword' => 'Secret1',
+            'plainPassword' => 'SecurePass12',
+            'confirmPassword' => 'SecurePass12',
         ]);
 
         self::assertTrue($form->isValid(), (string) $form->getErrors(true, false));
@@ -147,8 +147,8 @@ final class UserCreateTypeTest extends KernelTestCase
             'preferredLanguage' => 'en',
             'locale' => 'es-CO',
             'timeFormat' => '12h',
-            'plainPassword' => 'Secret1',
-            'confirmPassword' => 'Secret1',
+            'plainPassword' => 'SecurePass12',
+            'confirmPassword' => 'SecurePass12',
         ]);
 
         self::assertFalse($form->get('preferredLanguage')->isValid());

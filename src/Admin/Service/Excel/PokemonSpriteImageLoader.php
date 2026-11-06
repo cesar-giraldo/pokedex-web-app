@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace App\Admin\Service\Excel;
 
+use App\Admin\Service\PokemonSpriteHosts;
 use App\Entity\Pokemon;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
 
+use function file_put_contents;
 use function is_file;
 use function ltrim;
+use function realpath;
+use function str_replace;
 use function str_starts_with;
 use function sys_get_temp_dir;
 use function tempnam;
+
+use const DIRECTORY_SEPARATOR;
 
 class PokemonSpriteImageLoader
 {
@@ -32,12 +38,15 @@ class PokemonSpriteImageLoader
 
         if (null !== $sprite && '' !== $sprite) {
             if (str_starts_with($sprite, 'http://') || str_starts_with($sprite, 'https://')) {
-                return $this->loadFromUrl($sprite);
-            }
-
-            $localPath = $this->resolveLocalPath($sprite);
-            if (is_file($localPath)) {
-                return ['path' => $localPath, 'temporary' => false];
+                $remote = $this->loadFromUrl($sprite);
+                if (null !== $remote) {
+                    return $remote;
+                }
+            } else {
+                $localPath = $this->resolveLocalPath($sprite);
+                if (null !== $localPath && is_file($localPath)) {
+                    return ['path' => $localPath, 'temporary' => false];
+                }
             }
         }
 
@@ -54,8 +63,15 @@ class PokemonSpriteImageLoader
      */
     private function loadFromUrl(string $url): ?array
     {
+        if (!PokemonSpriteHosts::isAllowedUrl($url)) {
+            return null;
+        }
+
         try {
-            $response = $this->httpClient->request('GET', $url, ['timeout' => 5]);
+            $response = $this->httpClient->request('GET', $url, [
+                'timeout' => 5,
+                'max_redirects' => 0,
+            ]);
 
             if (Response::HTTP_OK !== $response->getStatusCode()) {
                 return null;
@@ -74,12 +90,27 @@ class PokemonSpriteImageLoader
         }
     }
 
-    private function resolveLocalPath(string $sprite): string
+    private function resolveLocalPath(string $sprite): ?string
     {
-        if (str_starts_with($sprite, '/')) {
-            return $this->projectDir . '/public' . $sprite;
+        $publicDir = realpath($this->projectDir . '/public');
+
+        if (false === $publicDir) {
+            return null;
         }
 
-        return $this->projectDir . '/public/' . ltrim($sprite, '/');
+        $candidate = $publicDir . '/' . ltrim(str_replace('\\', '/', $sprite), '/');
+        $resolved = realpath($candidate);
+
+        if (false === $resolved) {
+            return null;
+        }
+
+        $publicPrefix = $publicDir . DIRECTORY_SEPARATOR;
+
+        if ($resolved !== $publicDir && !str_starts_with($resolved, $publicPrefix)) {
+            return null;
+        }
+
+        return $resolved;
     }
 }

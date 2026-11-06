@@ -447,8 +447,8 @@ final class PublicAuthenticationTest extends WebTestCase
         );
         $form = $crawler->filter('form[name="user_profile_password"]')->form();
         $form['user_profile_password[currentPassword]'] = self::PASSWORD;
-        $form['user_profile_password[plainPassword]'] = 'Secret456';
-        $form['user_profile_password[confirmPassword]'] = 'Secret456';
+        $form['user_profile_password[plainPassword]'] = 'SecurePass12';
+        $form['user_profile_password[confirmPassword]'] = 'SecurePass12';
         $client->submit($form);
 
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
@@ -464,7 +464,7 @@ final class PublicAuthenticationTest extends WebTestCase
 
         /** @var UserPasswordHasherInterface $hasher */
         $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
-        self::assertTrue($hasher->isPasswordValid($updated, 'Secret456'));
+        self::assertTrue($hasher->isPasswordValid($updated, 'SecurePass12'));
         self::assertTrue($updated->hasChosenPassword());
     }
 
@@ -489,8 +489,8 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorTextContains('form[name="user_profile_password"] button[type="submit"]', $this->trans($locale, 'account.create_password'));
 
         $form = $crawler->filter('form[name="user_profile_password"]')->form();
-        $form['user_profile_password[plainPassword]'] = 'Secret456';
-        $form['user_profile_password[confirmPassword]'] = 'Secret456';
+        $form['user_profile_password[plainPassword]'] = 'SecurePass12';
+        $form['user_profile_password[confirmPassword]'] = 'SecurePass12';
         $client->submit($form);
 
         $this->assertRedirectEndsWith($client, '/' . $locale . '/profile');
@@ -502,14 +502,14 @@ final class PublicAuthenticationTest extends WebTestCase
 
         $form = $crawler->filter('form[name="user_profile_password"]')->form();
         $form['user_profile_password[currentPassword]'] = '';
-        $form['user_profile_password[plainPassword]'] = 'Secret789';
-        $form['user_profile_password[confirmPassword]'] = 'Secret789';
+        $form['user_profile_password[plainPassword]'] = 'SecurePass13';
+        $form['user_profile_password[confirmPassword]'] = 'SecurePass13';
         $client->submit($form);
 
         self::assertSelectorExists('#profile-current-password[aria-invalid="true"]');
         /** @var UserPasswordHasherInterface $hasher */
         $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
-        self::assertFalse($hasher->isPasswordValid($this->reload($nickname), 'Secret789'));
+        self::assertFalse($hasher->isPasswordValid($this->reload($nickname), 'SecurePass13'));
     }
 
     public function testInvalidFieldsRenderErrorMessages(): void
@@ -532,7 +532,7 @@ final class PublicAuthenticationTest extends WebTestCase
         self::assertSelectorTextContains('#profile-current-password-error', 'La contraseña actual no es correcta.');
         self::assertSelectorExists('#profile-new-password[aria-invalid="true"]');
         self::assertSelectorExists('#profile-new-password-error.field-error');
-        self::assertSelectorTextContains('#profile-new-password-error', 'La contraseña debe tener al menos 5 caracteres e incluir letras y números.');
+        self::assertSelectorTextContains('#profile-new-password-error', 'La contraseña debe tener al menos 8 caracteres e incluir letras y números.');
         self::assertSelectorExists('main .alert-error');
         self::assertSelectorExists('main .alert-error [data-action="alert#dismiss"]');
 

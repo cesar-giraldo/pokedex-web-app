@@ -100,6 +100,20 @@ final class SvgFileValidatorTest extends ConstraintValidatorTestCase
             ->assertRaised();
     }
 
+    public function testAcceptsSvgAfterStrippingScript(): void
+    {
+        $contents = <<<'SVG'
+            <?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">
+                <script>alert(1)</script>
+            </svg>
+            SVG;
+
+        $this->validator->validate($this->createFile('logo.svg', $contents), new SvgFile());
+
+        $this->assertNoViolation();
+    }
+
     private function svgDocument(): string
     {
         return '<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>';

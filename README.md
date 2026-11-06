@@ -93,6 +93,9 @@ Database settings are defined **once** in `.env`. Docker Compose and Symfony rea
 | `AWS_SECRET_ACCESS_KEY` | empty | IAM secret key (set in `.env.local`) |
 | `AWS_S3_BUCKET` | empty | S3 bucket name for media files |
 | `AWS_S3_STORAGE_PREFIX` | `%env(APP_ENV)%` | Environment prefix inside the bucket (`dev`, `prod`, `test`) |
+| `DEFAULT_URI` | `http://localhost` | Absolute origin used when generating URLs outside HTTP (mail, CLI). Use the public HTTPS URL in production. |
+| `TRUSTED_HOSTS` | `^(localhost|127\.0\.0\.1)$` | Host regex. Symfony rejects requests whose `Host` header does not match. |
+| `TRUSTED_PROXIES` | empty | Comma-separated proxy IPs or `REMOTE_ADDR` when the app sits behind a reverse proxy. Leave empty in local Docker. |
 
 ### Switch to MySQL 8.4 LTS
 
