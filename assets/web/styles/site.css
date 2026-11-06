@@ -116,6 +116,10 @@
         @apply bg-brand text-white hover:bg-black;
     }
 
+    .btn-danger {
+        @apply bg-danger text-white hover:bg-black;
+    }
+
     .btn:disabled,
     .btn:disabled:hover {
         cursor: not-allowed;
@@ -125,6 +129,11 @@
     .btn-primary:disabled,
     .btn-primary:disabled:hover {
         background-color: var(--color-brand);
+    }
+
+    .btn-danger:disabled,
+    .btn-danger:disabled:hover {
+        background-color: var(--color-danger);
     }
 
     .btn-secondary {
@@ -614,7 +623,8 @@ dialog.gallery-dialog::backdrop {
     animation: favorite-pop 360ms ease;
 }
 
-dialog.favorite-dialog {
+dialog.favorite-dialog,
+dialog.account-deactivation-dialog {
     position: fixed;
     inset: 0;
     width: min(24rem, calc(100vw - 2rem));
@@ -630,7 +640,8 @@ dialog.favorite-dialog {
     box-shadow: 0 24px 60px rgb(0 0 0 / 0.18);
 }
 
-dialog.favorite-dialog::backdrop {
+dialog.favorite-dialog::backdrop,
+dialog.account-deactivation-dialog::backdrop {
     background: rgb(0 0 0 / 65%);
 }
 

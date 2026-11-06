@@ -54,6 +54,10 @@ final class NotificationService
         $seen = [];
 
         foreach ($this->normalizeRecipients($recipients) as $recipient) {
+            if (!$recipient->acceptsAutomaticContact()) {
+                continue;
+            }
+
             $key = null !== $recipient->getId()
                 ? 'id-' . $recipient->getId()
                 : 'obj-' . spl_object_id($recipient);

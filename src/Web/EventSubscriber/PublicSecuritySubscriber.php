@@ -12,6 +12,7 @@ use App\Entity\User;
 use App\Legal\LegalLanguageResolver;
 use App\Repository\UserRepository;
 use App\Security\PublicUserImpersonator;
+use App\Web\Service\AccountDeactivationService;
 use App\Web\Service\PendingFavoriteReturn;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -217,6 +218,8 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
             return;
         }
 
+        $this->flashAccountDeactivated($request);
+
         if (!$event->getToken() instanceof SwitchUserToken) {
             return;
         }
@@ -379,7 +382,7 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
 
         $locale = SupportedLanguage::ROUTE_REQUIREMENT;
 
-        if (1 === preg_match(sprintf('#^/(%s)/profile(?:/avatar|/image/(?:avatar|display|original))?$#', $locale), $path)) {
+        if (1 === preg_match(sprintf('#^/(%s)/profile(?:/avatar|/image/(?:avatar|display|original)|/deactivate)?$#', $locale), $path)) {
             return true;
         }
 
@@ -394,6 +397,25 @@ final class PublicSecuritySubscriber implements EventSubscriberInterface
         return str_starts_with($path, '/assets/')
             || str_starts_with($path, '/_profiler')
             || str_starts_with($path, '/_wdt');
+    }
+
+    private function flashAccountDeactivated(Request $request): void
+    {
+        if (!$request->hasSession()) {
+            return;
+        }
+
+        $session = $request->getSession();
+
+        if (true !== $session->get(AccountDeactivationService::LOGOUT_NOTICE)) {
+            return;
+        }
+
+        $session->remove(AccountDeactivationService::LOGOUT_NOTICE);
+
+        if ($session instanceof FlashBagAwareSessionInterface) {
+            $session->getFlashBag()->add('success', 'account.deactivated');
+        }
     }
 
     private function isFavoriteTogglePath(string $path): bool

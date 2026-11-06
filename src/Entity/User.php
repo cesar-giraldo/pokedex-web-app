@@ -148,6 +148,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 512, nullable: true)]
     private ?string $profileImagePath = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $additionalNotes = null;
+
     public function __construct()
     {
         $now = new DateTime();
@@ -329,6 +332,47 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setStatus(UserStatus $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function acceptsAutomaticContact(): bool
+    {
+        return match ($this->status) {
+            UserStatus::Inactive, UserStatus::Banned => false,
+            UserStatus::Active, UserStatus::UncompleteProfileInfo, UserStatus::UnconfirmedAccount => true,
+        };
+    }
+
+    public function getAdditionalNotes(): ?string
+    {
+        return $this->additionalNotes;
+    }
+
+    public function setAdditionalNotes(?string $additionalNotes): static
+    {
+        if (null === $additionalNotes) {
+            $this->additionalNotes = null;
+
+            return $this;
+        }
+
+        $additionalNotes = trim($additionalNotes);
+        $this->additionalNotes = '' === $additionalNotes ? null : $additionalNotes;
+
+        return $this;
+    }
+
+    public function appendAdditionalNote(string $line): static
+    {
+        $line = trim($line);
+
+        if ('' === $line) {
+            return $this;
+        }
+
+        $current = null === $this->additionalNotes ? '' : trim($this->additionalNotes);
+        $this->additionalNotes = '' === $current ? $line : $current . "\n" . $line;
 
         return $this;
     }

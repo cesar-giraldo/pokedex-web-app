@@ -134,6 +134,17 @@
 			error="{{ field_error(form.status) }}"
 		/>
 
+		<twig:component_textarea
+			class="sm:col-span-2"
+			label="Notas adicionales"
+			name="{{ form.additionalNotes.vars.full_name }}"
+			id="user-additional-notes"
+			value="{{ form.additionalNotes.vars.value|default('') }}"
+			placeholder="Notas internas sobre esta cuenta"
+			:rows="4"
+			error="{{ field_error(form.additionalNotes) }}"
+		/>
+
 		<twig:component_multi_select
 			label="Roles"
 			name="{{ form.applicationRoles.vars.full_name }}"

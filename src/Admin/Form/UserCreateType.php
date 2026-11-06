@@ -18,6 +18,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormError;
@@ -95,6 +96,10 @@ final class UserCreateType extends AbstractType
                 'label' => false,
                 'choice_label' => static fn (UserStatus $status): string => $status->label(),
                 'data' => UserStatus::Active,
+            ])
+            ->add('additionalNotes', TextareaType::class, [
+                'label' => false,
+                'required' => false,
             ])
             ->add('applicationRoles', ChoiceType::class, [
                 'label' => false,

@@ -252,6 +252,51 @@
                     <twig:web_submit_button label="{{ (user.hasChosenPassword ? 'account.save_password' : 'account.create_password')|trans }}" />
                 {{ form_end(passwordForm, { render_rest: false }) }}
             </section>
+
+            <section class="rounded-3xl bg-white p-8 ring-1 ring-black/5" aria-labelledby="profile-account-status-title">
+                <h2 id="profile-account-status-title" class="text-xl font-bold">{{ 'account.status_title'|trans }}</h2>
+                <p class="mt-2 text-sm leading-6 text-muted">
+                    {{ 'account.status_summary'|trans({
+                        date: user.createdAt|app_datetime,
+                        status: ('account.status.' ~ user.status.value)|trans,
+                    }) }}
+                </p>
+                {% if not user.hasBackendAccess and not is_public_impersonating() %}
+                    <div class="mt-6" data-controller="account-deactivation-dialog">
+                        <button type="button" class="btn btn-danger w-full" data-action="account-deactivation-dialog#open">
+                            {{ 'account.deactivate'|trans }}
+                        </button>
+                        <dialog
+                            class="account-deactivation-dialog"
+                            data-account-deactivation-dialog-target="dialog"
+                            data-action="click->account-deactivation-dialog#backdrop cancel->account-deactivation-dialog#cancel"
+                            aria-labelledby="account-deactivation-title"
+                            aria-describedby="account-deactivation-message"
+                        >
+                            <h2 id="account-deactivation-title" class="text-xl font-bold">{{ 'account.deactivate_title'|trans }}</h2>
+                            <p id="account-deactivation-message" class="mt-2 text-sm leading-6 text-muted">{{ 'account.deactivate_message'|trans }}</p>
+                            <form method="post" action="{{ path('app_public_profile_deactivate', {_locale: app.request.locale}) }}" class="mt-6 space-y-4" data-turbo="false">
+                                <input type="hidden" name="_token" value="{{ csrf_token('deactivate_account') }}">
+                                {% if user.hasChosenPassword %}
+                                    <twig:web_password_input
+                                        label="{{ 'account.current_password'|trans }}"
+                                        name="current_password"
+                                        id="deactivate-current-password"
+                                        autocomplete="current-password"
+                                        showLabel="{{ 'account.show_password'|trans }}"
+                                        hideLabel="{{ 'account.hide_password'|trans }}"
+                                        :required="true"
+                                    />
+                                {% endif %}
+                                <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                                    <button type="button" class="btn btn-secondary" data-action="account-deactivation-dialog#cancel">{{ 'account.deactivate_cancel'|trans }}</button>
+                                    <button type="submit" class="btn btn-danger">{{ 'account.deactivate_confirm'|trans }}</button>
+                                </div>
+                            </form>
+                        </dialog>
+                    </div>
+                {% endif %}
+            </section>
         </div>
     </div>
 {% endblock %}

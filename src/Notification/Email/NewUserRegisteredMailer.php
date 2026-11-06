@@ -45,6 +45,14 @@ final class NewUserRegisteredMailer
         $registeredEmail = $registeredUser->getEmail() ?? '';
 
         foreach ($recipients as $recipient) {
+            if (!$recipient->acceptsAutomaticContact()) {
+                $this->logger->info('Se omitió el aviso de alta porque la cuenta no admite avisos automáticos.', [
+                    'user_id' => $recipient->getId(),
+                ]);
+
+                continue;
+            }
+
             $emailAddress = $recipient->getEmail();
 
             if (null === $emailAddress || '' === trim($emailAddress)) {

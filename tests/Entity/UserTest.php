@@ -204,4 +204,40 @@ final class UserTest extends TestCase
 
         self::assertSame(UserRole::Admin, $user->getPrimaryApplicationRole());
     }
+
+    public function testAppendsAdditionalNotesWithoutReplacingExistingText(): void
+    {
+        $user = new User();
+
+        $user->appendAdditionalNote('   ');
+        self::assertNull($user->getAdditionalNotes());
+
+        $user->appendAdditionalNote('  Primera nota  ');
+        self::assertSame('Primera nota', $user->getAdditionalNotes());
+
+        $user->appendAdditionalNote('Segunda nota');
+        self::assertSame("Primera nota\nSegunda nota", $user->getAdditionalNotes());
+
+        $user->setAdditionalNotes('   ');
+        self::assertNull($user->getAdditionalNotes());
+    }
+
+    public function testInactiveAndBannedUsersDoNotAcceptAutomaticContact(): void
+    {
+        $user = new User();
+
+        self::assertTrue($user->acceptsAutomaticContact());
+
+        $user->setStatus(UserStatus::Active);
+        self::assertTrue($user->acceptsAutomaticContact());
+
+        $user->setStatus(UserStatus::UncompleteProfileInfo);
+        self::assertTrue($user->acceptsAutomaticContact());
+
+        $user->setStatus(UserStatus::Inactive);
+        self::assertFalse($user->acceptsAutomaticContact());
+
+        $user->setStatus(UserStatus::Banned);
+        self::assertFalse($user->acceptsAutomaticContact());
+    }
 }
