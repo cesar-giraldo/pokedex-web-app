@@ -41,7 +41,7 @@ final class AccountDeactivationController extends AbstractController
         $locale = $request->getLocale();
 
         if (!$this->isCsrfTokenValid('deactivate_account', $request->request->getString('_token'))) {
-            $this->addFlash('error', 'account.deactivate_forbidden');
+            $this->addFlash('error', 'account.deactivate_invalid');
 
             return $this->redirectToRoute('app_public_profile', ['_locale' => $locale]);
         }

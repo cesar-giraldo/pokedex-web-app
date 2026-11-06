@@ -11,10 +11,12 @@ export default class extends Controller {
             this.dialogTarget.showModal();
         }
 
-        const field = this.dialogTarget.querySelector('input');
+        const field = this.dialogTarget.querySelector('input[name="current_password"]');
+        const cancel = this.dialogTarget.querySelector('[data-action="account-deactivation-dialog#cancel"]');
+        const focusTarget = field ?? cancel;
 
-        if (field instanceof HTMLElement) {
-            field.focus();
+        if (focusTarget instanceof HTMLElement) {
+            focusTarget.focus();
         }
     }
 

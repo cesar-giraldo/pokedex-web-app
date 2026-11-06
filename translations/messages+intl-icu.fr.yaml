@@ -276,6 +276,7 @@ account:
     deactivate_confirm: Oui, désactiver mon compte
     deactivate_password_invalid: Le mot de passe actuel est incorrect.
     deactivate_forbidden: Vous ne pouvez pas désactiver ce compte.
+    deactivate_invalid: La demande n’a pas pu être confirmée. Réessayez.
     deactivated: Votre compte a été désactivé.
 
 notifications:

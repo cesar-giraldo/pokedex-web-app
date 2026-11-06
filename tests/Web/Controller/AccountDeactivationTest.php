@@ -178,6 +178,27 @@ final class AccountDeactivationTest extends WebTestCase
         self::assertSame(UserStatus::Inactive, $this->reload($nickname)->getStatus());
     }
 
+    public function testInvalidCsrfTokenDoesNotDeactivateTheAccount(): void
+    {
+        $client = $this->createClientWithSecureArea();
+        $locale = $this->defaultLocale();
+        $nickname = $this->rememberNickname('csrf' . bin2hex(random_bytes(3)));
+        $this->createUser($nickname, [UserRole::User], UserStatus::Active);
+        $client->loginUser($this->reload($nickname), 'public');
+        $client->request('GET', '/' . $locale . '/profile');
+
+        $client->request('POST', '/' . $locale . '/profile/deactivate', [
+            '_token' => 'invalid-token',
+            'current_password' => self::PASSWORD,
+        ]);
+
+        self::assertResponseRedirects('/' . $locale . '/profile');
+        $client->followRedirect();
+        self::assertSelectorTextContains('main [role="alert"]', $this->trans($locale, 'account.deactivate_invalid'));
+        self::assertSelectorTextNotContains('main [role="alert"]', $this->trans($locale, 'account.deactivate_forbidden'));
+        self::assertSame(UserStatus::Active, $this->reload($nickname)->getStatus());
+    }
+
     public function testBackendRoleSeesTheStatusButCannotDeactivate(): void
     {
         $client = $this->createClientWithSecureArea();
