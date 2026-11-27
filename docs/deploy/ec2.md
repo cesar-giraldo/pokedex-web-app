@@ -398,17 +398,47 @@ No ejecutes `docker compose down -v` ni `docker volume prune`. Los dos borran la
 
 En AWS Backup, una regla semanal sobre el volumen de la instancia, con 7 copias. El backup de S3 cubre el contenido de la base. La snapshot cubre el disco si la instancia se pierde.
 
+Para ver el listado de cron jobs activos, en la sesión del servidor, da igual que el prompt sea deploy@ o ubuntu@, ejecuta:
+
+```
+cat /etc/cron.d/apps
+```
+
 ## 8. Despliegue automático
 
-En el repositorio de GitHub, Settings → Secrets and variables → Actions:
+El workflow [deploy.yml](../../.github/workflows/deploy.yml) corre cuando el workflow **CI** termina bien tras un push a `main`. Entra por SSH, deja el checkout en ese commit y ejecuta `deploy/deploy.sh`. Un pull request ejecuta CI y el job de despliegue queda en **Skipped**. Mientras falte alguno de los tres secrets, el job avisa y termina en verde, sin tocar el servidor.
+
+El job sale de los servidores de GitHub. La regla SSH con origen **My IP** solo deja entrar a tu Mac, así que con esa regla sola el paso SSH se queda colgado.
+
+- En la consola de EC2, región **US East (N. Virginia)**, abre **Security groups** y el grupo `apps`.
+- Pestaña **Inbound rules** → **Edit inbound rules**.
+- En la regla **SSH**, puerto **22**, cambia **Source** a **Anywhere-IPv4** (`0.0.0.0/0`). Guarda con **Save rules**.
+- El servidor sigue pidiendo la clave `pokedex-deploy`. Esta imagen de Ubuntu no acepta contraseña por SSH.
+
+Los tres secrets se crean en el repositorio, no en Variables y no en un environment. El nombre tiene que coincidir letra por letra.
 
 | Secret | Valor |
 | --- | --- |
-| `EC2_HOST` | IP elástica |
+| `EC2_HOST` | IP elástica, solo los números |
 | `EC2_USER` | `deploy` |
 | `EC2_SSH_KEY` | clave privada de `pokedex-deploy`, completa, con las líneas `BEGIN` y `END` |
 
-El workflow [deploy.yml](../../.github/workflows/deploy.yml) corre cuando CI termina bien tras un push a `main`. Entra por SSH, deja el checkout en ese commit y ejecuta `deploy/deploy.sh`. Un pull request no despliega. Mientras falte alguno de los tres secrets, el job avisa y termina en verde.
+- Abre [github.com/cesar-giraldo/pokedex-web-app](https://github.com/cesar-giraldo/pokedex-web-app). Arriba, **Settings**. Si no ves esa pestaña, la cuenta no administra el repositorio.
+- En el menú izquierdo abre **Secrets and variables** y luego **Actions**.
+- Quédate en la pestaña **Secrets**. La pestaña **Variables** no sirve: ahí el valor queda visible. Tampoco uses **Manage environment secrets**.
+- Pulsa **New repository secret**.
+- **Name:** `EC2_HOST`. **Secret:** la IP elástica de `apps`, la misma del registro A. Solo los números, por ejemplo `54.123.45.67`. Sin `https://`, sin `:22` y sin `deploy@`. Pulsa **Add secret**.
+- Otra vez **New repository secret**. **Name:** `EC2_USER`. **Secret:** `deploy`. Pulsa **Add secret**.
+- En el Mac, copia la clave privada. Es el archivo sin `.pub`. Empieza por `-----BEGIN OPENSSH PRIVATE KEY-----` y termina por `-----END OPENSSH PRIVATE KEY-----`. `apps.pem` es la otra clave, la de `ubuntu`, y no va en este secret.
+
+```bash
+pbcopy < ~/.ssh/pokedex-deploy
+```
+
+- **New repository secret**. **Name:** `EC2_SSH_KEY`. Pega en **Secret** con Cmd+V. Tienen que entrar las dos líneas `BEGIN` y `END`. Sin comillas. Pulsa **Add secret**.
+- La lista **Repository secrets** tiene que mostrar `EC2_HOST`, `EC2_USER` y `EC2_SSH_KEY`. GitHub no vuelve a mostrar el valor. Si el pegado quedó cortado, abre el secret y pulsa **Update secret**.
+- El despliegue arranca con el próximo push a `main`. En la pestaña **Actions** aparece primero **CI**. Cuando **CI** está en verde, aparece **Deploy** y el job **Deploy to EC2**. Un pull request deja **Deploy** en **Skipped**.
+- Dentro del job, el paso **Deploy the tested commit over SSH** tiene que terminar en verde. Si dice que los secrets no están configurados, falta uno de los tres nombres. Si se queda en el `ssh` hasta agotar el tiempo, la regla del puerto 22 todavía no acepta la red de GitHub.
 
 Cada ejecución construye `pokedex-app:<sha>`, migra, calienta la caché y recrea `php` y `messenger`. Para volver a una imagen anterior:
 
