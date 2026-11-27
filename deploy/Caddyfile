@@ -3,15 +3,22 @@
 #
 # Let's Encrypt pide y renueva el certificado solo.
 # El puerto 80 tiene que seguir abierto: lo usa la renovación.
+# resolvers va dentro de transport http. En reverse_proxy, Caddy 2 no lo reconoce
+# y no abre 80 ni 443. 127.0.0.11 es el DNS de Docker: al recrear PHP, el nombre
+# pokedex vuelve a resolver a la IP nueva.
 pokedex.tutoyotaseminuevo.com {
 	reverse_proxy pokedex:80 {
-		resolvers 127.0.0.11
+		transport http {
+			resolvers 127.0.0.11:53
+		}
 	}
 }
 
 # Otro cliente en la misma instancia: otro bloque y el CLIENT_ALIAS de su .env.
 # cliente2.tutoyotaseminuevo.com {
 # 	reverse_proxy cliente2:80 {
-# 		resolvers 127.0.0.11
+# 		transport http {
+# 			resolvers 127.0.0.11:53
+# 		}
 # 	}
 # }
