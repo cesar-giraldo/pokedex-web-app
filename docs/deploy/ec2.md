@@ -257,9 +257,9 @@ chmod 400 ~/.ssh/pokedex-deploy
 ssh -i ~/Downloads/apps.pem -o IdentitiesOnly=yes ubuntu@LA_IP_ELASTICA 'sudo mkdir -p /home/deploy/.ssh && sudo tee /home/deploy/.ssh/authorized_keys > /dev/null && sudo chown -R deploy:deploy /home/deploy/.ssh && sudo chmod 700 /home/deploy/.ssh && sudo chmod 600 /home/deploy/.ssh/authorized_keys' < ~/.ssh/pokedex-deploy.pub
 ```
 
-ejemplo para pokedex en la mac de cesar:
+ejemplo para pokedex en mac:
 ```
-ssh -i "./AWS Server Toyota/apps.pem" -o IdentitiesOnly=yes ubuntu@100.51.91.190 'sudo mkdir -p /home/deploy/.ssh && sudo tee /home/deploy/.ssh/authorized_keys > /dev/null && sudo chown -R deploy:deploy /home/deploy/.ssh && sudo chmod 700 /home/deploy/.ssh && sudo chmod 600 /home/deploy/.ssh/authorized_keys' < ~/.ssh/pokedex-deploy.pub
+ssh -i "./AWS Server Toyota/apps.pem" -o IdentitiesOnly=yes ubuntu@IP_ELASTICA 'sudo mkdir -p /home/deploy/.ssh && sudo tee /home/deploy/.ssh/authorized_keys > /dev/null && sudo chown -R deploy:deploy /home/deploy/.ssh && sudo chmod 700 /home/deploy/.ssh && sudo chmod 600 /home/deploy/.ssh/authorized_keys' < ~/.ssh/pokedex-deploy.pub
 ```
 
 - Si `apps.pem` no está en `~/Downloads`, cambia esa ruta. El comando no imprime la clave. Una vuelta sin texto de error es el resultado esperado.
@@ -293,21 +293,65 @@ sudo -u deploy -H docker network create edge
 
 ## 5. Entorno del primer cliente
 
+El `.env` lo edita el usuario `deploy`. El archivo queda en modo `600`: lectura y escritura solo para su dueño. Con el prompt `deploy@` puedes abrirlo directo. Con el prompt `ubuntu@`, ese mismo archivo responde `Permission denied`. `sudo nano` lo guarda como `root` y entonces `deploy` también se queda fuera. Si la sesión abierta es la de `ubuntu`, déjala como está y abre otra para `deploy`.
+
+- En el Mac, entra con la clave del paso 4. Sustituye la IP elástica:
+
 ```bash
-sudo -u deploy -H cp /srv/pokedex/src/deploy/client.env.example /srv/pokedex/clients/pokedex/.env
-sudo -u deploy -H chmod 600 /srv/pokedex/clients/pokedex/.env
+ssh -i ~/.ssh/pokedex-deploy -o IdentitiesOnly=yes deploy@LA_IP_ELASTICA
+```
+
+- El prompt tiene que ser `deploy@ip-...:~$`. Copia la plantilla y ciérrala:
+
+```bash
+cp /srv/pokedex/src/deploy/client.env.example /srv/pokedex/clients/pokedex/.env
+chmod 600 /srv/pokedex/clients/pokedex/.env
+ls -l /srv/pokedex/clients/pokedex/.env
+```
+
+- `ls -l` tiene que mostrar `-rw-------` y `deploy deploy`. `-rw-------` es el modo `600`. Si el dueño sale `root`, sal de esta sesión, entra como `ubuntu` y corrige el dueño antes de seguir:
+
+```bash
+sudo chown deploy:deploy /srv/pokedex/clients/pokedex/.env
+sudo chmod 600 /srv/pokedex/clients/pokedex/.env
+```
+
+- Genera el secreto de la aplicación. La terminal imprime una sola línea de 64 caracteres. Selecciónala y cópiala (Cmd+C). Esa línea es `APP_SECRET`.
+
+```bash
 openssl rand -hex 32
 ```
 
-Edita `/srv/pokedex/clients/pokedex/.env`:
+- Abre el archivo:
 
-- `APP_SECRET` es la salida de `openssl`. El valor de desarrollo del repositorio no sirve: el contenedor no arranca en `APP_ENV=prod` si el secreto está vacío o es el de desarrollo.
-- `DATABASE_PASSWORD` es una contraseña propia. Escríbela también dentro de `DATABASE_URL`. Si lleva caracteres reservados de una URL (`@`, `:`, `/`, `#`, `?`), codifícalos solo en `DATABASE_URL`.
-- `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` son la access key de `pokedex`. Repite esos dos valores en `AWS_SES_ACCESS_KEY_ID` y `AWS_SES_SECRET_ACCESS_KEY`.
-- `MAILER_DSN` usa la forma `ses+api://ACCESS_KEY:SECRET_URLENCODED@default?region=us-east-1`. En el DSN el secreto va codificado (`+` pasa a `%2B`, `/` a `%2F`, `=` a `%3D`). En `AWS_SES_SECRET_ACCESS_KEY` va sin codificar. `MAILER_FROM_ADDRESS` es el correo verificado en SES.
-- `INITIAL_USER_EMAIL` e `INITIAL_USER_PASSWORD` son el primer administrador. La contraseña tiene que cumplir la política de la aplicación.
+```bash
+nano /srv/pokedex/clients/pokedex/.env
+```
 
-El resto de la plantilla ya apunta a `https://pokedex.tutoyotaseminuevo.com`, al bucket `pokedex-444040489724` y al prefijo `pokedex`. El Compose de esta aplicación ya limita la memoria: PHP 512 MB, el worker 256 MB y Postgres 512 MB. Gotenberg, compartido, queda en 1 GB.
+- Si dice `nano: command not found`, escribe `exit`, entra como `ubuntu` con `apps.pem` y ejecuta `sudo apt-get install -y nano`. Vuelve a entrar como `deploy` y abre el archivo otra vez.
+- En nano el cursor se mueve con las flechas. Escribes en la línea, sin borrar el nombre de la variable. Ctrl+O y Enter guarda. Ctrl+X cierra. Cada valor va pegado al `=`, sin comillas y sin espacios. Una línea `APP_SECRET="abc"` deja las comillas dentro del secreto.
+- En cualquier valor evita el carácter `$`. Compose lo toma como una variable y el valor llega vacío o partido.
+- `APP_SECRET=` recibe la línea de `openssl`. El contenedor en `APP_ENV=prod` se niega a arrancar si este valor está vacío o es el secreto de desarrollo del repositorio.
+- Inventa `DATABASE_PASSWORD` con letras y números. La misma contraseña va dentro de `DATABASE_URL`, entre `app:` y `@database`, sin espacios. La plantilla trae `postgresql://app:@database:5432/app_pokedex?serverVersion=18&charset=utf8` y el hueco es ese. Con la contraseña `SoloEjemplo12` la línea queda `postgresql://app:SoloEjemplo12@database:5432/app_pokedex?serverVersion=18&charset=utf8`. Inventa otra: esa es solo la forma. `@`, `:`, `/`, `#`, `?`, `&`, `%` o un espacio van tal cual en `DATABASE_PASSWORD` y codificados solo dentro de `DATABASE_URL`.
+- `AWS_ACCESS_KEY_ID` y `AWS_SES_ACCESS_KEY_ID` reciben el Access key del usuario IAM `pokedex`, el mismo en las dos.
+- `AWS_SECRET_ACCESS_KEY` y `AWS_SES_SECRET_ACCESS_KEY` reciben el secreto tal cual, el mismo en las dos.
+- En `MAILER_DSN` ese secreto va codificado. Antes de guardarlo, en la sesión `deploy` ejecuta esto, pega el secreto cuando el cursor quede en blanco y pulsa Enter. La línea que imprime es la que va en el DSN (`+` pasa a `%2B`, `/` a `%2F`, `=` a `%3D`):
+
+```bash
+python3 -c 'import urllib.parse; print(urllib.parse.quote(input(), safe=""))'
+```
+
+- `MAILER_DSN` queda con esta forma, con tu Access key y el secreto ya codificado: `ses+api://ACCESS_KEY:SECRETO_CODIFICADO@default?region=us-east-1`. Sustituye `null://null`.
+- `MAILER_FROM_ADDRESS` es el correo que quedó **Verified** en SES.
+- `INITIAL_USER_EMAIL` es el correo del primer administrador del sitio. `INITIAL_USER_PASSWORD` es su contraseña de entrada: 8 caracteres o más, con letras y números. Es distinta de `DATABASE_PASSWORD`.
+- Deja como están `COMPOSE_PROJECT_NAME`, `CLIENT_ALIAS`, `APP_ENV`, `APP_DEBUG`, `DEFAULT_URI`, `TRUSTED_HOSTS`, `TRUSTED_PROXIES`, los datos de base salvo la contraseña, `AWS_S3_BUCKET`, `AWS_S3_STORAGE_PREFIX`, `GOTENBERG_URL` y `CORS_ALLOW_ORIGIN`. `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` y `MAILER_REDIRECT_TO` pueden seguir vacíos.
+- Ctrl+O, Enter y Ctrl+X. Vuelve a comprobar el permiso. Tiene que seguir en `-rw-------` y `deploy deploy`:
+
+```bash
+ls -l /srv/pokedex/clients/pokedex/.env
+```
+
+La plantilla ya apunta a `https://pokedex.tutoyotaseminuevo.com`, al bucket `pokedex-444040489724` y al prefijo `pokedex`. El Compose de esta aplicación ya limita la memoria: PHP 512 MB, el worker 256 MB y Postgres 512 MB. Gotenberg, compartido, queda en 1 GB.
 
 ## 6. Primer arranque
 

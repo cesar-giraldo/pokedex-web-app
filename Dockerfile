@@ -88,8 +88,9 @@ RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --opti
 
 COPY . .
 
-# Un solo shell: export vale para los tres comandos y no persiste en la imagen.
-# tailwind:build tiene que ir antes de asset-map:compile; el compilador lee ese CSS.
+# Un solo shell: export vale para los comandos y no persiste en la imagen.
+# tailwind:build sin argumento solo compila la primera hoja (admin).
+# La pública hay que compilarla aparte. asset-map:compile lee los dos CSS ya generados.
 RUN export APP_ENV=prod APP_DEBUG=0 \
     APP_SECRET=build-time-secret-not-used-at-runtime-0123456789 \
     DATABASE_ENGINE=postgresql \
@@ -101,6 +102,7 @@ RUN export APP_ENV=prod APP_DEBUG=0 \
     AWS_SES_SECRET_ACCESS_KEY=build \
     TRUSTED_PROXIES=REMOTE_ADDR \
  && php bin/console importmap:install --no-interaction \
- && php bin/console tailwind:build --minify \
+ && php bin/console tailwind:build --minify assets/admin/styles/app.css \
+ && php bin/console tailwind:build --minify assets/web/styles/site.css \
  && php bin/console asset-map:compile --no-interaction \
  && rm -rf var/cache var/log var/tailwind
