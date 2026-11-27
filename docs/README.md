@@ -15,12 +15,15 @@ Este directorio contiene la documentación interna del **Pokedex Web App**.
 | Autenticación del panel admin (login, roles, bloqueos, throttling) | [security/autenticacion-admin.md](./security/autenticacion-admin.md) |
 | Alta pública con Google (consola, credenciales y URI local) | [security/registro-google.md](./security/registro-google.md) |
 | Configurar Amazon SES (sandbox, IAM y dominio futuro) | [aws/ses.md](./aws/ses.md) |
+| Desplegar sitios en la EC2 compartida | [deploy/ec2.md](./deploy/ec2.md) |
 
 ## Estructura de `docs/`
 
 ```
 docs/
 ├── testing.md                       # Suites PHPUnit, comandos y CI
+├── deploy/
+│   └── ec2.md                       # EC2 compartida, HTTPS, cron y despliegue
 ├── security/
 │   ├── README.md                    # Índice de seguridad
 │   ├── autenticacion-admin.md       # Login admin, roles, estados, diagramas

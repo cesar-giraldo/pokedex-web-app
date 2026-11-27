@@ -74,3 +74,33 @@ EXPOSE 443/udp
 
 ENTRYPOINT ["app-entrypoint"]
 CMD ["--config", "/etc/frankenphp/Caddyfile", "--adapter", "caddyfile"]
+
+# ============================================================
+# Producción: el código va dentro de la imagen.
+# El Compose local sigue usando la etapa "base".
+# ============================================================
+FROM base AS prod
+
+COPY docker/Caddyfile /etc/frankenphp/Caddyfile
+
+COPY composer.json composer.lock symfony.lock ./
+RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader
+
+COPY . .
+
+# Un solo shell: export vale para los tres comandos y no persiste en la imagen.
+# tailwind:build tiene que ir antes de asset-map:compile; el compilador lee ese CSS.
+RUN export APP_ENV=prod APP_DEBUG=0 \
+    APP_SECRET=build-time-secret-not-used-at-runtime-0123456789 \
+    DATABASE_ENGINE=postgresql \
+    DATABASE_URL='postgresql://app:app@database:5432/app_pokedex?serverVersion=18&charset=utf8' \
+    AWS_S3_BUCKET=build \
+    AWS_ACCESS_KEY_ID=build \
+    AWS_SECRET_ACCESS_KEY=build \
+    AWS_SES_ACCESS_KEY_ID=build \
+    AWS_SES_SECRET_ACCESS_KEY=build \
+    TRUSTED_PROXIES=REMOTE_ADDR \
+ && php bin/console importmap:install --no-interaction \
+ && php bin/console tailwind:build --minify \
+ && php bin/console asset-map:compile --no-interaction \
+ && rm -rf var/cache var/log var/tailwind

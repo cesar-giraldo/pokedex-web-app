@@ -1,0 +1,45 @@
+# Proxy y Gotenberg compartidos por todas las aplicaciones de la EC2.
+# El Caddyfile en uso es /srv/edge/Caddyfile. Un despliegue de Pokedex no lo sustituye.
+
+name: edge
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - /srv/edge/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      edge:
+        aliases:
+          - gotenberg
+
+networks:
+  edge:
+    external: true
+    name: edge
+
+volumes:
+  caddy_data:
+  caddy_config:

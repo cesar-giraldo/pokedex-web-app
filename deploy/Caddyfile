@@ -1,0 +1,17 @@
+# Plantilla del primer sitio. En el servidor, Caddy lee /srv/edge/Caddyfile.
+# Los otros dominios se agregan en esa copia, no en este archivo del repositorio.
+#
+# Let's Encrypt pide y renueva el certificado solo.
+# El puerto 80 tiene que seguir abierto: lo usa la renovación.
+pokedex.tutoyotaseminuevo.com {
+	reverse_proxy pokedex:80 {
+		resolvers 127.0.0.11
+	}
+}
+
+# Otro cliente en la misma instancia: otro bloque y el CLIENT_ALIAS de su .env.
+# cliente2.tutoyotaseminuevo.com {
+# 	reverse_proxy cliente2:80 {
+# 		resolvers 127.0.0.11
+# 	}
+# }

@@ -26,3 +26,8 @@ when@test:
         test: true
         session:
             storage_factory_id: session.storage.factory.mock_file
+
+when@prod:
+    framework:
+        trusted_proxies: '%env(csv:TRUSTED_PROXIES)%'
+        trusted_headers: ['x-forwarded-for', 'x-forwarded-port', 'x-forwarded-proto', 'x-forwarded-host']

@@ -1,0 +1,91 @@
+# Un cliente de Pokedex en el EC2.
+# La imagen la construye deploy/deploy.sh. Este archivo no publica puertos
+# y no borra volúmenes: no uses "docker compose down -v".
+#
+# Ejecutar con el directorio del cliente como proyecto, para que .env y
+# ./data/postgresql sean los de ese cliente:
+#   docker compose --project-directory /srv/pokedex/clients/<cliente> \
+#     --file compose.prod.yaml up -d
+
+services:
+  php:
+    image: pokedex-app:${APP_IMAGE_TAG:-latest}
+    pull_policy: never
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      SERVER_NAME: ":80"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    volumes:
+      - app_var:/app/var
+    networks:
+      edge:
+        aliases:
+          - ${CLIENT_ALIAS:?Falta CLIENT_ALIAS en el .env del cliente}
+      internal: {}
+    depends_on:
+      database-postgresql:
+        condition: service_healthy
+
+  messenger:
+    image: pokedex-app:${APP_IMAGE_TAG:-latest}
+    pull_policy: never
+    restart: unless-stopped
+    command: ["php", "bin/console", "messenger:consume", "async", "--time-limit=3600", "--memory-limit=256M"]
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    volumes:
+      - app_var:/app/var
+    networks:
+      - internal
+    depends_on:
+      database-postgresql:
+        condition: service_healthy
+
+  database-postgresql:
+    image: postgres:18.3-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:?Falta DATABASE_NAME en el .env del cliente}
+      POSTGRES_USER: ${DATABASE_USER:?Falta DATABASE_USER en el .env del cliente}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Falta DATABASE_PASSWORD en el .env del cliente}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    volumes:
+      # Postgres 18+: montar en /var/lib/postgresql (no .../data).
+      - ./data/postgresql:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      internal:
+        aliases:
+          - database
+
+networks:
+  edge:
+    external: true
+    name: edge
+  internal:
+
+volumes:
+  app_var:
