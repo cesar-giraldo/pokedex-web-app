@@ -1,0 +1,31 @@
+---
+description: Sistema visual del sitio público (Twig, Tailwind 4, Stimulus)
+globs: templates/web/**/*.twig,assets/web/**/*.css,assets/controllers/web/**/*.js
+alwaysApply: false
+---
+
+# UI del sitio público
+
+Los tokens viven en el `@theme` de `assets/web/styles/site.css`: `brand` (`#820ad1`), `ink`, `muted`, `canvas`, `surface`, `danger`. Aplícalos con utilidades en la plantilla (`bg-brand`, `text-ink`, `rounded-2xl`, `focus:border-brand`). La fuente es Graphik, con Manrope de respaldo.
+
+Esa hoja queda para la entrada de Tailwind (`@import`, `@source`, `@theme`, `@font-face`). Añade una regla propia solo cuando ninguna utilidad ni variante pueda expresar el selector. Si el markup que editas aún usa `.btn`, `.field`, `.file-field` o `.alert-*`, traslada ese estilo a utilidades en el elemento y borra la clase cuando ya no tenga usos.
+
+Antes de escribir markup nuevo, reutiliza un componente de `docs/design/componentes.md`. Se invocan como `<twig:web_*>`.
+
+```twig
+<twig:web_text_input
+    label="Nombre"
+    name="name"
+    id="name"
+    error="Este campo es obligatorio."
+/>
+```
+
+- Iconos solo con `ux_icon('heroicons:…')`, set outline.
+- Una sola `<h1>`. Encabezados en orden. Cada `<img>` lleva `alt`, `width` y `height`. Las imágenes bajo el pliegue llevan `loading="lazy"` y `decoding="async"`.
+- Interacción en `assets/controllers/web/`. Sin otro framework de frontend.
+- Cubre vacío, error, carga y deshabilitado con los estados que el componente ya expone.
+- Mobile first. El foco visible y la reducción de movimiento van en variantes `focus-visible:` y `motion-reduce:`.
+- Tras editar JS o `importmap.php`, ejecuta `docker compose exec php composer assets:compile`.
+
+`templates/web/components/pokemon_internal_search.html.twig` y `pokemon_external_search.html.twig` no son referencia visual.

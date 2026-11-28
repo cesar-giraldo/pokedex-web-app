@@ -1,0 +1,30 @@
+---
+description: Sistema visual del panel admin (Twig, Tailwind 4, Stimulus, modo oscuro)
+globs: templates/admin/**/*.twig,assets/admin/**/*.css,assets/controllers/admin/**/*.js
+alwaysApply: false
+---
+
+# UI del admin
+
+Los tokens viven en el `@theme` de `assets/admin/styles/app.css`: `brand-500` (`#465fff`), `gray-*`, `success-*`, `error-*`, `warning-*`, `blue-light-*`, Outfit y los tamaños `text-title-*` y `text-theme-*`. Aplícalos con utilidades en la plantilla. Cada superficie lleva su par `dark:`.
+
+Esa hoja queda para la entrada de Tailwind (`@import`, `@source`, `@theme`, `@custom-variant`, la fuente Outfit). Añade una regla propia solo cuando ninguna utilidad ni variante pueda expresar el selector. Si el markup que editas depende de una clase propia de `app.css`, traslada ese estilo a utilidades y borra la clase cuando ya no tenga usos.
+
+El catálogo vivo está en `/admin/ui-kit`. La referencia de formulario es `templates/admin/design/form/index.html.twig`. Los componentes se invocan como `<twig:component_*>`; el inventario está en `docs/design/componentes.md`.
+
+```twig
+<twig:component_text_input
+    label="Nombre"
+    name="name"
+    id="user-name"
+    :required="true"
+    error="Este campo es obligatorio."
+/>
+```
+
+- Copia el patrón de clase de `templates/admin/design/ui_elements/` cuando no exista un componente. Los partials de badge traen texto de demostración: no los incluyas para datos reales.
+- Iconos solo con `ux_icon('heroicons:…')`, set outline.
+- Una sola `<h1>`. Encabezados en orden. Cada `<img>` lleva `alt`, `width` y `height`.
+- Interacción en `assets/controllers/admin/`. Sin otro framework de frontend.
+- Cubre vacío, error, carga y deshabilitado, y comprueba la misma pantalla con la clase `.dark`.
+- Tras editar JS o `importmap.php`, ejecuta `docker compose exec php composer assets:compile`.

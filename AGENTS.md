@@ -125,6 +125,10 @@ The PHPUnit database (`dbname_suffix: '_test'`) has an empty `modules` table, so
 - Prefer Twig templates plus Stimulus controllers over introducing a separate frontend framework.
 - Use AssetMapper and `importmap.php` rather than Webpack/Vite unless explicitly requested.
 - Keep Tailwind styling integrated with Symfony templates and Stimulus-based interactions.
+- Put visual styling in Tailwind utility classes on the Twig element. Both contexts already load Tailwind 4: `assets/web/styles/site.css` and `assets/admin/styles/app.css`.
+- Leave those stylesheets for the Tailwind entry and the design tokens: `@import "tailwindcss"`, `@source`, `@theme`, `@font-face`, and `@custom-variant`. Add a custom rule there only when no utility or variant can express the selector, such as a `::file-selector-button` or a third-party widget that requires a fixed class name.
+- Express color, type, spacing, and state with the utilities of that context (`bg-brand`, `text-ink` on the public site; `bg-brand-500`, `text-gray-800`, `dark:` in the admin). A new component class in CSS (`.btn`, `.field`, `.alert-*`, or an `@apply` wrapper) is out of bounds.
+- When a change edits markup that still uses one of those component classes, move that styling onto the element as utilities and remove the class once nothing references it. Leave untouched CSS as it is.
 - Match the template location to the context: use `templates/admin` for admin screens and `templates/web` for public pages.
 - Keep shared UI fragments in reusable template components rather than duplicating markup across contexts.
 - Use Heroicons for all icons. Prefer the Heroicons library and the available outline set, consistently across admin and web.
@@ -153,7 +157,7 @@ docker compose exec php composer assets:compile
 
 ### Core Web Vitals
 
-- Design mobile-first with modern CSS.
+- Design mobile-first with Tailwind utilities, then add `sm:`, `md:`, and `lg:` overrides.
 - Add `loading="lazy"` and `decoding="async"` to secondary images below the fold.
 - Add `width` and `height` on `<img>` tags to limit layout shift.
 

@@ -8,6 +8,7 @@ Este directorio contiene la documentación interna del **Pokedex Web App**.
 | -------- | --------- |
 | Arrancar el proyecto ya clonado | [README.md](../README.md) en la raíz |
 | Entender la app Pokédex (entidades, PokeAPI, rutas, UI kit) | [symfony_guide/07-aplicacion-pokedex.md](./symfony_guide/07-aplicacion-pokedex.md) |
+| Reutilizar un componente al maquetar el sitio o el admin | [design/componentes.md](./design/componentes.md) |
 | Aprender a construir el stack desde cero | [symfony_guide/README.md](./symfony_guide/README.md) (pasos 00–06) |
 | Comandos Docker, Composer, Doctrine, troubleshooting | [symfony_guide/06-comandos-y-troubleshooting.md](./symfony_guide/06-comandos-y-troubleshooting.md) |
 | Pruebas automatizadas (unit / integration / functional) | [testing.md](./testing.md) |
@@ -21,6 +22,8 @@ Este directorio contiene la documentación interna del **Pokedex Web App**.
 
 ```
 docs/
+├── design/
+│   └── componentes.md               # Inventario visual del sitio público y del admin
 ├── testing.md                       # Suites PHPUnit, comandos y CI
 ├── deploy/
 │   └── ec2.md                       # EC2 compartida, HTTPS, cron y despliegue
